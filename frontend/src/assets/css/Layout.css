@@ -1,0 +1,38 @@
+.layout {
+    min-height: 100vh;
+    display: flex;
+    background: #f4f6f9;
+}
+
+.main-content {
+    margin-top: 65px;
+    margin-left: 250px;
+
+    width: calc(100% - 250px);
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    min-height: calc(100vh - 65px);
+
+    transition: all 0.3s ease;
+}
+
+.sidebar-close {
+    margin-left: 70px;
+    width: calc(100% - 70px);
+}
+
+.sidebar-open {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+}
+.page-content {
+    flex: 1;
+    padding: 20px;
+
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+}

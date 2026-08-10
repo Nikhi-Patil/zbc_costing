@@ -1,0 +1,95 @@
+.top-header{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    height:50px;
+    background:#15243a;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 20px;
+    z-index:1000;
+    color:white;
+    box-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+
+.header-left{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.menu-btn{
+    border:none;
+    background:white;
+    width:42px;
+    height:42px;
+    border-radius:8px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.menu-btn:hover{
+    background:#f2f2f2;
+}
+
+.logo{
+    width:42px;
+    height:42px;
+    object-fit:contain;
+}
+
+.app-title{
+    margin:0;
+    font-size:22px;
+    font-weight:600;
+}
+
+.header-right{
+    position:relative;
+}
+
+.profile{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    cursor:pointer;
+}
+
+.profile-img{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    border:2px solid white;
+}
+
+.dropdown{
+    position:absolute;
+    top:60px;
+    right:0;
+    width:200px;
+    background:white;
+    color:#333;
+    border-radius:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,.15);
+    overflow:hidden;
+}
+
+.dropdown-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:14px 18px;
+    cursor:pointer;
+}
+
+.dropdown-item:hover{
+    background:#f4f4f4;
+}
+
+.logout{
+    color:red;
+}

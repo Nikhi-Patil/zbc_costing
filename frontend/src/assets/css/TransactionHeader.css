@@ -1,0 +1,16 @@
+.transaction-header {
+    background: #fff;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.transaction-header h3 {
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.transaction-header .badge {
+    font-size: 13px;
+    padding: 6px 10px;
+}
