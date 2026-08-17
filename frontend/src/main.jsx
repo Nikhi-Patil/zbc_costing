@@ -10,6 +10,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import App from "./App";
 import "./index.css";
 import "./pages/Login.css";
+import "./assets/css/masterTable.css";
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(

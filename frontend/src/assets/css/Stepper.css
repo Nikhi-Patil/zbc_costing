@@ -1,4 +1,4 @@
-.stepper{
+/* .stepper{
     display:flex;
     justify-content:space-between;
     align-items:flex-start;
@@ -60,6 +60,126 @@
 .step-line.completed{
     background:#17c0c9;
 }
+.card-body {
+    padding: 3px !important;
+} */
+
+/* =========================================
+   COSTING WIZARD STEPPER
+========================================= */
+
+.stepper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    position: relative;
+    width: 100%;
+}
+
+.step-item {
+    flex: 1;
+    position: relative;
+    text-align: center;
+}
+
+
+/* =========================================
+   STEP CIRCLE
+========================================= */
+
+.step-circle {
+    width: 20px;
+    height: 20px;
+
+    border-radius: 50%;
+
+    border: 3px solid #cfd4da;
+    background: #fff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0 auto;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    color: #6c757d;
+
+    position: relative;
+    z-index: 2;
+}
+
+
+/* Active step */
+
+.step-circle.active {
+    background: #17c0c9;
+    border-color: #17c0c9;
+    color: #fff;
+}
+
+
+/* Completed step */
+
+.step-circle.completed {
+    background: #17c0c9;
+    border-color: #17c0c9;
+    color: #fff;
+}
+
+
+/* =========================================
+   STEP TITLE
+========================================= */
+
+.step-title {
+    margin-top: 3px;
+
+    font-size: 12px !important;
+    font-weight: 500;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   STEP CONNECTING LINE
+========================================= */
+
+.step-line {
+    position: absolute;
+
+    /*
+       Circle is 20px high.
+       Center of circle = 10px.
+    */
+    top: 9px;
+
+    left: 50%;
+
+    width: 100%;
+    height: 3px;
+
+    background: #d8d8d8;
+
+    z-index: 1;
+}
+
+
+/* Completed connecting line */
+
+.step-line.completed {
+    background: #17c0c9;
+}
+
+
+/* =========================================
+   CARD BODY
+========================================= */
+
 .card-body {
     padding: 3px !important;
 }

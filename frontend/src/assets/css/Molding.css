@@ -1,0 +1,251 @@
+.molding-page {
+  width: 100%;
+  padding: 25px;
+  background: #f5f7fa;
+  min-height: calc(100vh - 70px);
+}
+
+/* =========================
+   PAGE HEADER
+========================= */
+
+.molding-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.molding-header h2 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.molding-header p {
+  margin: 5px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* =========================
+   ADD BUTTON
+========================= */
+
+.add-transaction-btn {
+  border: none;
+  background: #2563eb;
+  color: white;
+  padding: 11px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  transition: 0.2s;
+}
+
+.add-transaction-btn span {
+  font-size: 20px;
+  line-height: 14px;
+}
+
+.add-transaction-btn:hover {
+  background: #1d4ed8;
+}
+
+/* =========================
+   TABLE CARD
+========================= */
+
+.molding-table-card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+/* =========================
+   TABLE HEADER
+========================= */
+
+.table-header {
+  height: 60px;
+  padding: 0 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table-header h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.table-header span {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.molding-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1250px;
+}
+
+.molding-table thead {
+  background: #f8fafc;
+}
+
+.molding-table th {
+  padding: 13px 15px;
+  text-align: left;
+
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.molding-table td {
+  padding: 14px 15px;
+
+  font-size: 13px;
+  color: #374151;
+
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+
+.molding-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* =========================
+   TRANSACTION ID
+========================= */
+
+.transaction-id {
+  font-weight: 600 !important;
+  color: #2563eb !important;
+}
+
+/* =========================
+   PROFIT / LOSS
+========================= */
+
+.profit {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.loss {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* =========================
+   STATUS
+========================= */
+
+.status {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 20px;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status.completed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status.draft {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.status.submitted {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* =========================
+   OPEN BUTTON
+========================= */
+
+.open-btn {
+  border: 1px solid #2563eb;
+  background: white;
+
+  color: #2563eb;
+
+  padding: 6px 13px;
+  border-radius: 5px;
+
+  font-size: 12px;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.open-btn:hover {
+  background: #2563eb;
+  color: white;
+}
+
+/* =========================
+   NO DATA
+========================= */
+
+.no-data {
+  text-align: center !important;
+  padding: 40px !important;
+  color: #9ca3af !important;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+
+  .molding-page {
+    padding: 15px;
+  }
+
+  .molding-header {
+    align-items: flex-start;
+    gap: 15px;
+    flex-direction: column;
+  }
+
+  .add-transaction-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+}

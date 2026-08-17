@@ -10,7 +10,7 @@ const steps = [
 
 function Stepper({ currentStep }) {
   return (
-    <div className="card mb-2" style={{height: "45px",marginTop: "-20px", fontWeight: "700"}}>
+    <div className="card mb-2" style={{height: "45px", fontWeight: "700"}}>
       <div className="card-body">
 
         <div className="stepper">

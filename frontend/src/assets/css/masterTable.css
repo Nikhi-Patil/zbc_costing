@@ -1,0 +1,216 @@
+
+/* =========================================
+   UNIT MASTER
+========================================= */
+
+.unit-master h2 {
+    margin-bottom: 20px;
+}
+
+.unit-master table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.unit-master th,
+.unit-master td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.unit-master th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.unit-master tr:hover {
+    background: #f9f9f9;
+}
+
+/* =========================================
+   Part MASTER
+========================================= */
+
+.part-master h2 {
+    margin-bottom: 20px;
+}
+
+.part-master table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.part-master th,
+.part-master td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.part-master th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.part-master tr:hover {
+    background: #f9f9f9;
+}
+
+
+/* =========================================
+   Bop MASTER
+========================================= */
+
+.bop-master h2 {
+    margin-bottom: 20px;
+}
+
+.bop-master table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.bop-master th,
+.bop-master td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.bop-master th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.bop-master tr:hover {
+    background: #f9f9f9;
+}
+
+
+
+/* =========================================
+   compound MASTER
+========================================= */
+
+.compound-master h2 {
+    margin-bottom: 20px;
+}
+
+.compound-master table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.compound-master th,
+.compound-master td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.compound-master th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.compound-master tr:hover {
+    background: #f9f9f9;
+}
+
+
+/* =========================================
+  customer  MASTER
+========================================= */
+
+.customer-master h2 {
+    margin-bottom: 20px;
+}
+
+.customer-master table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.customer-master th,
+.customer-master td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.customer-master th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.customer-master tr:hover {
+    background: #f9f9f9;
+}
+
+
+/* =========================================
+   employee MASTER
+========================================= */
+
+.employee-master h2 {
+    margin-bottom: 20px;
+}
+
+.employee-master table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.employee-master th,
+.employee-master td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.employee-master th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.employee-master tr:hover {
+    background: #f9f9f9;
+}
+
+
+/* =========================================
+   supplier MASTER
+========================================= */
+
+.supplier-master h2 {
+    margin-bottom: 20px;
+}
+
+.supplier-master table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.supplier-master th,
+.supplier-master td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.supplier-master th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.supplier-master tr:hover {
+    background: #f9f9f9;
+}

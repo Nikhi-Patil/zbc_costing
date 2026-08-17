@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Menu, User, LogOut, Settings } from "lucide-react";
+import { User, LogOut, Settings } from "lucide-react";
+
 import "../../assets/css/TopHeader.css";
-import logo from "../../assets/images/jayshreemain.png";  
+
+import logo from "../../assets/images/jayshreemain.png";
 import profile from "../../assets/images/profile.jpg";
 
 function TopHeader({ toggleSidebar }) {
@@ -14,66 +16,44 @@ function TopHeader({ toggleSidebar }) {
 
   return (
     <header className="top-header">
-
+      {/* LEFT SIDE */}
       <div className="header-left">
-
-        <button
-          className="menu-btn"
-          onClick={toggleSidebar}
-        >
+        <button className="menu-btn" onClick={toggleSidebar} type="button">
           <img src={logo} alt="Logo" className="logo" />
         </button>
 
-       
-
-        <h4 className="app-title">
-          ZBC Costing
-        </h4>
-
+        <h4 className="app-title">ZBC Costing</h4>
       </div>
 
+      {/* RIGHT SIDE */}
       <div className="header-right">
-
-        <div
-          className="profile"
-          onClick={() => setOpen(!open)}
-        >
-
-          <img
-            src={profile}
-            alt="Profile"
-            className="profile-img"
-          />
+        <div className="profile" onClick={() => setOpen((prev) => !prev)}>
+          <img src={user.image} alt="Profile" className="profile-img" />
 
           <span>{user.name}</span>
-
         </div>
 
+        {/* DROPDOWN */}
+
         {open && (
-
           <div className="dropdown">
-
             <div className="dropdown-item">
               <User size={18} />
-              Profile
+              <span>Profile</span>
             </div>
 
             <div className="dropdown-item">
               <Settings size={18} />
-              Settings
+              <span>Settings</span>
             </div>
 
             <div className="dropdown-item logout">
               <LogOut size={18} />
-              Logout
+              <span>Logout</span>
             </div>
-
           </div>
-
         )}
-
       </div>
-
     </header>
   );
 }

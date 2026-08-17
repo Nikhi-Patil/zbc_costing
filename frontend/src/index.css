@@ -1,528 +1,783 @@
+/* =========================================
+   GLOBAL
+========================================= */
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Segoe UI", sans-serif;
-    font-size: 14px;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 14px;
 }
 
 html,
 body,
 #root {
-    width: 100%;
-    height: 100%;
-    background: #f4f6f9;
+  width: 100%;
+  min-height: 100%;
+  background: #f4f6f9;
 }
 
 body {
-    overflow-x: hidden;
+  overflow-x: hidden;
 }
 
+/* =========================================
+   MAIN LAYOUT
+========================================= */
+
+.layout {
+  width: 100%;
+  min-height: 100vh;
+  background: #f4f6f9;
+}
+
+/* =========================================
+   MAIN CONTENT
+   Header = 50px
+   Sidebar Open = 210px
+   Sidebar Closed = 70px
+========================================= */
+
+.main-content {
+  margin-top: 50px;
+  margin-left: 210px;
+
+  width: calc(100% - 210px);
+  min-width: 0;
+
+  min-height: calc(100vh - 50px);
+
+  display: flex;
+  flex-direction: column;
+
+  transition:
+    margin-left 0.3s ease,
+    width 0.3s ease;
+}
+
+/* =========================================
+   SIDEBAR OPEN
+========================================= */
+
+.main-content.sidebar-open {
+  margin-left: 210px;
+  width: calc(100% - 210px);
+}
+
+/* =========================================
+   SIDEBAR CLOSED
+========================================= */
+
+.main-content.sidebar-close {
+  margin-left: 70px;
+  width: calc(100% - 70px);
+}
+
+/* =========================================
+   PAGE CONTENT
+========================================= */
+
+.page-content {
+  flex: 1;
+
+  width: 100%;
+  min-width: 0;
+
+  padding: 20px;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+}
 
 /* =========================================
    TABULATOR
 ========================================= */
 
 .tabulator .tabulator-footer .tabulator-footer-contents {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    width: 100%;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100%;
 }
 
 .tabulator .tabulator-page-size {
-    margin-right: auto;
+  margin-right: auto;
 }
 
 .tabulator .tabulator-paginator {
-    margin-left: auto !important;
-    display: flex !important;
-    justify-content: flex-end !important;
-    align-items: center;
-    gap: 5px;
-    width: auto !important;
+  margin-left: auto !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center;
+  gap: 5px;
+  width: auto !important;
 }
 
 .tabulator button {
-    width: auto !important;
+  width: auto !important;
 }
 
 .tabulator .tabulator-page {
-    width: auto !important;
-    min-width: 40px;
-}
-
-.tabulator .tabulator-page {
-    background: #343a40 !important;
-    color: #fff !important;
-    border: 1px solid #343a40 !important;
+  width: auto !important;
+  min-width: 40px;
+  background: #343a40 !important;
+  color: #fff !important;
+  border: 1px solid #343a40 !important;
 }
 
 .tabulator .tabulator-page:hover {
-    background: #fff !important;
-    color: #343a40 !important;
+  background: #fff !important;
+  color: #343a40 !important;
 }
 
 .tabulator .tabulator-page.active {
-    background: #0d6efd !important;
-    color: #fff !important;
-    border-color: #0d6efd !important;
+  background: #0d6efd !important;
+  color: #fff !important;
+  border-color: #0d6efd !important;
 }
 
 .tabulator .tabulator-page:disabled {
-    background: #e9ecef !important;
-    color: #6c757d !important;
-    border-color: #dee2e6 !important;
+  background: #e9ecef !important;
+  color: #6c757d !important;
+  border-color: #dee2e6 !important;
 }
-
 
 /* =========================================
    TABLE
 ========================================= */
 
 .table-container {
-    width: 100%;
-    overflow-x: auto;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .table-container .tabulator {
-    min-width: 100%;
+  min-width: 100%;
 }
 
 .app-content {
-    overflow-x: hidden;
+  overflow-x: hidden;
 }
 
 .card {
-    overflow: hidden;
-    padding: 0px;
-    
+  overflow: hidden;
+  padding: 0;
 }
-
-
 
 /* =========================================
    ACTION BUTTONS
 ========================================= */
 
 .action-btn {
-    min-width: 110px;
-    height: 38px;
-    font-size: 14px;
-    font-weight: 500;
+  min-width: 110px;
+  height: 38px;
+  font-size: 14px;
+  font-weight: 500;
 }
-
 
 /* =========================================
    WIZARD BUTTON
 ========================================= */
 
 .wizard-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    padding: 0;
+  padding: 0;
 }
 
-/* BOP Main Header */
+/* =========================================
+   BOP HEADER
+========================================= */
+
 .bop-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-    width: 100%;
-       padding: 5px 5px;
+  width: 100%;
+  padding: 0 20px;
 
-    /* border-bottom: 1px solid #ddd; */
+  border: 1px solid #ddd;
+  border-radius: 6px;
+
+  background: lightgray;
 }
 
 .bop-title {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 600;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
 }
 
+/* =========================================
+   ADD BOP BUTTON
+========================================= */
 
-/* Add BOP */
 .add-bop-btn {
-    width: auto !important;
-    min-width: 140px;
-    height: 44px;
+  min-width: 60px;
+  height: 28px;
 
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
-    padding: 0px 0px;
-
-    border-radius: 7px;
-
-    font-size: 16px;
-    font-weight: 600;
+  font-weight: 600;
 }
 
+/* =========================================
+   BOP SECTION
+========================================= */
 
-/* Individual BOP Card Header */
-.bop-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    width: 100%;
-    padding: 5px 20px;
-
-    border-bottom: 1px solid #ddd;
-}
-
-.bop-card-title {
-    margin: 0;
-
-    font-size: 24px;
-    font-weight: 600;
-}
-
-
-/* Delete BOP */
-.delete-bop-btn {
-    width: auto !important;
-    min-width: 140px;
-    height: 40px;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 0px 0px;
-
-    border-radius: 7px;
-
-    font-size: 15px;
-    font-weight: 600;
-}
 .bop-section {
-    width: 100%;
-    margin-top: 15px;
+  width: 100%;
+  margin-top: 15px;
 }
 
-
-/* Main BOP header */
-
-.bop-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 0px 20px;
-
-    border: 1px solid #ddd;
-    border-radius: 6px;
-
-    background:  lightgray;
-}
-
-.bop-title {
-    margin: 0;
-    font-size: 18px;
-}
-
-
-/* Add button */
-
-.add-bop-btn {
-    min-width: 60px;
-
-    height: 28px;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    font-weight: 600;
-}
-
-
-/* Individual BOP */
+/* =========================================
+   BOP CARD
+========================================= */
 
 .bop-card {
-    margin-top: 15px;
+  margin-top: 15px;
 
-    border: 1px solid #ddd;
-    border-radius: 6px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
 
-    background: #fff;
+  background: #fff;
 }
 
-
-/* BOP card header */
+/* =========================================
+   BOP CARD HEADER
+========================================= */
 
 .bop-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-    padding: 0px 20px;
-background-color: #acc4ef;
-    border-bottom: 1px solid #ddd;
+  width: 100%;
+  padding: 0 20px;
+
+  background-color: #acc4ef;
+  border-bottom: 1px solid #ddd;
 }
 
 .bop-card-title {
-    margin: 0;
-
-    font-size: 18px;
+  margin: 0;
+  font-size: 18px;
 }
 
-
-/* Delete */
+/* =========================================
+   DELETE BOP
+========================================= */
 
 .delete-bop-btn {
-    min-width: 60px;
+  min-width: 60px;
+  height: 28px;
 
-    height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    font-weight: 600;
+  font-weight: 600;
 }
 
-
-/* BOP body */
+/* =========================================
+   BOP BODY
+========================================= */
 
 .bop-card-body {
-    padding: 15px;
+  padding: 15px;
 }
-
 
 .form-select {
-    font-size: 12px;
-    /* border: #a6a7a8 !important; */
-    border: var(--bs-border-width) solid #a6a7a8 !important;
+  font-size: 12px;
+  border: var(--bs-border-width) solid #a6a7a8 !important;
+  /* color: #1e00ff !important;
+   font-weight: 600; */
 }
-style attribute {
-    font-size: 12px;
-}
+
 .form-control {
-    font-size: 12px;
-    border: var(--bs-border-width) solid #a6a7a8 !important;
+  font-size: 12px;
+  border: var(--bs-border-width) solid #a6a7a8 !important;
+  /* font-weight: 600;
+  color: #1e00ff !important; */
 }
-b, strong {
-    font-weight: bolder;
-    font-size: 12px;
+/* 
+input::placeholder {
+  color: #1e00ff !important;
+} */
+
+b,
+strong {
+  font-weight: bolder;
+  font-size: 12px;
 }
+
 .card-header {
-        padding: 0px 20px;
-       background-color: lightgray;
-}
-.h5, h5 {
-    font-size: 18px;
+  padding: 0 20px;
+  background-color: lightgray;
 }
 
-
-
-
+.h5,
+h5 {
+  font-size: 18px;
+}
 
 /* =========================================
    BOTTOM LINE
 ========================================= */
 
 .bottom-line-container {
-    width: 100%;
-    background: #fff;
-    border: 1px solid #d3d3d3;
-    padding: 14px;
-    box-sizing: border-box;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #d3d3d3;
+
+  box-sizing: border-box;
 }
 
-
 /* =========================================
-   HEADER
+   BOTTOM LINE HEADER
 ========================================= */
 
 .bottom-line-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-    padding: 0 15px 12px 15px;
+  padding: 0 15px 0px 15px;
 
-    border-bottom: 1px solid #d3d3d3;
+  border-bottom: 1px solid #d3d3d3;
 
-    font-size: 15px;
+  font-size: 15px;
 }
 
 .bottom-line-header > div:last-child {
-    text-align: right;
+  text-align: right;
 }
 
 .bottom-line-header b {
-    font-weight: 700;
+  font-weight: 700;
 }
 
 .bottom-line-header span {
-    font-weight: 600;
+  font-weight: 600;
 }
-
 
 /* =========================================
    TABLE WRAPPER
 ========================================= */
 
 .bottom-line-table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    margin-top: 20px;
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 20px;
 }
 
-
 /* =========================================
-   TABLE
+   BOTTOM LINE TABLE
 ========================================= */
 
 .bottom-line-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-
-    font-size: 14px;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
 }
-
-
-/* =========================================
-   HEADER
-========================================= */
 
 .bottom-line-table thead th {
-    height: 35px;
+  height: 35px;
 
-    background: #fff;
+  background: #fff;
+  border: 1px solid #d9d9d9;
 
-    border: 1px solid #d9d9d9;
-
-    text-align: center;
-
-    font-weight: 600;
+  text-align: center;
+  font-weight: 600;
 }
 
 
-/* =========================================
-   COLUMNS
-========================================= */
-
-.bottom-line-table .sr-column {
-    width: 13%;
+.bottom-line-table th:nth-child(1),
+.bottom-line-table td:nth-child(1) {
+width:5%;
+}
+.bottom-line-table th:nth-child(6),
+.bottom-line-table td:nth-child(6) {
+width:7%;
 }
 
-.bottom-line-table .parameter-column {
-    width: 32%;
-    text-align: left;
+.bottom-line-table th:nth-child(3),
+.bottom-line-table td:nth-child(3),
+.bottom-line-table th:nth-child(5),
+.bottom-line-table td:nth-child(5) {
+  text-align: center !important;
 }
 
-.bottom-line-table .percentage-column {
-    width: 43%;
+.percentage-input {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
-
-.bottom-line-table .action-column {
-    width: 12%;
+.percentage-input input {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
-
-
 /* =========================================
    BODY
 ========================================= */
 
 .bottom-line-table tbody td {
-    height: 48px;
+  height: 30px;
 
-    border: 1px solid #d9d9d9;
-
-    padding: 5px 10px;
+  border: 1px solid #d9d9d9;
+  padding: 0px 10px;
 }
 
-
-/* Alternating rows */
-
 .bottom-line-table tbody tr:nth-child(odd) {
-    background: #f1f1f1;
+  background: #f1f1f1;
 }
 
 .bottom-line-table tbody tr:nth-child(even) {
-    background: #dcdcdc;
+  background: #dcdcdc;
 }
-
 
 /* =========================================
    PERCENTAGE
 ========================================= */
 
 .percentage-cell {
-    text-align: right;
+  text-align: right;
 }
 
 .percentage-input {
-    display: flex;
+  display: flex;
 
-    justify-content: flex-end;
-    align-items: center;
+  justify-content: flex-end;
+  align-items: center;
 
-    gap: 3px;
+  gap: 3px;
 }
 
 .percentage-input input {
-    width: 165px;
-    height: 25px;
+  width: 165px;
+  height: 25px;
 
-    padding: 3px 6px;
+  padding: 3px 6px;
 
-    border: 1px solid #999;
+  border: 1px solid #999;
+  border-radius: 0;
 
-    border-radius: 0;
+  background: #fff;
 
-    background: #fff;
-
-    font-size: 13px;
-
-    box-sizing: border-box;
+  font-size: 13px;
+  box-sizing: border-box;
 }
 
 .percentage-input span {
-    font-size: 13px;
+  font-size: 13px;
 }
-
 
 /* =========================================
    ACTION
 ========================================= */
 
 .action-cell {
-    text-align: center;
+  text-align: center;
 }
 
 .bottom-edit-btn {
-    width: 45px;
-    height: 31px;
+  width: 45px;
+  height: 31px;
 
-    padding: 0;
+  padding: 0;
 
-    border: none;
-    border-radius: 4px;
+  border: none;
+  border-radius: 4px;
 
-    background: #50bfae;
+  background: #50bfae;
 
-    color: #fff;
+  color: #fff;
 
-    font-size: 13px;
+  font-size: 13px;
 
-    cursor: pointer;
+  cursor: pointer;
 
-    transition: 0.2s;
+  transition: 0.2s;
 }
 
 .bottom-edit-btn:hover {
-    background: #3eaa9a;
+  background: #3eaa9a;
+}
+/* Compound Code react-select */
+.compound-select__control {
+  min-height: 31px !important;
+  height: 31px !important;
+
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+}
+
+
+
+.compound-select__control--is-focused {
+  border-color: #86b7fe !important;
+  box-shadow: 0 0 0 0.1rem rgba(13, 110, 253, 0.15) !important;
+}
+
+.compound-select__value-container {
+  padding: 0 10px !important;
+}
+
+.compound-select__input-container {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.compound-select__placeholder {
+  font-size: 12px !important;
+}
+
+.compound-select__single-value {
+  font-size: 12px !important;
+}
+
+.compound-select__indicators {
+  height: 34px !important;
+}
+
+.compound-select__indicator {
+  padding: 0px !important;
+  margin-bottom: 2px;
+  font-weight: 600 !important;
+  color: #7b69ff !important;
+}
+
+.compound-select__menu {
+  font-size: 12px !important;
+  z-index: 99999 !important;
+  position: absolute !important;
+}
+.compound-select__menu-list {
+  max-height: 250px !important;
+  overflow-y: auto !important;
+}
+.compound-select__option {
+  padding: 8px 10px !important;
+}
+
+.compound-select__option--is-focused {
+  background: #f1f1f1 !important;
+}
+
+.compound-select__option--is-selected {
+  background: #0d6efd !important;
+  color: white !important;
+}
+
+.bop-card,
+.bop-card-body,
+.card,
+.card-body,
+.row {
+  overflow: visible !important;
+}
+
+.col-md-1 {
+  flex: 0 0 auto;
+  width: 11.333333%;
+}
+.cost-highlight {
+  background-color: #e8ff9b;
+}
+.conversion-highlight {
+  background-color: #9bffe9 !important;
+  font-weight: 600;
+  color: #1e00ff;
+}
+.field-filled {
+  background-color: #cbffd0 !important;
+  font-weight: 600;
+  color: #1e00ff;
+}
+
+.transaction-id {
+  font-size: 15px;
+  padding: 6px 12px;
+  border-radius: 5px;
+  color: #0d6efd;
+  border: 1px;
+}
+
+.compound-select.field-filled .compound-select__control {
+  background-color: #cbffd0 !important;
+  font-weight: 600;
+  color: #1e00ff;
+}
+
+.compound-select.field-filled .compound-select__single-value {
+  font-weight: 600 !important;
+  color: #1e00ff !important;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.transaction-id-header {
+  margin-left: auto;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.wizard-page-content {
+  width: 100%;
+  min-height: 0;
+}
+
+.wizard-buttons-wrapper {
+  width: 100%;
+  margin-top: 12px;
+  margin-bottom: 10px;
+}
+
+.wizard-buttons-card {
+  width: 100%;
+  background: #b0cbcb;
+  border: 1px solid #9fb5b5;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.wizard-buttons-body {
+  min-height: 30px;
+  padding: 0px 0px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.costing-wizard-page {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.costing-wizard-stepper {
+  flex-shrink: 0;
+}
+
+.wizard-content {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+.wizard-buttons-area {
+  margin-top: auto;
+  width: 100%;
+  padding-top: 12px;
+  padding-bottom: 0px;
+  flex-shrink: 0;
+}
+
+.form-control:focus {
+  font-weight: 600;
+  color: #1e00ff;
+}
+
+.bop-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.bop-table th,
+.bop-table td {
+  vertical-align: middle;
+  padding: 3px 5px;
+}
+
+/* Make every control use the full cell width */
+.bop-table input,
+.bop-table select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 38px;
+}
+.bop-table th:nth-child(1),
+.bop-table td:nth-child(1) {
+  width: 5%;
+}
+.part-bop-table th:nth-child(8),
+.part-bop-table td:nth-child(8) {
+  width: 5%;
+}
+
+.process-row {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.form-row {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.bottom-line-summary {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 15px;
+  padding: 10px 0;
+}
+
+.summary-field {
+  width: 200px;
+}
+
+.summary-field label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.summary-field input {
+  text-align: right;
+  font-weight: 600;
+}
+
+.report-toolbar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 15px;
+}
+
+.year-filter {
+  width: 180px;
+}
+
+.year-filter .form-control {
+  width: 100%;
+}
+
+.add-rate-btn {
+  height: 38px;
+  padding: 6px 16px;
+  white-space: nowrap;
 }

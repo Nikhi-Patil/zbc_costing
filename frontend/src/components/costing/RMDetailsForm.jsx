@@ -1,330 +1,286 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import Select from "react-select";
+import BopTable from "./BopTable";
 
-function RMDetailsForm({ formData, handleInputChange,  addBopRate,bopList}) {
+function RMDetailsForm({
+  formData,
+  transactionId,
+  handleInputChange,
+  handleCompoundChange,
+  handlePolymerChange,
+  bopList,
+  updateBop,
+}) {
+  const [compounds, setCompounds] = useState([]);
+
+  const months = [
+    { value: "01", label: "January" },
+    { value: "02", label: "February" },
+    { value: "03", label: "March" },
+    { value: "04", label: "April" },
+    { value: "05", label: "May" },
+    { value: "06", label: "June" },
+    { value: "07", label: "July" },
+    { value: "08", label: "August" },
+    { value: "09", label: "September" },
+    { value: "10", label: "October" },
+    { value: "11", label: "November" },
+    { value: "12", label: "December" },
+  ];
+  useEffect(() => {
+    const fetchCompounds = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/compounds");
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch compounds");
+        }
+
+        const data = await response.json();
+        setCompounds(data);
+      } catch (error) {
+        console.error("Error fetching compounds:", error);
+      }
+    };
+
+    fetchCompounds();
+  }, []);
+  const polymers = [...new Set(compounds.map((compound) => compound.polymer))];
+  const filteredCompounds = compounds.filter(
+    (compound) => compound.polymer === formData.polymerName,
+  );
+  const compoundOptions = filteredCompounds.map((compound) => ({
+    value: compound.compound_code,
+    label: compound.compound_code,
+    data: compound,
+  }));
+  const selectedCompound =
+    compoundOptions.find((option) => option.value === formData.compoundCode) ||
+    null;
+  const totalBopCost = bopList.reduce(
+    (total, bop) => total + (Number(bop.bopCost) || 0),
+    0,
+  );
+  const finalRmCost = (Number(formData.totalRmCost) || 0) + totalBopCost;
+
   return (
     <>
-    <div className="card">
-      <div className="card-header">
-        <h5 className="mb-0"><b style={{fontSize:"14px"}}>Raw Material Details</b></h5>
-      </div>
+      {/* Raw Material Details */}
+      <div className="card">
+        <div className="card-header">
+          <h5 className="mb-0">
+            <b style={{ fontSize: "14px" }}>Raw Material Details</b>
+          </h5>
 
-      <div className="card-body">
-            {/* Row 1 */}
-        <div className="row g-3 mt-1">
-
-          <div className="col-md-2">
-              <label className="form-label"><b>Polymer Name</b></label>
-              <select
-                className="form-select"
-                name="polymerName"
-                value={formData.polymerName}
-                onChange={handleInputChange}>
-                <option value="">Select</option>
-              </select>
-          </div>
-
-          <div className="col-md-2">
-                <label className="form-label"><b>Compound Code</b></label>
-              <select
-                  className="form-select"
-                  name="compoundCode"
-                  value={formData.compoundCode}
-                  onChange={handleInputChange}>
-                  <option value="">Select</option>
-                </select>
-          </div>
-
-          <div className="col-md-2">
-                <label className="form-label"><b>IM Code</b></label>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="imCode"
-                  value={formData.imCode}
-                  onChange={handleInputChange}/>
-          </div>
-
+          <span className="transaction-id-header">
+            Transaction ID: <b>{transactionId || "Not Saved"}</b>
+          </span>
         </div>
-          {/* Row 2 */}
-        <div className=" row g-2 mt-1">
 
-          <div className="col-md-2">
-              <label className="form-label"><b>Month</b></label>
+        <div className="card-body">
+          {/* Row 1 */}
+          <div className="row g-3 mt-1">
+            {/* Polymer */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Polymer Name</b>
+              </label>
               <select
-                  className="form-select"
-                  name="compMonth"
-                  value={formData.compMonth}
-                  onChange={handleInputChange}>
+                className={`form-control ${
+                  formData.polymerName ? "field-filled" : ""
+                }`}
+                name="polymerName"
+                value={formData.polymerName || ""}
+                onChange={(e) => handlePolymerChange(e.target.value)}
+              >
                 <option value="">Select</option>
+                {polymers.map((polymer) => (
+                  <option key={polymer} value={polymer}>
+                    {polymer}
+                  </option>
+                ))}
               </select>
-          </div>
-
-          <div className="col-md-2">
-              <label className="form-label"><b>Compound Rate</b></label>
+            </div>
+            {/* Compound */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Compound Code</b>
+              </label>
+              <Select
+                className={
+                  formData.compoundCode
+                    ? "compound-select field-filled"
+                    : "compound-select"
+                }
+                classNamePrefix="compound-select"
+                options={compoundOptions}
+                value={selectedCompound}
+                onChange={(selected) => {
+                  if (selected) {
+                    handleCompoundChange(selected.data);
+                  } else {
+                    handleInputChange({
+                      target: {
+                        name: "compoundCode",
+                        value: "",
+                      },
+                    });
+                    handleInputChange({
+                      target: {
+                        name: "imCode",
+                        value: "",
+                      },
+                    });
+                  }
+                }}
+                isDisabled={!formData.polymerName}
+                isClearable
+                isSearchable
+                placeholder="Select"
+                noOptionsMessage={() => "No compound found"}
+              />
+            </div>
+            {/* IM Code */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>IM Code</b>
+              </label>
               <input
                 type="text"
-                className="form-control"
-                name="compoundRate"
-                value={formData.compoundRate}
-                onChange={handleInputChange}/>
-          </div>
-
-          <div className="col-md-2">
-              <label className="form-label"><b>Loading Wt (Grm)</b></label>
-              <input
-                type="text"
-                className="form-control"
-                name="loadingWeight"
-                value={formData.loadingWeight}
-                onChange={handleInputChange}/>
-          </div>
-
-          <div className="col-md-2">
-              <label className="form-label"><b>Net Wt (Grm)</b></label>
-              <input
-                type="text"
-                className="form-control"
-                name="netWeight"
-                value={formData.netWeight}
-                onChange={handleInputChange}/>
-          </div>
-
-          <div className="col-md-2">
-              <label className="form-label"> <b>Loading % </b></label>
+                className={`form-control ${
+                  formData.imCode ? "field-filled" : ""
+                }`}
+                name="imCode"
+                value={formData.imCode || ""}
+                readOnly
+              />
+            </div>
+            {/* Month */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Month</b>
+              </label>
+              <select
+                className={`form-control ${
+                  formData.month ? "field-filled" : ""
+                }`}
+                name="month"
+                value={formData.month || ""}
+                onChange={handleInputChange}
+              >
+                <option value="">Select</option>
+                {months.map((month) => (
+                  <option key={month.value} value={month.value}>
+                    {month.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* Compound Rate */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Compound Rate</b>
+              </label>
               <input
                 type="number"
-                className="form-control"
-                name="loadingper"
-                value={formData.loadingper}
-                onChange={handleInputChange}/>
-          </div>
-
-        </div>
-        
-      </div>
-    </div>
-
-    {formData.hasBop === "Yes" && (
-        <div className="card mt-4">
-          <div className="bop-header">
-            <h4 className="bop-title">BOP Details</h4>
-          </div>
-
-          {bopList.map((bop, index) => (
-            <div className="card mt-3 shadow-sm" key={bop.id}>
-              <div className="bop-card-header">
-                <h5 className="bop-card-title">BOP : {index + 1}</h5>
-              </div>
-
-              <div className="card-body">
-                <div className="row g-3">
-                  <div className="col-md-4">
-                    <label className="form-label">
-                      <b>BOP Part No</b>
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="bopPartNo"
-                      value={bop.bopPartNo}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setBops((prev) =>
-                          prev.map((item) =>
-                            item.id === bop.id
-                              ? {
-                                  ...item,
-                                  bopPartNo: value,
-                                }
-                              : item,
-                          ),
-                        );
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-md-4">
-                    <label className="form-label">
-                      <b>Part Name</b>
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="bopPartName"
-                      value={bop.bopPartName}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setBops((prev) =>
-                          prev.map((item) =>
-                            item.id === bop.id
-                              ? {
-                                  ...item,
-                                  bopPartName: value,
-                                }
-                              : item,
-                          ),
-                        );
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-md-4">
-                    <label className="form-label">
-                      <b>Commodity</b>
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="commodity"
-                      value={bop.commodity}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setBops((prev) =>
-                          prev.map((item) =>
-                            item.id === bop.id
-                              ? {
-                                  ...item,
-                                  commodity: value,
-                                }
-                              : item,
-                          ),
-                        );
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-md-4">
-                    <label className="form-label">
-                      <b>Supplier Name</b>
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="supplierName"
-                      value={bop.supplierName}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setBops((prev) =>
-                          prev.map((item) =>
-                            item.id === bop.id
-                              ? {
-                                  ...item,
-                                  supplierName: value,
-                                }
-                              : item,
-                          ),
-                        );
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-md-4">
-                    <label className="form-label">
-                      <b>Assembly Quantity</b>
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="bopAssemblyQty"
-                      value={bop.bopAssemblyQty}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setBops((prev) =>
-                          prev.map((item) =>
-                            item.id === bop.id
-                              ? {
-                                  ...item,
-                                  bopAssemblyQty: value,
-                                }
-                              : item,
-                          ),
-                        );
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-md-4">
-                    <label className="form-label">
-                      <b>BOP FG Code</b>
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="bopFgCode"
-                      value={bop.bopFgCode}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setBops((prev) =>
-                          prev.map((item) =>
-                            item.id === bop.id
-                              ? {
-                                  ...item,
-                                  bopFgCode: value,
-                                }
-                              : item,
-                          ),
-                        );
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-md-4">
-                    <label className="form-label">
-                      <b>Month</b>
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="bopmonth"
-                      value={bop.bopmonth}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setBops((prev) =>
-                          prev.map((item) =>
-                            item.id === bop.id
-                              ? {
-                                  ...item,
-                                  bopmonth: value,
-                                }
-                              : item,
-                          ),
-                        );
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-md-4">
-                    <label className="form-label">
-                      <b>Bop Rate</b>
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="bopRate"
-                      value={bop.bopRate}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setBops((prev) =>
-                          prev.map((item) =>
-                            item.id === bop.id
-                              ? {
-                                  ...item,
-                                  bopRate: value,
-                                }
-                              : item,
-                          ),
-                        );
-                      }}
-                    />
-                  </div>
-
-                </div>
-              </div>
+                className={`form-control ${
+                  formData.compoundRate ? "field-filled" : ""
+                }`}
+                name="compoundRate"
+                value={formData.compoundRate || ""}
+                onChange={handleInputChange}
+              />
             </div>
-          ))}
+          </div>
+
+          {/* Row 2 */}
+          <div className="row g-2 mt-1">
+            {/* Loading Weight */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Loading Wt (Grm)</b>
+              </label>
+              <input
+                type="number"
+                className={`form-control ${
+                  formData.grossWeight ? "field-filled" : ""
+                }`}
+                value={formData.grossWeight || ""}
+                readOnly
+              />
+            </div>
+            {/* Net Weight */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Net Wt (Grm)</b>
+              </label>
+              <input
+                type="number"
+                className={`form-control ${
+                  formData.netWeight ? "field-filled" : ""
+                }`}
+                value={formData.netWeight || ""}
+                readOnly
+              />
+            </div>
+            {/* Loading % */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Loading %</b>
+              </label>
+              <input
+                type="text"
+                className={`form-control ${
+                  formData.loadingper ? "field-filled" : ""
+                }`}
+                value={formData.loadingper || ""}
+                readOnly
+              />
+            </div>
+            {/* Total RM Cost */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Total RM Cost</b>
+              </label>
+              <input
+                type="text"
+                className="form-control cost-highlight"
+                value={formData.totalRmCost || ""}
+                readOnly
+              />
+            </div>
+            {/* Total BOP Cost */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Total BOP Cost</b>
+              </label>
+              <input
+                type="text"
+                className="form-control cost-highlight"
+                value={totalBopCost.toFixed(2)}
+                readOnly
+              />
+            </div>
+            {/* Final RM Cost */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Final RM Cost</b>
+              </label>
+              <input
+                type="text"
+                className="form-control conversion-highlight"
+                value={finalRmCost.toFixed(2)}
+                readOnly
+              />
+            </div>
+          </div>
         </div>
+      </div>
+      {/* BOP Table */}
+      {formData.hasBop === "Yes" && (
+        <BopTable mode="rm" bopList={bopList} updateBop={updateBop} />
       )}
-      </>
+    </>
   );
 }
 
