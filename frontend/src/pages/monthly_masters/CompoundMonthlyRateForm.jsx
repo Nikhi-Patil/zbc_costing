@@ -1,69 +1,7 @@
 import React, { useEffect, useState } from "react";
+import {months,generateFinancialYears,} from "../../utils/costingUtils";
+import API_BASE_URL from "../../config/api";
 
-const months = [
-  { value: 1, label: "January" },
-  { value: 2, label: "February" },
-  { value: 3, label: "March" },
-  { value: 4, label: "April" },
-  { value: 5, label: "May" },
-  { value: 6, label: "June" },
-  { value: 7, label: "July" },
-  { value: 8, label: "August" },
-  { value: 9, label: "September" },
-  { value: 10, label: "October" },
-  { value: 11, label: "November" },
-  { value: 12, label: "December" },
-];
-
-/* --------------------------------------------------
-   Financial Year Generator
-   -------------------------------------------------- */
-const generateFinancialYears = () => {
-  const startYear = 2026;
-
-  const today = new Date();
-  const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth() + 1;
-
-  let currentFY;
-  let endYear;
-
-  if (currentMonth >= 4) {
-    // April - December
-    currentFY = `${currentYear}-${String(
-      currentYear + 1
-    ).slice(-2)}`;
-
-    endYear = currentYear + 1;
-  } else {
-    // January - March
-    currentFY = `${currentYear - 1}-${String(
-      currentYear
-    ).slice(-2)}`;
-
-    endYear = currentYear;
-  }
-
-  const financialYears = [];
-
-  for (let year = startYear; year <= endYear; year++) {
-    const next = String(year + 1).slice(-2);
-
-    const fy = `${year}-${next}`;
-
-    financialYears.push({
-      value: fy,
-      label: fy,
-      selected: fy === currentFY,
-    });
-  }
-
-  return financialYears;
-};
-
-/* --------------------------------------------------
-   Component
-   -------------------------------------------------- */
 const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
   const [compounds, setCompounds] = useState([]);
   const [units, setUnits] = useState([]);
@@ -99,7 +37,7 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
   const fetchCompounds = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/compounds"
+        `${API_BASE_URL}/compounds`
       );
 
       if (!response.ok) {
@@ -117,7 +55,7 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
   const fetchUnits = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/units"
+        `${API_BASE_URL}/units`
       );
 
       if (!response.ok) {
@@ -278,7 +216,7 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
       };
 
       const response = await fetch(
-        "http://localhost:5000/api/monthly-compound-rate",
+        `${API_BASE_URL}/monthly-compound-rate`,
         {
           method: "POST",
           headers: {

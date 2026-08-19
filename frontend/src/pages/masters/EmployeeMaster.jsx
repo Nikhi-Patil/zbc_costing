@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API_BASE_URL from "../../config/api";
     
 function EmployeeMaster() {
   const [employees, setEmployees] = useState([]);
@@ -8,7 +9,7 @@ function EmployeeMaster() {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/employees");
+        const response = await fetch(`${API_BASE_URL}/employees`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch employees");

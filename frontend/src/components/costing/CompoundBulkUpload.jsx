@@ -1,0 +1,606 @@
+import React, { useState } from "react";
+import * as XLSX from "xlsx";
+import API_BASE_URL from "../../config/api";
+
+const CompoundBulkUpload = ({ onClose, onSaved }) => {
+  const [file, setFile] = useState(null);
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [error, setError] = useState("");
+
+  // =====================================================
+  // Download Excel Template
+  // =====================================================
+
+  const downloadTemplate = () => {
+    const templateData = [
+      {
+        "IM Code": "IM100001",
+        "Production Unit": "Unit 1",
+        "Financial Year": "2026-27",
+        Month: 4,
+        Qty: 1000,
+        Rate: 25.5,
+      },
+      {
+        "IM Code": "IM100002",
+        "Production Unit": "Unit 1",
+        "Financial Year": "2026-27",
+        Month: 5,
+        Qty: 1200,
+        Rate: 26.0,
+      },
+    ];
+
+    const worksheet = XLSX.utils.json_to_sheet(templateData);
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Compound Monthly Rate");
+
+    XLSX.writeFile(workbook, "Compound_Monthly_Rate_Template.xlsx");
+  };
+
+  // =====================================================
+  // File Selection
+  // =====================================================
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+
+    setError("");
+    setRows([]);
+    setFile(null);
+    setUploadProgress(0);
+
+    if (!selectedFile) {
+      return;
+    }
+
+    const extension = selectedFile.name.split(".").pop().toLowerCase();
+
+    if (!["xlsx", "xls"].includes(extension)) {
+      setError("Please select an Excel file (.xlsx or .xls)");
+      return;
+    }
+
+    setFile(selectedFile);
+
+    readExcelFile(selectedFile);
+  };
+
+  // =====================================================
+  // Read Excel
+  // =====================================================
+
+  const readExcelFile = (selectedFile) => {
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      try {
+        const data = new Uint8Array(event.target.result);
+
+        const workbook = XLSX.read(data, {
+          type: "array",
+        });
+
+        const firstSheetName = workbook.SheetNames[0];
+
+        const worksheet = workbook.Sheets[firstSheetName];
+
+        const excelRows = XLSX.utils.sheet_to_json(worksheet, {
+          defval: "",
+        });
+
+        if (!excelRows.length) {
+          setError("Excel file is empty.");
+          return;
+        }
+
+        // -----------------------------------------------
+        // Normalize Excel column names
+        // -----------------------------------------------
+
+        const normalizedRows = excelRows.map((row) => {
+          const normalizedRow = {};
+
+          Object.entries(row).forEach(([key, value]) => {
+            const normalizedKey = String(key)
+              .trim()
+              .toLowerCase()
+              .replace(/\s+/g, " ");
+
+            normalizedRow[normalizedKey] = value;
+          });
+
+          return normalizedRow;
+        });
+
+        const firstRow = normalizedRows[0];
+
+        // -----------------------------------------------
+        // Required columns
+        // -----------------------------------------------
+
+        const requiredColumns = [
+          "im code",
+          "production unit",
+          "financial year",
+          "month",
+          "qty",
+          "rate",
+        ];
+
+        const missingColumns = requiredColumns.filter(
+          (column) => !Object.prototype.hasOwnProperty.call(firstRow, column),
+        );
+
+        if (missingColumns.length > 0) {
+          setError(`Missing Excel columns: ${missingColumns.join(", ")}`);
+
+          return;
+        }
+
+        // -----------------------------------------------
+        // Prepare rows
+        // -----------------------------------------------
+
+        const preparedRows = normalizedRows.map((row, index) => {
+          const excelRowNumber = index + 2;
+
+          const preparedRow = {
+            rowNumber: excelRowNumber,
+
+            imCode: String(row["im code"] || "").trim(),
+
+            productionUnit: String(row["production unit"] || "").trim(),
+
+            financialYear: String(row["financial year"] || "").trim(),
+
+            month: row["month"],
+
+            qty: row["qty"],
+
+            rate: row["rate"],
+
+            errors: [],
+          };
+
+          // -------------------------------------------
+          // Validation
+          // -------------------------------------------
+
+          if (!preparedRow.imCode) {
+            preparedRow.errors.push("IM Code is required");
+          }
+
+          if (!preparedRow.productionUnit) {
+            preparedRow.errors.push("Production Unit is required");
+          }
+
+          if (!preparedRow.financialYear) {
+            preparedRow.errors.push("Financial Year is required");
+          }
+
+          const month = Number(preparedRow.month);
+
+          if (!preparedRow.month || month < 1 || month > 12) {
+            preparedRow.errors.push("Month must be between 1 and 12");
+          }
+
+          if (
+            preparedRow.qty === "" ||
+            preparedRow.qty === null ||
+            preparedRow.qty === undefined ||
+            isNaN(Number(preparedRow.qty))
+          ) {
+            preparedRow.errors.push("Qty must be a number");
+          }
+
+          if (
+            preparedRow.rate === "" ||
+            preparedRow.rate === null ||
+            preparedRow.rate === undefined ||
+            isNaN(Number(preparedRow.rate))
+          ) {
+            preparedRow.errors.push("Rate must be a number");
+          }
+
+          return preparedRow;
+        });
+        setRows(preparedRows);
+      } catch (error) {
+        console.error("Excel read error:", error);
+
+        setError("Unable to read the Excel file.");
+      }
+    };
+
+    reader.readAsArrayBuffer(selectedFile);
+  };
+
+  // =====================================================
+  // Upload
+  // =====================================================
+
+  const handleUpload = async () => {
+    setError("");
+
+    if (!file) {
+      setError("Please select an Excel file.");
+      return;
+    }
+
+    if (!rows.length) {
+      setError("No valid rows found in Excel file.");
+      return;
+    }
+
+    // -----------------------------------------------
+    // Check validation errors
+    // -----------------------------------------------
+
+    const invalidRows = rows.filter(
+      (row) => row.errors && row.errors.length > 0,
+    );
+
+    if (invalidRows.length > 0) {
+      setError(
+        `Please fix ${invalidRows.length} invalid row(s) before uploading.`,
+      );
+      return;
+    }
+
+    // -----------------------------------------------
+    // Extra validation
+    // -----------------------------------------------
+
+    const missingImCode = rows.find(
+      (row) => !row.imCode || !String(row.imCode).trim(),
+    );
+
+    if (missingImCode) {
+      setError(`Excel row ${missingImCode.rowNumber}: IM Code is required`);
+      return;
+    }
+
+    const missingUnit = rows.find(
+      (row) => !row.productionUnit || !String(row.productionUnit).trim(),
+    );
+
+    if (missingUnit) {
+      setError(
+        `Excel row ${missingUnit.rowNumber}: Production Unit is required`,
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setUploadProgress(0);
+
+      // -----------------------------------------------
+      // Prepare API data
+      // -----------------------------------------------
+
+      const uploadData = rows.map((row) => ({
+        imCode: String(row.imCode).trim(),
+
+        productionUnit: String(row.productionUnit).trim(),
+
+        financial_year: String(row.financialYear).trim(),
+
+        month: Number(row.month),
+
+        qty: Number(row.qty),
+
+        rate: Number(row.rate),
+      }));
+      // -----------------------------------------------
+      // API request
+      // -----------------------------------------------
+
+      const response = await fetch(
+        `${API_BASE_URL}/monthly-compound-rate/bulk`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            rows: uploadData,
+          }),
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Compound bulk upload failed");
+      }
+
+      setUploadProgress(100);
+
+      alert(
+        `Successfully uploaded ${
+          result.insertedCount || rows.length
+        } record(s).`,
+      );
+
+      onSaved?.();
+      onClose?.();
+    } catch (error) {
+      console.error("Compound bulk upload error:", error);
+
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // =====================================================
+  // Remove File
+  // =====================================================
+
+  const handleRemoveFile = () => {
+    setFile(null);
+    setRows([]);
+    setError("");
+    setUploadProgress(0);
+
+    const fileInput = document.getElementById("compoundExcelFile");
+
+    if (fileInput) {
+      fileInput.value = "";
+    }
+  };
+
+  const invalidCount = rows.filter(
+    (row) => row.errors && row.errors.length > 0,
+  ).length;
+
+  // =====================================================
+  // UI
+  // =====================================================
+
+  return (
+    <div className="card mt-4">
+      {/* Header */}
+      <div className="card-header d-flex justify-content-between align-items-center">
+        <h5 className="mb-0">
+          <b>Compound Monthly Rate - Bulk Upload</b>
+        </h5>
+
+        <button
+          type="button"
+          className="btn btn-danger btn-sm"
+          onClick={onClose}
+          disabled={loading}
+          title="Close"
+        >
+          <i className="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div className="card-body">
+        {/* Information */}
+        <div className="alert alert-info">
+          <b>Excel Format</b>
+
+          <p className="mb-1 mt-2">Your Excel file must contain:</p>
+
+          <strong>
+            IM Code, Production Unit, Financial Year, Month, Qty, Rate
+          </strong>
+
+          <p className="mb-0 mt-2">
+            Compound Code and Polymer Name will be automatically fetched from
+            the Compound Master using the IM Code.
+          </p>
+
+          <p className="mb-0">
+            Production Unit will be matched with the Unit Master.
+          </p>
+        </div>
+
+        {/* Download Template */}
+        <div className="mb-3">
+          <button
+            type="button"
+            className="btn btn-outline-success"
+            onClick={downloadTemplate}
+          >
+            <i className="fas fa-file-excel me-2"></i>
+            Download Excel Template
+          </button>
+        </div>
+
+        {/* File */}
+        <div className="mb-3">
+          <label htmlFor="compoundExcelFile" className="form-label">
+            <b>Select Excel File</b>
+          </label>
+
+          <input
+            id="compoundExcelFile"
+            type="file"
+            className="form-control"
+            accept=".xlsx,.xls"
+            onChange={handleFileChange}
+            disabled={loading}
+          />
+        </div>
+
+        {/* Selected File */}
+        {file && (
+          <div className="alert alert-secondary d-flex justify-content-between align-items-center">
+            <div>
+              <i className="fas fa-file-excel me-2"></i>
+
+              <b>{file.name}</b>
+
+              <span className="ms-2">({rows.length} rows)</span>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-sm btn-danger"
+              onClick={handleRemoveFile}
+              disabled={loading}
+            >
+              <i className="fas fa-trash"></i>
+            </button>
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div className="alert alert-danger">
+            <i className="fas fa-exclamation-triangle me-2"></i>
+            {error}
+          </div>
+        )}
+
+        {/* Preview */}
+        {rows.length > 0 && (
+          <div className="mt-4">
+            <div className="d-flex justify-content-between mb-2">
+              <h6>
+                <b>Preview</b>
+              </h6>
+
+              <div>
+                <span className="badge bg-success me-2">
+                  Valid: {rows.length - invalidCount}
+                </span>
+
+                <span className="badge bg-danger">Invalid: {invalidCount}</span>
+              </div>
+            </div>
+
+            <div
+              className="table-responsive"
+              style={{
+                maxHeight: "400px",
+                overflowY: "auto",
+              }}
+            >
+              <table className="table table-bordered table-sm">
+                <thead>
+                  <tr>
+                    <th>Row</th>
+                    <th>IM Code</th>
+                    <th>Production Unit</th>
+                    <th>Financial Year</th>
+                    <th>Month</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {rows.map((row) => (
+                    <tr
+                      key={row.rowNumber}
+                      className={
+                        row.errors && row.errors.length > 0
+                          ? "table-danger"
+                          : ""
+                      }
+                    >
+                      <td>{row.rowNumber}</td>
+
+                      <td>{row.imCode}</td>
+
+                      <td>{row.productionUnit}</td>
+
+                      <td>{row.financialYear}</td>
+
+                      <td>{row.month}</td>
+
+                      <td>{row.qty}</td>
+
+                      <td>{row.rate}</td>
+
+                      <td>
+                        {row.errors && row.errors.length > 0 ? (
+                          <span
+                            className="text-danger"
+                            title={row.errors.join(", ")}
+                          >
+                            <i className="fas fa-times-circle me-1"></i>
+
+                            {row.errors.join(", ")}
+                          </span>
+                        ) : (
+                          <span className="text-success">
+                            <i className="fas fa-check-circle me-1"></i>
+                            Valid
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Progress */}
+        {loading && (
+          <div className="mt-3">
+            <div className="progress">
+              <div
+                className="progress-bar progress-bar-striped progress-bar-animated"
+                role="progressbar"
+                style={{
+                  width: `${uploadProgress}%`,
+                }}
+              >
+                {uploadProgress}%
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div className="d-flex justify-content-end gap-2 mt-4">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onClose}
+            disabled={loading}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-success"
+            onClick={handleUpload}
+            disabled={loading || !file || !rows.length || invalidCount > 0}
+          >
+            {loading ? (
+              <>
+                <i className="fas fa-spinner fa-spin me-2"></i>
+                Uploading...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-upload me-2"></i>
+                Upload {rows.length} Records
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CompoundBulkUpload;

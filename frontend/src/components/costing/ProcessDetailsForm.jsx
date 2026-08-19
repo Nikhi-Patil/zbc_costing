@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import API_BASE_URL from "../../config/api";
 
 function ProcessDetailsForm({
   formData,
@@ -13,7 +14,7 @@ function ProcessDetailsForm({
   useEffect(() => {
     const fetchMachines = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/machines");
+        const response = await fetch(`${API_BASE_URL}/machines`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch molding machines");

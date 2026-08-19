@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../config/api";
 import "../../assets/css/Molding.css";
 
 const Molding = () => {
@@ -17,7 +18,7 @@ const Molding = () => {
       setLoading(true);
 
       const response = await fetch(
-        "http://localhost:5000/api/molding"
+        `${API_BASE_URL}/molding`
       );
 
       const result = await response.json();

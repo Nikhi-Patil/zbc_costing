@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API_BASE_URL from "../../config/api";
 
 const CompoundMaster = () => {
   const [compounds, setCompounds] = useState([]);
@@ -8,7 +9,7 @@ const CompoundMaster = () => {
   useEffect(() => {
     const fetchCompounds = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/compounds");
+        const response = await fetch(`${API_BASE_URL}/compounds`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch compounds");

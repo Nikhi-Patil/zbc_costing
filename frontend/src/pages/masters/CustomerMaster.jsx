@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API_BASE_URL from "../../config/api";
 
 function CustomerMaster() {
   const [customer, setCustomers] = useState([]);
@@ -8,7 +9,7 @@ function CustomerMaster() {
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/customers");
+        const response = await fetch(`${API_BASE_URL}/customers`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch customer");

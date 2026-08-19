@@ -1,68 +1,9 @@
 import React, { useEffect, useState } from "react";
 import CompoundMonthlyRateForm from "./CompoundMonthlyRateForm";
+import CompoundBulkUpload from "../../components/costing/CompoundBulkUpload";
+import { months, generateFinancialYears } from "../../utils/costingUtils";
+import API_BASE_URL from "../../config/api";
 
-const months = [
-  { id: 1, name: "January" },
-  { id: 2, name: "February" },
-  { id: 3, name: "March" },
-  { id: 4, name: "April" },
-  { id: 5, name: "May" },
-  { id: 6, name: "June" },
-  { id: 7, name: "July" },
-  { id: 8, name: "August" },
-  { id: 9, name: "September" },
-  { id: 10, name: "October" },
-  { id: 11, name: "November" },
-  { id: 12, name: "December" },
-];
-
-/* --------------------------------------------------
-   Financial Year Generator
--------------------------------------------------- */
-const generateFinancialYears = () => {
-  const startYear = 2026;
-
-  const today = new Date();
-  const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth() + 1;
-
-  let currentFY;
-  let endYear;
-
-  if (currentMonth >= 4) {
-    currentFY = `${currentYear}-${String(
-      currentYear + 1
-    ).slice(-2)}`;
-
-    endYear = currentYear + 1;
-  } else {
-    currentFY = `${currentYear - 1}-${String(
-      currentYear
-    ).slice(-2)}`;
-
-    endYear = currentYear;
-  }
-
-  const financialYears = [];
-
-  for (let year = startYear; year <= endYear; year++) {
-    const next = String(year + 1).slice(-2);
-
-    const fy = `${year}-${next}`;
-
-    financialYears.push({
-      value: fy,
-      label: fy,
-      selected: fy === currentFY,
-    });
-  }
-
-  return financialYears;
-};
-
-/* --------------------------------------------------
-   Component
--------------------------------------------------- */
 const CompoundMonthlyReport = () => {
   const financialYears = generateFinancialYears();
 
@@ -71,22 +12,22 @@ const CompoundMonthlyReport = () => {
     financialYears[0]?.value ||
     "";
 
-  const [financialYear, setFinancialYear] = useState(
-    currentFinancialYear
-  );
+  const [financialYear, setFinancialYear] = useState(currentFinancialYear);
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showRateForm, setShowRateForm] = useState(false);
   const [viewType, setViewType] = useState("qty");
   const [units, setUnits] = useState([]);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
 
-  /* --------------------------------------------------
-     Load Report + Units
-  -------------------------------------------------- */
+  // Load Report + Units
+  useEffect(() => {
+    fetchUnits();
+  }, []);
+
   useEffect(() => {
     fetchReport();
-    fetchUnits();
   }, [financialYear]);
 
   /* --------------------------------------------------
@@ -94,9 +35,7 @@ const CompoundMonthlyReport = () => {
   -------------------------------------------------- */
   const fetchUnits = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/units"
-      );
+      const response = await fetch(`${API_BASE_URL}/units`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch units");
@@ -106,10 +45,7 @@ const CompoundMonthlyReport = () => {
 
       setUnits(result.data || result);
     } catch (error) {
-      console.error(
-        "Error fetching units:",
-        error
-      );
+      console.error("Error fetching units:", error);
     }
   };
 
@@ -121,26 +57,20 @@ const CompoundMonthlyReport = () => {
       setLoading(true);
 
       const response = await fetch(
-        `http://localhost:5000/api/monthly-compound-rate?financial_year=${encodeURIComponent(
-          financialYear
-        )}`
+        `${API_BASE_URL}/monthly-compound-rate?financial_year=${encodeURIComponent(
+          financialYear,
+        )}`,
       );
 
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(
-          result.message ||
-            "Failed to fetch report"
-        );
+        throw new Error(result.message || "Failed to fetch report");
       }
 
       setData(result.data || []);
     } catch (error) {
-      console.error(
-        "Error fetching report:",
-        error
-      );
+      console.error("Error fetching report:", error);
 
       setData([]);
     } finally {
@@ -153,8 +83,7 @@ const CompoundMonthlyReport = () => {
   -------------------------------------------------- */
   const groupedData = Object.values(
     data.reduce((acc, row) => {
-      const key =
-        `${row.compound_id}-${row.unit_id}-${row.financial_year}`;
+      const key = `${row.compound_id}-${row.unit_id}-${row.financial_year}`;
 
       if (!acc[key]) {
         acc[key] = {
@@ -174,7 +103,7 @@ const CompoundMonthlyReport = () => {
       };
 
       return acc;
-    }, {})
+    }, {}),
   );
 
   /* --------------------------------------------------
@@ -188,21 +117,13 @@ const CompoundMonthlyReport = () => {
   /* --------------------------------------------------
      Unit Map
   -------------------------------------------------- */
-  const unitMap = new Map(
-    units.map((unit) => [
-      String(unit.id),
-      unit.unit,
-    ])
-  );
+  const unitMap = new Map(units.map((unit) => [String(unit.id), unit.unit]));
 
   return (
     <div className="compound-report-page">
-
       {/* Toolbar */}
       <div className="report-toolbar">
-
         <div className="report-filters">
-
           {/* Financial Year */}
           <div className="filter-field">
             <label className="form-label">
@@ -212,15 +133,10 @@ const CompoundMonthlyReport = () => {
             <select
               className="form-control"
               value={financialYear}
-              onChange={(e) =>
-                setFinancialYear(e.target.value)
-              }
+              onChange={(e) => setFinancialYear(e.target.value)}
             >
               {financialYears.map((fy) => (
-                <option
-                  key={fy.value}
-                  value={fy.value}
-                >
+                <option key={fy.value} value={fy.value}>
                   {fy.label}
                 </option>
               ))}
@@ -236,51 +152,60 @@ const CompoundMonthlyReport = () => {
             <select
               className="form-control"
               value={viewType}
-              onChange={(e) =>
-                setViewType(e.target.value)
-              }
+              onChange={(e) => setViewType(e.target.value)}
             >
               <option value="qty">Qty</option>
               <option value="rate">Rate</option>
             </select>
           </div>
-
         </div>
 
-        {/* Add Rate */}
-        <button
-          type="button"
-          className="btn btn-success add-rate-btn"
-          onClick={() =>
-            setShowRateForm(true)
-          }
-        >
-          <i className="fas fa-plus me-2"></i>
-          Add Rate
-        </button>
-
+        <div className="d-flex gap-2">
+          {/* Add Rate */}
+          <button
+            type="button"
+            className="btn btn-success add-rate-btn"
+            onClick={() => setShowRateForm(true)}
+          >
+            <i className="fas fa-plus me-2"></i>
+            Add Rate
+          </button>
+          {/* Bulk Upload */}
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => setShowBulkUpload(true)}
+          >
+            <i className="fas fa-file-excel me-2"></i>
+            Bulk Upload
+          </button>
+        </div>
       </div>
 
       {/* Add Rate Form */}
       {showRateForm && (
         <CompoundMonthlyRateForm
-          onClose={() =>
-            setShowRateForm(false)
-          }
+          onClose={() => setShowRateForm(false)}
           onSaved={handleRateSaved}
+        />
+      )}
+      {/* Bulk upload Form */}
+      {showBulkUpload && (
+        <CompoundBulkUpload
+          onClose={() => setShowBulkUpload(false)}
+          onSaved={() => {
+            setShowBulkUpload(false);
+            fetchReport();
+          }}
         />
       )}
 
       {/* Report */}
       <div className="table-responsive mt-3">
-
         {loading ? (
-          <div className="text-center p-4">
-            Loading...
-          </div>
+          <div className="text-center p-4">Loading...</div>
         ) : (
           <table className="table table-bordered compound-report-table">
-
             <thead>
               <tr>
                 <th>Sr. No.</th>
@@ -290,18 +215,14 @@ const CompoundMonthlyReport = () => {
                 <th>Unit</th>
 
                 {months.map((month) => (
-                  <th key={month.id}>
-                    {month.name}{" "}
-                    {viewType === "qty"
-                      ? "Qty"
-                      : "Rate"}
+                  <th key={month.value}>
+                    {month.label} {viewType === "qty" ? "Qty" : "Rate"}
                   </th>
                 ))}
               </tr>
             </thead>
 
             <tbody>
-
               {groupedData.length === 0 ? (
                 <tr>
                   <td
@@ -312,91 +233,52 @@ const CompoundMonthlyReport = () => {
                   </td>
                 </tr>
               ) : (
+                groupedData.map((compound, index) => (
+                  <tr
+                    key={`${compound.compound_id}-${compound.unit_id}-${compound.financial_year}`}
+                  >
+                    <td>{index + 1}</td>
 
-                groupedData.map(
-                  (compound, index) => (
-                    <tr
-                      key={`${compound.compound_id}-${compound.unit_id}-${compound.financial_year}`}
-                    >
+                    <td>{compound.compound_code || "-"}</td>
 
-                      <td>
-                        {index + 1}
-                      </td>
+                    <td>{compound.polymer_name || "-"}</td>
 
-                      <td>
-                        {compound.compound_code ||
-                          "-"}
-                      </td>
+                    <td>{compound.im_code || "-"}</td>
 
-                      <td>
-                        {compound.polymer_name ||
-                          "-"}
-                      </td>
+                    <td>{unitMap.get(String(compound.unit_id)) || "-"}</td>
 
-                      <td>
-                        {compound.im_code ||
-                          "-"}
-                      </td>
+                    {months.map((month) => {
+                      const monthData = compound.months[month.value] || {
+                        qty: null,
+                        rate: null,
+                      };
 
-                      <td>
-                        {unitMap.get(
-                          String(
-                            compound.unit_id
-                          )
-                        ) || "-"}
-                      </td>
-
-                      {months.map((month) => {
-
-                        const monthData =
-                          compound.months[
-                            month.id
-                          ] || {
-                            qty: null,
-                            rate: null,
-                          };
-
-                        return (
-                          <td
-                            key={month.id}
-                            style={{
-                              textAlign:
-                                "center",
-                            }}
-                          >
-
-                            {viewType === "qty"
-                              ? monthData.qty ===
-                                null
-                                ? "-"
-                                : monthData.qty.toLocaleString(
-                                    "en-IN"
-                                  )
-                              : monthData.rate ===
-                                null
+                      return (
+                        <td
+                          key={month.value}
+                          style={{
+                            textAlign: "center",
+                          }}
+                        >
+                          {viewType === "qty"
+                            ? monthData.qty === null
                               ? "-"
-                              : monthData.rate.toLocaleString(
-                                  "en-IN",
-                                  {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  }
-                                )}
-
-                          </td>
-                        );
-                      })}
-
-                    </tr>
-                  )
-                )
-
+                              : monthData.qty.toLocaleString("en-IN")
+                            : monthData.rate === null
+                              ? "-"
+                              : monthData.rate.toLocaleString("en-IN", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))
               )}
-
             </tbody>
           </table>
         )}
-
       </div>
     </div>
   );

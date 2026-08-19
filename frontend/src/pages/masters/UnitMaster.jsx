@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API_BASE_URL from "../../config/api";
 
 const UnitMaster = () => {
 
@@ -13,7 +14,7 @@ const UnitMaster = () => {
             try {
 
                 const response = await fetch(
-                    "http://localhost:5000/api/units"
+                    `${API_BASE_URL}/units`
                 );
 
                 if (!response.ok) {

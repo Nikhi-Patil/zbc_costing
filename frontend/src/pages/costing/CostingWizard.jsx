@@ -8,6 +8,7 @@ import RMDetailsForm from "../../components/costing/RMDetailsForm";
 import ProcessDetailsForm from "../../components/costing/ProcessDetailsForm";
 import BottomLineForm from "../../components/costing/BottomLineForm";
 import OutsourcingForm from "../../components/costing/OutsourcingForm";
+import API_BASE_URL from "../../config/api";
 
 function CostingWizard() {
   const { transactionId: urlTransactionId } = useParams();
@@ -104,7 +105,7 @@ function CostingWizard() {
   const fetchTransaction = async (id) => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/molding/${id}`);
+      const response = await fetch(`${API_BASE_URL}/molding/${id}`);
       const result = await response.json();
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Transaction not found");
@@ -236,7 +237,7 @@ function CostingWizard() {
 
   const saveDraft = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/molding/draft", {
+      const response = await fetch(`${API_BASE_URL}/molding/draft`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -299,7 +300,7 @@ function CostingWizard() {
       }
 
       // Change DRAFT → FINAL
-      const response = await fetch("http://localhost:5000/api/molding/submit", {
+      const response = await fetch(`${API_BASE_URL}/molding/submit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -566,7 +567,7 @@ function CostingWizard() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/compound-by-im-code?imCode=${encodeURIComponent(
+        `${API_BASE_URL}/compound-by-im-code?imCode=${encodeURIComponent(
           partImCode,
         )}`,
       );
@@ -814,7 +815,7 @@ function CostingWizard() {
   //     });
 
   //     const response = await fetch(
-  //       `http://localhost:5000/api/bop-rate-for-costing?${params.toString()}`,
+  //       `${API_BASE_URL}/bop-rate-for-costing?${params.toString()}`,
   //     );
 
   //     const result = await response.json();
@@ -855,7 +856,7 @@ function CostingWizard() {
         month: String(month),
       });
 
-      const url = `http://localhost:5000/api/bop-rate-for-costing?${params.toString()}`;
+      const url = `${API_BASE_URL}/bop-rate-for-costing?${params.toString()}`;
 
       console.log("BOP RATE URL:", url);
 

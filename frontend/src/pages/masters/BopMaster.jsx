@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API_BASE_URL from "../../config/api";
 
 const BopMaster = () => {
   const [bops, setBops] = useState([]);
@@ -8,7 +9,7 @@ const BopMaster = () => {
   useEffect(() => {
     const fetchBops = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/bops");
+        const response = await fetch(`${API_BASE_URL}/bops`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch bops");

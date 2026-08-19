@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import BopTable from "./BopTable";
+import {months,generateFinancialYears,} from "../../utils/costingUtils";
+import API_BASE_URL from "../../config/api";
 
 function PartDetailsForm({
   formData,
@@ -12,6 +14,7 @@ function PartDetailsForm({
   deleteBop,
   updateBop,
 }) {
+  const financialYears = generateFinancialYears();
   const [units, setUnits] = useState([]);
   const [subDepartments, setSubDepartments] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
@@ -21,7 +24,7 @@ function PartDetailsForm({
   useEffect(() => {
     const fetchParts = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/parts");
+        const response = await fetch(`${API_BASE_URL}/parts`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch parts");
@@ -42,7 +45,7 @@ function PartDetailsForm({
     const fetchSubCategories = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5000/api/subcategories?category=Molding",
+          `${API_BASE_URL}/subcategories?category=Molding`,
         );
 
         if (!response.ok) {
@@ -65,7 +68,7 @@ function PartDetailsForm({
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/customers");
+        const response = await fetch(`${API_BASE_URL}/customers`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch customers");
@@ -85,7 +88,7 @@ function PartDetailsForm({
   useEffect(() => {
     const fetchUnits = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/units");
+        const response = await fetch(`${API_BASE_URL}/units`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch units");
@@ -112,7 +115,7 @@ function PartDetailsForm({
     const fetchSubDepartments = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/subdepartments?unitId=${formData.productionUnit}`,
+          `${API_BASE_URL}/subdepartments?unitId=${formData.productionUnit}`,
         );
 
         if (!response.ok) {
@@ -132,62 +135,7 @@ function PartDetailsForm({
     fetchSubDepartments();
   }, [formData.productionUnit]);
 
-  const months = [
-    { value: "01", label: "January" },
-    { value: "02", label: "February" },
-    { value: "03", label: "March" },
-    { value: "04", label: "April" },
-    { value: "05", label: "May" },
-    { value: "06", label: "June" },
-    { value: "07", label: "July" },
-    { value: "08", label: "August" },
-    { value: "09", label: "September" },
-    { value: "10", label: "October" },
-    { value: "11", label: "November" },
-    { value: "12", label: "December" },
-  ];
 
-  const generateFinancialYears = () => {
-    const startYear = 2026;
-
-    const today = new Date();
-
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth() + 1; // January = 1
-
-    let currentFY;
-    let endYear;
-
-    if (currentMonth >= 4) {
-      // April to December
-      currentFY = `${currentYear}-${String(currentYear + 1).slice(-2)}`;
-
-      endYear = currentYear + 1;
-    } else {
-      // January to March
-      currentFY = `${currentYear - 1}-${String(currentYear).slice(-2)}`;
-
-      endYear = currentYear;
-    }
-
-    const financialYears = [];
-
-    for (let year = startYear; year <= endYear; year++) {
-      const next = String(year + 1).slice(-2);
-
-      const fy = `${year}-${next}`;
-
-      financialYears.push({
-        value: fy,
-        label: fy,
-        selected: fy === currentFY,
-      });
-    }
-
-    return financialYears;
-  };
-
-  const financialYears = generateFinancialYears();
 
   return (
     <>

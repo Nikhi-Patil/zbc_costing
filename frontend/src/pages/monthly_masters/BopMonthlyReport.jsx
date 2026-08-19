@@ -1,54 +1,8 @@
 import React, { useEffect, useState } from "react";
 import BopMonthlyRateForm from "./BopMonthlyRateForm";
-
-const months = [
-  { id: 1, name: "January" },
-  { id: 2, name: "February" },
-  { id: 3, name: "March" },
-  { id: 4, name: "April" },
-  { id: 5, name: "May" },
-  { id: 6, name: "June" },
-  { id: 7, name: "July" },
-  { id: 8, name: "August" },
-  { id: 9, name: "September" },
-  { id: 10, name: "October" },
-  { id: 11, name: "November" },
-  { id: 12, name: "December" },
-];
-
-const generateFinancialYears = () => {
-  const startYear = 2026;
-
-  const today = new Date();
-  const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth() + 1;
-
-  let currentFY;
-  let endYear;
-
-  if (currentMonth >= 4) {
-    currentFY = `${currentYear}-${String(currentYear + 1).slice(-2)}`;
-    endYear = currentYear + 1;
-  } else {
-    currentFY = `${currentYear - 1}-${String(currentYear).slice(-2)}`;
-    endYear = currentYear;
-  }
-
-  const financialYears = [];
-
-  for (let year = startYear; year <= endYear; year++) {
-    const next = String(year + 1).slice(-2);
-    const fy = `${year}-${next}`;
-
-    financialYears.push({
-      value: fy,
-      label: fy,
-      selected: fy === currentFY,
-    });
-  }
-
-  return financialYears;
-};
+import BopBulkUpload from "../../components/costing/BopBulkUpload";
+import { months, generateFinancialYears } from "../../utils/costingUtils";
+import API_BASE_URL from "../../config/api";
 
 const BopMonthlyReport = () => {
   const financialYears = generateFinancialYears();
@@ -64,6 +18,7 @@ const BopMonthlyReport = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showRateForm, setShowRateForm] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
 
   useEffect(() => {
     fetchReport();
@@ -74,7 +29,7 @@ const BopMonthlyReport = () => {
       setLoading(true);
 
       const response = await fetch(
-        `http://localhost:5000/api/monthly-bop-rate?financial_year=${encodeURIComponent(
+        `${API_BASE_URL}/monthly-bop-rate?financial_year=${encodeURIComponent(
           financialYear,
         )}`,
       );
@@ -167,22 +122,40 @@ const BopMonthlyReport = () => {
             </select>
           </div>
         </div>
-
-        {/* Add Rate */}
-        <button
-          type="button"
-          className="btn btn-success add-rate-btn"
-          onClick={() => setShowRateForm(true)}
-        >
-          <i className="fas fa-plus me-2"></i>
-          Add Rate
-        </button>
+        <div className="d-flex gap-2">
+          {/* Add Rate */}
+          <button
+            type="button"
+            className="btn btn-success add-rate-btn "
+            onClick={() => setShowRateForm(true)}
+          >
+            <i className="fas fa-plus me-2"></i>
+            Add Rate
+          </button>
+          {/* bulk upload Rate */}
+          <button
+            type="button"
+            className="btn btn-primary add-rate-btn"
+            onClick={() => setShowBulkUpload(true)}
+          >
+            <i className="fas fa-file-excel me-2"></i>
+            Bulk Upload
+          </button>
+        </div>
       </div>
 
-      {/* Form */}
+      {/* Add Rate Form */}
       {showRateForm && (
         <BopMonthlyRateForm
           onClose={() => setShowRateForm(false)}
+          onSaved={handleRateSaved}
+        />
+      )}
+      {/* Bulk Upload Form */}
+
+      {showBulkUpload && (
+        <BopBulkUpload
+          onClose={() => setShowBulkUpload(false)}
           onSaved={handleRateSaved}
         />
       )}
@@ -204,8 +177,8 @@ const BopMonthlyReport = () => {
                 <th>Supplier Name</th>
 
                 {months.map((month) => (
-                  <th key={month.id}>
-                    {month.name} {viewType === "qty" ? "Qty" : "Rate"}
+                  <th key={month.value}>
+                    {month.label} {viewType === "qty" ? "Qty" : "Rate"}
                   </th>
                 ))}
               </tr>
@@ -241,14 +214,14 @@ const BopMonthlyReport = () => {
                     <td>{bop.supplier_name || "-"}</td>
 
                     {months.map((month) => {
-                      const monthData = bop.months[month.id] || {
+                      const monthData = bop.months[month.value] || {
                         qty: null,
                         rate: null,
                       };
 
                       return (
                         <td
-                          key={month.id}
+                          key={month.value}
                           style={{
                             textAlign: "center",
                           }}

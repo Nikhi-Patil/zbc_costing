@@ -1,4 +1,5 @@
 import {useEffect,useState} from "react";
+import API_BASE_URL from "../../config/api";
 
 function PartMaster() {
   const [parts, setParts] = useState([]);
@@ -8,7 +9,7 @@ function PartMaster() {
   useEffect(() => {
     const fetchParts = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/parts");
+        const response = await fetch(`${API_BASE_URL}/parts`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch parts");

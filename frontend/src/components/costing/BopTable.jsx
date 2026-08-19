@@ -1,18 +1,6 @@
 import React, { useState, useEffect } from "react";
-const months = [
-  { value: "01", label: "January" },
-  { value: "02", label: "February" },
-  { value: "03", label: "March" },
-  { value: "04", label: "April" },
-  { value: "05", label: "May" },
-  { value: "06", label: "June" },
-  { value: "07", label: "July" },
-  { value: "08", label: "August" },
-  { value: "09", label: "September" },
-  { value: "10", label: "October" },
-  { value: "11", label: "November" },
-  { value: "12", label: "December" },
-];
+import {months} from "../../utils/costingUtils";
+import API_BASE_URL from "../../config/api";
 
 const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
   const [bops, setBops] = useState([]);
@@ -20,7 +8,7 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
   useEffect(() => {
     const fetchBops = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/bops");
+        const response = await fetch(`${API_BASE_URL}/api/bops`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch bops");
