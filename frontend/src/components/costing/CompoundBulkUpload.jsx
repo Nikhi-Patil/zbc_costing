@@ -369,7 +369,7 @@ const CompoundBulkUpload = ({ onClose, onSaved }) => {
   return (
     <div className="card mt-4">
       {/* Header */}
-      <div className="card-header d-flex justify-content-between align-items-center">
+      <div className="bop-monthly-header">
         <h5 className="mb-0">
           <b>Compound Monthly Rate - Bulk Upload</b>
         </h5>
@@ -389,21 +389,7 @@ const CompoundBulkUpload = ({ onClose, onSaved }) => {
         {/* Information */}
         <div className="alert alert-info">
           <b>Excel Format</b>
-
-          <p className="mb-1 mt-2">Your Excel file must contain:</p>
-
-          <strong>
-            IM Code, Production Unit, Financial Year, Month, Qty, Rate
-          </strong>
-
-          <p className="mb-0 mt-2">
-            Compound Code and Polymer Name will be automatically fetched from
-            the Compound Master using the IM Code.
-          </p>
-
-          <p className="mb-0">
-            Production Unit will be matched with the Unit Master.
-          </p>
+          <p className="mb-0 mt-2">Month should be a number from 1 to 12.</p>
         </div>
 
         {/* Download Template */}

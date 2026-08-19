@@ -241,7 +241,7 @@ const BopBulkUpload = ({ onClose, onSaved }) => {
   return (
     <div className="card mt-4">
       {/* Header */}
-      <div className="card-header d-flex justify-content-between align-items-center">
+      <div className="bop-monthly-header">
         <h5 className="mb-0">
           <b>BOP Monthly Rate - Bulk Upload</b>
         </h5>
