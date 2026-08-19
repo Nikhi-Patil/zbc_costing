@@ -12,7 +12,13 @@ function BottomLineForm({
   const [editingRow, setEditingRow] = useState(null);
   const inputRefs = useRef({});
 
-  
+  const customerSalesCost = Number(formData.customerSalesCost) || 0;
+
+  const buyingCost = Number(formData.buyingCost) || 0;
+
+  const salesProfitLoss = customerSalesCost - totalPartCost;
+
+  const buyingProfitLoss = customerSalesCost - buyingCost;
 
   const bottomLineData = [
     {
@@ -238,6 +244,69 @@ function BottomLineForm({
               className="form-control conversion-highlight"
               value={totalPartCost.toFixed(2)}
               readOnly
+            />
+          </div>
+        </div>
+        <div className="bottom-line-profit-summary">
+          {/* Customer Sales Cost */}
+          <div className="summary-field">
+            <label>
+              <b>Customer Sales Cost</b>
+            </label>
+
+            <input
+              type="number"
+              step="0.01"
+              name="customerSalesCost"
+              value={formData.customerSalesCost || ""}
+              onChange={handleInputChange}
+              className="form-control"
+              placeholder="Enter Sales Cost"
+            />
+          </div>
+
+          {/* Profit / Loss */}
+          <div className="summary-field">
+            <label>
+              <b>Profit / Loss</b>
+            </label>
+
+            <input
+              type="text"
+              value={salesProfitLoss.toFixed(2)}
+              readOnly
+              className="form-control conversion-highlight"
+            />
+          </div>
+
+          {/* Buying Cost */}
+          <div className="summary-field">
+            <label>
+              <b>Buying Cost</b>
+            </label>
+
+            <input
+              type="number"
+              step="0.01"
+              name="buyingCost"
+              value={formData.buyingCost || ""}
+              onChange={handleInputChange}
+              className="form-control"
+              placeholder="Enter Buying Cost"
+            />
+          </div>
+
+          {/* Profit / Loss on Buying */}
+          <div className="summary-field">
+            <label>
+              <b>Profit / Loss on Buying</b>
+            </label>
+
+            <input
+              type="text"
+              value={buyingProfitLoss.toFixed(2)}
+              readOnly
+              className="form-control conversion-highlight"
             />
           </div>
         </div>

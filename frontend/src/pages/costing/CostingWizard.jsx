@@ -70,7 +70,6 @@ function CostingWizard() {
     conversionCost: "",
 
     partCost: "",
-    sellCost: "",
 
     iccOnRm: "",
     rejOnSubtotal: "",
@@ -87,6 +86,10 @@ function CostingWizard() {
 
     totalBopCost: "",
     finalRmCost: "",
+    customerSalesCost: "",
+    salesProfitLoss: "",
+    buyingCost: "",
+    buyingProfitLoss: "",
   });
 
   useEffect(() => {
@@ -136,9 +139,10 @@ function CostingWizard() {
 
         polymerName: data.polymer_name ?? prev.polymerName,
         compoundCode: data.compound_code ?? prev.compoundCode,
-        imCode: data.im_code ?? prev.imCode,
+        imCode: data.rm_im_code ?? prev.imCode,
         compMonth: data.comp_month ?? prev.compMonth,
         compoundRate: data.compound_rate ?? prev.compoundRate,
+
         totalRmCost: data.total_rm_cost ?? prev.totalRmCost,
 
         processType: data.process_type ?? prev.processType,
@@ -167,7 +171,14 @@ function CostingWizard() {
         conversionCost: data.conversion_cost ?? prev.conversionCost,
 
         partCost: data.part_cost ?? prev.partCost,
-        sellCost: data.sell_cost ?? prev.sellCost,
+
+        customerSalesCost: data.customer_sales_cost ?? prev.customerSalesCost,
+
+        salesProfitLoss: data.sales_profit_loss ?? prev.salesProfitLoss,
+
+        buyingCost: data.buying_cost ?? prev.buyingCost,
+
+        buyingProfitLoss: data.buying_profit_loss ?? prev.buyingProfitLoss,
 
         iccOnRm: data.icc_on_rm ?? prev.iccOnRm,
         rejOnSubtotal: data.rej_on_subtotal ?? prev.rejOnSubtotal,
@@ -193,15 +204,25 @@ function CostingWizard() {
       setBops(
         (data.bops || []).map((bop) => ({
           id: bop.id,
+
+          bopId: bop.bop_id ?? bop.bopId ?? bop.bop_fg_code ?? "",
+
           bopFgCode: bop.bop_fg_code || "",
           bopPartNo: bop.bop_part_no || "",
           bopPartName: bop.bop_part_name || "",
+
           supplierId: bop.supplier_id ?? "",
+
           suppliers: bop.suppliers || [],
+
           commodity: bop.commodity || "",
+
           bopAssemblyQty: bop.bop_assembly_qty ?? "",
+
           bopmonth: bop.bop_month || "",
+
           bopRate: bop.bop_rate ?? "",
+
           bopCost: bop.bop_cost ?? "",
         })),
       );
@@ -491,13 +512,93 @@ function CostingWizard() {
     }));
   };
 
-  const handlePartSelect = (part) => {
+  const handlePartSelect = async (part) => {
+    if (!part) {
+      setFormData((prev) => ({
+        ...prev,
+
+        partNo: "",
+        partName: "",
+        fgcode: "",
+
+        // Keep Production IM Code separate
+        // Do NOT overwrite imcode
+
+        polymerName: "",
+        compoundCode: "",
+        imCode: "",
+        compMonth: "",
+        compoundRate: "",
+        totalRmCost: "",
+      }));
+
+      return;
+    }
+
+    // IM Code from PART MASTER
+    const partImCode = part.im_code || part.imcode || "";
+
+    // Update Part Details
     setFormData((prev) => ({
       ...prev,
-      partNo: part ? part.part_no : "",
-      partName: part ? part.part_name : "",
-      fgcode: part ? part.fg_code : "",
+
+      partNo: part.part_no || "",
+      partName: part.part_name || "",
+      fgcode: part.fg_code || "",
+
+      // Production IM Code remains whatever
+      // user entered manually
+      imcode: prev.imcode || "",
+
+      // Clear old RM values
+      polymerName: "",
+      compoundCode: "",
+      imCode: "",
+      compMonth: "",
+      compoundRate: "",
+      totalRmCost: "",
     }));
+
+    if (!partImCode) {
+      console.warn("Selected part does not have an IM Code");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/compound-by-im-code?imCode=${encodeURIComponent(
+          partImCode,
+        )}`,
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Failed to fetch compound");
+      }
+
+      if (!result.found || !result.data) {
+        console.warn("No compound found for IM Code:", partImCode);
+
+        return;
+      }
+
+      const compound = result.data;
+
+      setFormData((prev) => ({
+        ...prev,
+
+        // RM details
+        polymerName: compound.polymer || "",
+
+        compoundCode: compound.compound_code || "",
+
+        // This is RM IM Code
+        imCode: compound.im_code || partImCode,
+      }));
+    } catch (error) {
+      console.error("Error fetching compound by Part IM Code:", error);
+    }
   };
 
   const totalAssemblyQty = bops.reduce(
@@ -539,7 +640,14 @@ function CostingWizard() {
     transportOnSubtotalCost;
 
   const totalPartCost = subtotalA + subtotalB;
-  const partCost = totalPartCost;
+
+  const customerSalesCost = Number(formData.customerSalesCost) || 0;
+
+  const buyingCost = Number(formData.buyingCost) || 0;
+
+  const salesProfitLoss = customerSalesCost - totalPartCost;
+
+  const buyingProfitLoss = customerSalesCost - totalPartCost - buyingCost;
 
   useEffect(() => {
     const assemblyPerCost = parseFloat(formData.assemblyPerCost) || 0;
@@ -582,6 +690,13 @@ function CostingWizard() {
     formData.processCostA,
   ]);
 
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      salesProfitLoss: salesProfitLoss.toFixed(2),
+      buyingProfitLoss: buyingProfitLoss.toFixed(2),
+    }));
+  }, [customerSalesCost, buyingCost, totalPartCost]);
   const handleCompoundChange = (compound) => {
     setFormData((prev) => ({
       ...prev,
@@ -638,6 +753,8 @@ function CostingWizard() {
   const createEmptyBop = () => ({
     id: Date.now() + Math.random(),
 
+    bopId: "",
+
     bopFgCode: "",
     bopPartNo: "",
     bopPartName: "",
@@ -682,33 +799,330 @@ function CostingWizard() {
   const deleteBop = (id) => {
     setBops((prev) => prev.filter((bop) => bop.id !== id));
   };
+
+  // const fetchBopRate = async ({ bopId, supplierId, financialYear, month }) => {
+  //   try {
+  //     if (!bopId || !supplierId || !financialYear || !month) {
+  //       return null;
+  //     }
+
+  //     const params = new URLSearchParams({
+  //       bopId: String(bopId),
+  //       supplierId: String(supplierId),
+  //       financial_year: String(financialYear),
+  //       month: String(month),
+  //     });
+
+  //     const response = await fetch(
+  //       `http://localhost:5000/api/bop-rate-for-costing?${params.toString()}`,
+  //     );
+
+  //     const result = await response.json();
+
+  //     if (!response.ok || !result.success) {
+  //       throw new Error(result.message || "Failed to fetch BOP rate");
+  //     }
+
+  //     if (!result.found) {
+  //       return null;
+  //     }
+
+  //     return Number(result.rate) || 0;
+  //   } catch (error) {
+  //     console.error("BOP RATE ERROR:", error);
+  //     return null;
+  //   }
+  // };
   // update BOP
-  const updateBop = (id, field, value) => {
+  const fetchBopRate = async ({ bopId, supplierId, financialYear, month }) => {
+    try {
+      console.log("BOP RATE LOOKUP:", {
+        bopId,
+        supplierId,
+        financialYear,
+        month,
+      });
+
+      if (!bopId || !supplierId || !financialYear || !month) {
+        console.log("Missing BOP lookup value");
+        return null;
+      }
+
+      const params = new URLSearchParams({
+        bopId: String(bopId),
+        supplierId: String(supplierId),
+        financial_year: String(financialYear),
+        month: String(month),
+      });
+
+      const url = `http://localhost:5000/api/bop-rate-for-costing?${params.toString()}`;
+
+      console.log("BOP RATE URL:", url);
+
+      const response = await fetch(url);
+
+      const result = await response.json();
+
+      console.log("BOP RATE RESPONSE:", result);
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Failed to fetch BOP rate");
+      }
+
+      if (!result.found) {
+        console.log("No monthly BOP rate found");
+        return null;
+      }
+
+      return Number(result.rate) || 0;
+    } catch (error) {
+      console.error("BOP RATE ERROR:", error);
+      return null;
+    }
+  };
+  // const updateBop = async (id, field, value) => {
+  //   const currentBop = bops.find((bop) => bop.id === id);
+
+  //   if (!currentBop) {
+  //     return;
+  //   }
+
+  //   // ==========================================
+  //   // SUPPLIER CHANGE
+  //   // ==========================================
+  //   if (field === "supplierId") {
+  //     setBops((prev) =>
+  //       prev.map((bop) =>
+  //         bop.id === id
+  //           ? {
+  //               ...bop,
+  //               supplierId: value,
+  //               bopRate: "",
+  //               bopCost: "0.00",
+  //             }
+  //           : bop,
+  //       ),
+  //     );
+
+  //     // In RM mode supplier is normally fixed,
+  //     // but keep this lookup for Part Details.
+  //     if (value && formData.financialYear && currentBop.bopmonth) {
+  //       const rate = await fetchBopRate({
+  //         bopId: currentBop.bopId || currentBop.bopFgCode,
+  //         supplierId: value,
+  //         financialYear: formData.financialYear,
+  //         month: currentBop.bopmonth,
+  //       });
+
+  //       setBops((prev) =>
+  //         prev.map((bop) => {
+  //           if (bop.id !== id) {
+  //             return bop;
+  //           }
+
+  //           const updatedRate = rate !== null ? rate : "";
+
+  //           const qty = Number(bop.bopAssemblyQty) || 0;
+
+  //           return {
+  //             ...bop,
+  //             supplierId: value,
+  //             bopRate: updatedRate,
+  //             bopCost:
+  //               updatedRate !== ""
+  //                 ? (qty * Number(updatedRate)).toFixed(2)
+  //                 : "0.00",
+  //           };
+  //         }),
+  //       );
+  //     }
+
+  //     return;
+  //   }
+
+  //   // ==========================================
+  //   // MONTH CHANGE
+  //   // ==========================================
+  //   if (field === "bopmonth") {
+  //     const bopId = currentBop.bopId || currentBop.bopFgCode;
+
+  //     const supplierId = currentBop.supplierId;
+
+  //     let rate = null;
+
+  //     if (bopId && supplierId && formData.financialYear && value) {
+  //       rate = await fetchBopRate({
+  //         bopId,
+  //         supplierId,
+  //         financialYear: formData.financialYear,
+  //         month: value,
+  //       });
+  //     }
+
+  //     setBops((prev) =>
+  //       prev.map((bop) => {
+  //         if (bop.id !== id) {
+  //           return bop;
+  //         }
+
+  //         const updatedRate = rate !== null ? rate : "";
+
+  //         const qty = Number(bop.bopAssemblyQty) || 0;
+
+  //         return {
+  //           ...bop,
+  //           bopmonth: value,
+  //           bopRate: updatedRate,
+  //           bopCost:
+  //             updatedRate !== ""
+  //               ? (qty * Number(updatedRate)).toFixed(2)
+  //               : "0.00",
+  //         };
+  //       }),
+  //     );
+
+  //     return;
+  //   }
+
+  //   // ==========================================
+  //   // ASSEMBLY QTY CHANGE
+  //   // ==========================================
+  //   if (field === "bopAssemblyQty") {
+  //     setBops((prev) =>
+  //       prev.map((bop) => {
+  //         if (bop.id !== id) {
+  //           return bop;
+  //         }
+
+  //         const qty = Number(value) || 0;
+  //         const rate = Number(bop.bopRate) || 0;
+
+  //         return {
+  //           ...bop,
+  //           bopAssemblyQty: value,
+  //           bopCost: (qty * rate).toFixed(2),
+  //         };
+  //       }),
+  //     );
+
+  //     return;
+  //   }
+
+  //   // ==========================================
+  //   // OTHER FIELDS
+  //   // ==========================================
+  //   setBops((prev) =>
+  //     prev.map((bop) => {
+  //       if (bop.id !== id) {
+  //         return bop;
+  //       }
+
+  //       return {
+  //         ...bop,
+  //         [field]: value,
+  //       };
+  //     }),
+  //   );
+  // };
+
+  const updateBop = async (id, field, value) => {
+    const currentBop = bops.find((bop) => bop.id === id);
+
+    if (!currentBop) return;
+
+    // ------------------------------------------
+    // BOP MONTH CHANGED
+    // ------------------------------------------
+    if (field === "bopmonth") {
+      const bopId = currentBop.bopId;
+      const supplierId = currentBop.supplierId;
+
+      const rate = await fetchBopRate({
+        bopId,
+        supplierId,
+        financialYear: formData.financialYear,
+        month: value,
+      });
+
+      setBops((prev) =>
+        prev.map((bop) => {
+          if (bop.id !== id) return bop;
+
+          const newRate = rate === null ? "" : rate;
+
+          const qty = Number(bop.bopAssemblyQty) || 0;
+
+          const cost =
+            newRate === "" ? "0.00" : (qty * Number(newRate)).toFixed(2);
+
+          return {
+            ...bop,
+            bopmonth: value,
+            bopRate: newRate,
+            bopCost: cost,
+          };
+        }),
+      );
+
+      return;
+    }
+
+    // ------------------------------------------
+    // ASSEMBLY QTY CHANGED
+    // ------------------------------------------
+    if (field === "bopAssemblyQty") {
+      setBops((prev) =>
+        prev.map((bop) => {
+          if (bop.id !== id) return bop;
+
+          const qty = Number(value) || 0;
+          const rate = Number(bop.bopRate) || 0;
+
+          return {
+            ...bop,
+            bopAssemblyQty: value,
+            bopCost: (qty * rate).toFixed(2),
+          };
+        }),
+      );
+
+      return;
+    }
+
+    // ------------------------------------------
+    // SUPPLIER CHANGED
+    // ------------------------------------------
+    if (field === "supplierId") {
+      setBops((prev) =>
+        prev.map((bop) =>
+          bop.id === id
+            ? {
+                ...bop,
+                supplierId: value,
+                bopRate: "",
+                bopCost: "0.00",
+              }
+            : bop,
+        ),
+      );
+
+      return;
+    }
+
+    // ------------------------------------------
+    // NORMAL FIELD
+    // ------------------------------------------
     setBops((prev) =>
-      prev.map((bop) => {
-        if (bop.id !== id) return bop;
-
-        const updated = {
-          ...bop,
-          [field]: value,
-        };
-
-        // BOP Cost = Assembly Qty × BOP Rate
-        if (field === "bopAssemblyQty" || field === "bopRate") {
-          const qty =
-            Number(field === "bopAssemblyQty" ? value : bop.bopAssemblyQty) ||
-            0;
-
-          const rate = Number(field === "bopRate" ? value : bop.bopRate) || 0;
-
-          updated.bopCost = (qty * rate).toFixed(2);
-        }
-
-        return updated;
-      }),
+      prev.map((bop) =>
+        bop.id === id
+          ? {
+              ...bop,
+              [field]: value,
+            }
+          : bop,
+      ),
     );
   };
-
   const formatDateForInput = (value) => {
     if (!value) return "";
 

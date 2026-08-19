@@ -1,0 +1,458 @@
+import React, { useEffect, useState } from "react";
+
+const months = [
+  { value: 1, label: "January" },
+  { value: 2, label: "February" },
+  { value: 3, label: "March" },
+  { value: 4, label: "April" },
+  { value: 5, label: "May" },
+  { value: 6, label: "June" },
+  { value: 7, label: "July" },
+  { value: 8, label: "August" },
+  { value: 9, label: "September" },
+  { value: 10, label: "October" },
+  { value: 11, label: "November" },
+  { value: 12, label: "December" },
+];
+
+const generateFinancialYears = () => {
+  const startYear = 2026;
+
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth() + 1;
+
+  let currentFY;
+  let endYear;
+
+  if (currentMonth >= 4) {
+    currentFY = `${currentYear}-${String(currentYear + 1).slice(-2)}`;
+
+    endYear = currentYear + 1;
+  } else {
+    currentFY = `${currentYear - 1}-${String(currentYear).slice(-2)}`;
+
+    endYear = currentYear;
+  }
+
+  const financialYears = [];
+
+  for (let year = startYear; year <= endYear; year++) {
+    const next = String(year + 1).slice(-2);
+
+    const fy = `${year}-${next}`;
+
+    financialYears.push({
+      value: fy,
+      label: fy,
+      selected: fy === currentFY,
+    });
+  }
+
+  return financialYears;
+};
+
+const BopMonthlyRateForm = ({ onClose, onSaved }) => {
+  const [bops, setBops] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const financialYears = generateFinancialYears();
+
+  const currentFY =
+    financialYears.find((fy) => fy.selected)?.value ||
+    financialYears[0]?.value ||
+    "";
+
+  const [formData, setFormData] = useState({
+    bopId: "",
+    partNo: "",
+    fgCode: "",
+    bopPartName: "",
+    bopPartNo: "",
+    bopErpCode: "",
+    supplierId: "",
+    financialYear: currentFY,
+    month: "",
+    qty: "",
+    rate: "",
+  });
+
+  useEffect(() => {
+    fetchBops();
+  }, []);
+
+  const fetchBops = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/bops");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch BOPs");
+      }
+
+      const result = await response.json();
+
+      setBops(result.data || result);
+    } catch (error) {
+      console.error("Error fetching BOPs:", error);
+    }
+  };
+
+  const handleBopChange = (e) => {
+    const bopId = e.target.value;
+
+    const selectedBop = bops.find((bop) => String(bop.id) === String(bopId));
+
+    if (!selectedBop) {
+      setFormData((prev) => ({
+        ...prev,
+        bopId: "",
+        partNo: "",
+        fgCode: "",
+        bopPartName: "",
+        bopPartNo: "",
+        bopErpCode: "",
+        supplierId: "",
+      }));
+
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      bopId: selectedBop.id,
+      partNo: selectedBop.part_no || "",
+      fgCode: selectedBop.fg_code || "",
+      bopPartName: selectedBop.bop_part_name || "",
+      bopPartNo: selectedBop.bop_part_no || "",
+      bopErpCode: selectedBop.bop_erp_code || "",
+      supplierId: "",
+    }));
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!formData.bopId) {
+      alert("Please select BOP");
+      return;
+    }
+
+    if (!formData.supplierId || Number(formData.supplierId) <= 0) {
+      alert("Please select Supplier");
+      return;
+    }
+
+    if (!formData.financialYear) {
+      alert("Please select Financial Year");
+      return;
+    }
+
+    if (!formData.month) {
+      alert("Please select Month");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const payload = {
+        ...formData,
+        financial_year: formData.financialYear,
+      };
+
+      delete payload.financialYear;
+
+      const response = await fetch(
+        "http://localhost:5000/api/monthly-bop-rate",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Failed to save BOP monthly rate");
+      }
+
+      alert("BOP monthly rate saved successfully");
+
+      onSaved?.();
+      onClose?.();
+    } catch (error) {
+      console.error("Save error:", error);
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const selectedBop = bops.find(
+    (bop) => String(bop.id) === String(formData.bopId),
+  );
+
+  console.log("Selected BOP:", selectedBop);
+
+  return (
+    <div className="card mt-4">
+      <div className="bop-monthly-header">
+        <h5 className="mb-0">
+          <b>Add BOP Monthly Rate</b>
+        </h5>
+
+        <button
+          type="button"
+          className="btn btn-danger btn-sm"
+          onClick={onClose}
+          title="Close"
+        >
+          <i className="fas fa-times"></i>
+        </button>
+      </div>
+      <div className="card-body">
+        <form onSubmit={handleSubmit}>
+          <div className="row g-3">
+            {/* BOP */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>BOP ERP Code</b>
+              </label>
+
+              <select
+                className={`form-control ${
+                  formData.bopId ? "field-filled" : ""
+                }`}
+                value={formData.bopId}
+                onChange={handleBopChange}
+              >
+                <option value="">Select BOP</option>
+
+                {bops.map((bop) => (
+                  <option key={bop.id} value={bop.id}>
+                    {bop.bop_erp_code}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* Part No */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Part No</b>
+              </label>
+
+              <input
+                type="text"
+                className={`form-control ${
+                  formData.partNo ? "field-filled" : ""
+                }`}
+                value={formData.partNo}
+                readOnly
+              />
+            </div>
+            {/* FG Code */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>FG Code</b>
+              </label>
+
+              <input
+                type="text"
+                className={`form-control ${
+                  formData.fgCode ? "field-filled" : ""
+                }`}
+                value={formData.fgCode}
+                readOnly
+              />
+            </div>
+            {/* BOP Part Name */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>BOP Part Name</b>
+              </label>
+
+              <input
+                type="text"
+                className={`form-control ${
+                  formData.bopPartName ? "field-filled" : ""
+                }`}
+                value={formData.bopPartName}
+                readOnly
+              />
+            </div>
+            {/* BOP Part No */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>BOP Part No</b>
+              </label>
+
+              <input
+                type="text"
+                className={`form-control ${
+                  formData.bopPartNo ? "field-filled" : ""
+                }`}
+                value={formData.bopPartNo}
+                readOnly
+              />
+            </div>
+            {/* Supplier */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Supplier Name</b>
+              </label>
+              <select
+                className={`form-control ${
+                  formData.supplierId ? "field-filled" : ""
+                }`}
+                name="supplierId"
+                value={formData.supplierId}
+                onChange={handleInputChange}
+                disabled={!formData.bopId}
+              >
+                <option value="">Select Supplier</option>
+                {(
+                  bops.find((bop) => String(bop.id) === String(formData.bopId))
+                    ?.supplier_id || ""
+                )
+                  .split(",")
+                  .map((id, index) => {
+                    const selectedBop = bops.find(
+                      (bop) => String(bop.id) === String(formData.bopId),
+                    );
+                    const supplierNames = String(
+                      selectedBop?.supplier_name || "",
+                    )
+                      .split(",")
+                      .map((name) => name.trim());
+                    return (
+                      <option key={id.trim()} value={id.trim()}>
+                        {supplierNames[index] || `Supplier ${id.trim()}`}
+                      </option>
+                    );
+                  })}
+              </select>
+            </div>
+            {/* Year */}
+            <div className="col-md-3">
+              <label className="form-label">
+                <b>Financial Year</b>
+              </label>
+
+              <select
+                className={`form-control ${
+                  formData.financialYear ? "field-filled" : ""
+                }`}
+                name="financialYear"
+                value={formData.financialYear}
+                onChange={handleInputChange}
+              >
+                <option value="">Select Financial Year</option>
+
+                {financialYears.map((fy) => (
+                  <option key={fy.value} value={fy.value}>
+                    {fy.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* Month */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Month</b>
+              </label>
+
+              <select
+                className={`form-control ${
+                  formData.month ? "field-filled" : ""
+                }`}
+                name="month"
+                value={formData.month}
+                onChange={handleInputChange}
+              >
+                <option value="">Select Month</option>
+
+                {months.map((month) => (
+                  <option key={month.value} value={month.value}>
+                    {month.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* Qty */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Qty</b>
+              </label>
+
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                className={`form-control ${formData.qty ? "field-filled" : ""}`}
+                name="qty"
+                value={formData.qty}
+                onChange={handleInputChange}
+                placeholder="Enter Qty"
+              />
+            </div>
+            {/* Rate */}
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Rate</b>
+              </label>
+
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                className={`form-control ${
+                  formData.rate ? "field-filled" : ""
+                }`}
+                name="rate"
+                value={formData.rate}
+                onChange={handleInputChange}
+                placeholder="Enter Rate"
+              />
+            </div>
+          </div>
+          <div className="d-flex justify-content-end gap-2 mt-4">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-success"
+              disabled={loading}
+            >
+              {loading ? (
+                "Saving..."
+              ) : (
+                <>
+                  <i className="fas fa-save me-2"></i>
+                  Save
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default BopMonthlyRateForm;

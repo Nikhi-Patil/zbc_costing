@@ -27,7 +27,6 @@ export const getAllUnits = async (req, res) => {
         });
     }
 };
-
 // Bop Controller
 export const getAllBops = async (req, res) => {
     try {
@@ -45,7 +44,6 @@ export const getAllBops = async (req, res) => {
         });
     }
 };
-
 // Compound Controller
 export const getAllCompounds = async (req, res) => {
     try {
@@ -63,8 +61,6 @@ export const getAllCompounds = async (req, res) => {
         });
     }
 };
-
-
 // Customer Controller
 export const getAllCustomers = async (req, res) => {
     try {
@@ -82,7 +78,6 @@ export const getAllCustomers = async (req, res) => {
         });
     }
 };
-
 // Employee Controller
 export const getAllEmployees = async (req, res) => {
     try {
@@ -100,7 +95,6 @@ export const getAllEmployees = async (req, res) => {
         });
     }
 };
-
 // part Controller
 export const getAllParts = async (req, res) => {
     try {
@@ -118,7 +112,6 @@ export const getAllParts = async (req, res) => {
         });
     }
 };
-
 // Sub Category Controller
 export const getAllSubCategories = async (req, res) => {
 
@@ -141,8 +134,6 @@ export const getAllSubCategories = async (req, res) => {
         });
     }
 };
-
-
 // Sub DepartMent Controller
 export const getAllSubDepartments = async (req, res) => {
 
@@ -168,7 +159,7 @@ export const getAllSubDepartments = async (req, res) => {
         });
     }
 };
-
+// Molding Machine Controller
 export const getAllMachines = async (req, res) => {
     try {
         const machines = await Machine.getMachines();
@@ -184,4 +175,46 @@ export const getAllMachines = async (req, res) => {
             error: err.message
         });
     }
+};
+
+// Compound by IM Code Controller
+export const getCompoundByImCode = async (req, res) => {
+  try {
+    const { imCode } = req.query;
+
+    if (!imCode) {
+      return res.status(400).json({
+        success: false,
+        message: "IM Code is required",
+      });
+    }
+
+    const compound =
+      await Compound.getCompoundByImCode(imCode);
+
+    if (!compound) {
+      return res.json({
+        success: true,
+        found: false,
+        data: null,
+      });
+    }
+
+    return res.json({
+      success: true,
+      found: true,
+      data: compound,
+    });
+  } catch (error) {
+    console.error(
+      "Error fetching compound by IM Code:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch compound by IM Code",
+      error: error.message,
+    });
+  }
 };

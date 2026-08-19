@@ -21,10 +21,7 @@ function Sidebar({ isOpen }) {
     <aside className={`sidebar ${isOpen ? "open" : "collapsed"}`}>
       <nav className="sidebar-nav">
         <ul className="sidebar-list">
-          {/* =========================
-                        DASHBOARD
-                    ========================= */}
-
+          {/*  DASHBOARD */}
           <li>
             <NavLink
               to="/dashboard"
@@ -35,6 +32,7 @@ function Sidebar({ isOpen }) {
               <span>Dashboard</span>
             </NavLink>
           </li>
+          {/*  Molding */}
           <li>
             <NavLink
               to="/molding"
@@ -45,6 +43,7 @@ function Sidebar({ isOpen }) {
               <span>Molding</span>
             </NavLink>
           </li>
+          {/*  Extrusion */}
           <li>
             <NavLink
               to="/extrusion"
@@ -55,11 +54,7 @@ function Sidebar({ isOpen }) {
               <span>Extrusion</span>
             </NavLink>
           </li>
-
-          {/* =========================
-                        MASTERS
-                    ========================= */}
-
+          {/*  MASTERS */}
           <li>
             <div
               className={`menu master-menu ${masterOpen ? "active" : ""}`}
@@ -75,163 +70,149 @@ function Sidebar({ isOpen }) {
                 } master-arrow`}
               ></i>
             </div>
-
-            {/* =========================
-                            MASTER SUB MENU
-                        ========================= */}
-
+            {/* MASTER SUB MENU */}
             {masterOpen && (
               <ul className="master-submenu">
+                {/* Employee Master*/}
                 <li>
                   <NavLink
                     to="/employee-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }
-                  >
+                    }>
                     <i className="fa-solid fa-user-tie"></i>
-
                     <span>Employee Master</span>
                   </NavLink>
                 </li>
-
+                {/* Unit Master*/}
                 <li>
                   <NavLink
                     to="/unit-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }
-                  >
+                    }>
                     <i className="fa-solid fa-building"></i>
-
                     <span>Unit Master</span>
                   </NavLink>
                 </li>
-
+                {/* Customer Master*/}
                 <li>
                   <NavLink
                     to="/customer-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }
-                  >
+                    }>
                     <i className="fa-solid fa-users"></i>
-
                     <span>Customer Master</span>
                   </NavLink>
                 </li>
-
+                {/* Part Master*/}
                 <li>
                   <NavLink
                     to="/part-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }
-                  >
+                    }>
                     <i className="fa-solid fa-puzzle-piece"></i>
-
                     <span>Part Master</span>
                   </NavLink>
                 </li>
-
+                {/* Compound Master*/}
                 <li>
                   <NavLink
                     to="/compound-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }
-                  >
+                    }>
                     <i className="fa-solid fa-flask"></i>
-
                     <span>Compound Master</span>
                   </NavLink>
                 </li>
-
+                {/* Bop Master*/}
                 <li>
                   <NavLink
                     to="/bop-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }
-                  >
+                    }>
                     <i className="fa-solid fa-boxes-stacked"></i>
-
                     <span>Bop Master</span>
                   </NavLink>
                 </li>
-
+                {/* Sales Rate Master*/}
                 <li>
                   <NavLink
                     to="/sales-rate-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }
-                  >
+                    }>
                     <i className="fa-solid fa-tags"></i>
-
                     <span>Sales Rate Master</span>
                   </NavLink>
                 </li>
+                {/* Sales Qty  Master*/}
                 <li>
                   <NavLink
                     to="/sales-qty-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }
-                  >
+                    }>
                     <i className="fa-solid fa-chart-simple"></i>
-
                     <span>Sales Qty Master</span>
                   </NavLink>
                 </li>
+                {/* Vendor Master*/}
                 <li>
                   <NavLink
                     to="/vendor-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }
-                  >
+                    }>
                     <i className="fa-solid fa-handshake"></i>
-
                     <span>Vendor Master</span>
-                  </NavLink>
-                </li>
-
-                <li>
-                  <NavLink
-                    to="/montly-compound-master"
-                    className={({ isActive }) =>
-                      isActive ? "menu active" : "menu"
-                    }
-                  >
-                    <i className="fa-solid fa-flask"></i>
-
-                    <span>Montly Compound Master</span>
                   </NavLink>
                 </li>
               </ul>
             )}
           </li>
-
-          {/* =========================
-                        TRANSACTIONS
-                    ========================= */}
-
+          {/* Report */}
           <li>
             <div
               className={`menu repot-menu ${reportOpen ? "active" : ""}`}
-              onClick={() => setreportOpen(!reportOpen)}
-            >
+              onClick={() => setreportOpen(!reportOpen)}>
               <i className="fa-solid fa-chart-column"></i>
-
               <span>Report</span>
-
               <i
                 className={`fas ${
-                  masterOpen ? "fa-chevron-down" : "fa-chevron-right"
+                  reportOpen ? "fa-chevron-down" : "fa-chevron-right"
                 } master-arrow`}
               ></i>
             </div>
+            {/* Report SUB MENU */}
+            {reportOpen && (
+              <ul className="master-submenu">
+                <li>
+                  <NavLink
+                    to="/monthly-compound-master"
+                    className={({ isActive }) =>
+                      isActive ? "menu active" : "menu"
+                    }>
+                    <i className="fa-solid fa-flask"></i>
+                    <span>Montly Compound Master</span>
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/monthly-bop-master"
+                    className={({ isActive }) =>
+                      isActive ? "menu active" : "menu"
+                    }>
+                    <i className="fa-solid fa-flask"></i>
+                    <span>Montly Bop Master</span>
+                  </NavLink>
+                </li>
+              </ul>
+            )}
           </li>
         </ul>
       </nav>

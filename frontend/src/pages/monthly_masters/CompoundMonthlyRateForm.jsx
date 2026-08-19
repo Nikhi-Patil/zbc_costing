@@ -15,28 +15,92 @@ const months = [
   { value: 12, label: "December" },
 ];
 
+/* --------------------------------------------------
+   Financial Year Generator
+   -------------------------------------------------- */
+const generateFinancialYears = () => {
+  const startYear = 2026;
+
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth() + 1;
+
+  let currentFY;
+  let endYear;
+
+  if (currentMonth >= 4) {
+    // April - December
+    currentFY = `${currentYear}-${String(
+      currentYear + 1
+    ).slice(-2)}`;
+
+    endYear = currentYear + 1;
+  } else {
+    // January - March
+    currentFY = `${currentYear - 1}-${String(
+      currentYear
+    ).slice(-2)}`;
+
+    endYear = currentYear;
+  }
+
+  const financialYears = [];
+
+  for (let year = startYear; year <= endYear; year++) {
+    const next = String(year + 1).slice(-2);
+
+    const fy = `${year}-${next}`;
+
+    financialYears.push({
+      value: fy,
+      label: fy,
+      selected: fy === currentFY,
+    });
+  }
+
+  return financialYears;
+};
+
+/* --------------------------------------------------
+   Component
+   -------------------------------------------------- */
 const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
   const [compounds, setCompounds] = useState([]);
+  const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const financialYears = generateFinancialYears();
+
+  const currentFY =
+    financialYears.find((fy) => fy.selected)?.value ||
+    financialYears[0]?.value ||
+    "";
 
   const [formData, setFormData] = useState({
     polymer: "",
     compoundId: "",
     compoundCode: "",
     imCode: "",
-    year: new Date().getFullYear(),
+    unitId: "",
+    financialYear: currentFY,
     month: "",
     qty: "",
     rate: "",
   });
 
+  /* --------------------------------------------------
+     Fetch Compounds + Units
+     -------------------------------------------------- */
   useEffect(() => {
     fetchCompounds();
+    fetchUnits();
   }, []);
 
   const fetchCompounds = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/compounds");
+      const response = await fetch(
+        "http://localhost:5000/api/compounds"
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch compounds");
@@ -50,16 +114,46 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
     }
   };
 
-  // Unique polymer names
+  const fetchUnits = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/units"
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch units");
+      }
+
+      const result = await response.json();
+
+      setUnits(result.data || result);
+    } catch (error) {
+      console.error("Error fetching units:", error);
+    }
+  };
+
+  /* --------------------------------------------------
+     Polymer List
+     -------------------------------------------------- */
   const polymers = [
-    ...new Set(compounds.map((compound) => compound.polymer).filter(Boolean)),
+    ...new Set(
+      compounds
+        .map((compound) => compound.polymer)
+        .filter(Boolean)
+    ),
   ];
 
-  // Compounds belonging to selected polymer
+  /* --------------------------------------------------
+     Filter Compounds by Polymer
+     -------------------------------------------------- */
   const filteredCompounds = compounds.filter(
-    (compound) => compound.polymer === formData.polymer,
+    (compound) =>
+      compound.polymer === formData.polymer
   );
 
+  /* --------------------------------------------------
+     Polymer Change
+     -------------------------------------------------- */
   const handlePolymerChange = (e) => {
     const value = e.target.value;
 
@@ -72,12 +166,18 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
     }));
   };
 
+  /* --------------------------------------------------
+     Compound Change
+     -------------------------------------------------- */
   const handleCompoundChange = (e) => {
     const compoundId = e.target.value;
 
-    const selectedCompound = filteredCompounds.find(
-      (compound) => String(compound.id) === String(compoundId),
-    );
+    const selectedCompound =
+      filteredCompounds.find(
+        (compound) =>
+          String(compound.id) ===
+          String(compoundId)
+      );
 
     if (!selectedCompound) {
       setFormData((prev) => ({
@@ -86,17 +186,23 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
         compoundCode: "",
         imCode: "",
       }));
+
       return;
     }
 
     setFormData((prev) => ({
       ...prev,
       compoundId: selectedCompound.id,
-      compoundCode: selectedCompound.compound_code || "",
-      imCode: selectedCompound.im_code || "",
+      compoundCode:
+        selectedCompound.compound_code || "",
+      imCode:
+        selectedCompound.im_code || "",
     }));
   };
 
+  /* --------------------------------------------------
+     Normal Input Change
+     -------------------------------------------------- */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -106,11 +212,70 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
     }));
   };
 
+  /* --------------------------------------------------
+     Submit
+     -------------------------------------------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    /* Validation */
+
+    if (!formData.polymer) {
+      alert("Please select Polymer");
+      return;
+    }
+
+    if (!formData.compoundId) {
+      alert("Please select Compound");
+      return;
+    }
+
+    if (!formData.unitId) {
+      alert("Please select Unit");
+      return;
+    }
+
+    if (!formData.financialYear) {
+      alert("Please select Financial Year");
+      return;
+    }
+
+    if (!formData.month) {
+      alert("Please select Month");
+      return;
+    }
+
+    if (formData.qty === "") {
+      alert("Please enter Qty");
+      return;
+    }
+
+    if (formData.rate === "") {
+      alert("Please enter Rate");
+      return;
+    }
+
     try {
       setLoading(true);
+
+      /*
+        Frontend uses:
+        financialYear
+
+        Backend / MySQL uses:
+        financial_year
+      */
+      const payload = {
+        compoundId: formData.compoundId,
+        compoundCode: formData.compoundCode,
+        polymer: formData.polymer,
+        imCode: formData.imCode,
+        unitId: formData.unitId,
+        financial_year: formData.financialYear,
+        month: Number(formData.month),
+        qty: Number(formData.qty),
+        rate: Number(formData.rate),
+      };
 
       const response = await fetch(
         "http://localhost:5000/api/monthly-compound-rate",
@@ -119,19 +284,22 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
-        },
+          body: JSON.stringify(payload),
+        }
       );
 
       const result = await response.json();
 
       if (!response.ok || !result.success) {
         throw new Error(
-          result.message || "Failed to save monthly compound rate",
+          result.message ||
+            "Failed to save monthly compound rate"
         );
       }
 
-      alert("Compound monthly rate saved successfully");
+      alert(
+        "Compound monthly rate saved successfully"
+      );
 
       onSaved?.();
       onClose?.();
@@ -145,6 +313,7 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
 
   return (
     <div className="card mt-4">
+      {/* Header */}
       <div className="card-header d-flex justify-content-between align-items-center">
         <h5 className="mb-0">
           <b>Add Compound Monthly Rate</b>
@@ -154,6 +323,7 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
           type="button"
           className="btn btn-danger btn-sm"
           onClick={onClose}
+          title="Close"
         >
           <i className="fas fa-times"></i>
         </button>
@@ -162,6 +332,7 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
       <div className="card-body">
         <form onSubmit={handleSubmit}>
           <div className="row g-3">
+
             {/* Polymer */}
             <div className="col-md-3">
               <label className="form-label">
@@ -170,15 +341,22 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
 
               <select
                 className={`form-control ${
-                  formData.polymer ? "field-filled" : ""
+                  formData.polymer
+                    ? "field-filled"
+                    : ""
                 }`}
                 value={formData.polymer}
                 onChange={handlePolymerChange}
               >
-                <option value="">Select Polymer</option>
+                <option value="">
+                  Select Polymer
+                </option>
 
                 {polymers.map((polymer) => (
-                  <option key={polymer} value={polymer}>
+                  <option
+                    key={polymer}
+                    value={polymer}
+                  >
                     {polymer}
                   </option>
                 ))}
@@ -193,19 +371,28 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
 
               <select
                 className={`form-control ${
-                  formData.compoundId ? "field-filled" : ""
+                  formData.compoundId
+                    ? "field-filled"
+                    : ""
                 }`}
                 value={formData.compoundId}
                 onChange={handleCompoundChange}
                 disabled={!formData.polymer}
               >
-                <option value="">Select Compound</option>
+                <option value="">
+                  Select Compound
+                </option>
 
-                {filteredCompounds.map((compound) => (
-                  <option key={compound.id} value={compound.id}>
-                    {compound.compound_code}
-                  </option>
-                ))}
+                {filteredCompounds.map(
+                  (compound) => (
+                    <option
+                      key={compound.id}
+                      value={compound.id}
+                    >
+                      {compound.compound_code}
+                    </option>
+                  )
+                )}
               </select>
             </div>
 
@@ -218,7 +405,9 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
               <input
                 type="text"
                 className={`form-control ${
-                  formData.imCode ? "field-filled" : ""
+                  formData.imCode
+                    ? "field-filled"
+                    : ""
                 }`}
                 value={formData.imCode}
                 readOnly
@@ -226,28 +415,63 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
               />
             </div>
 
-            {/* Year */}
+            {/* Unit */}
             <div className="col-md-3">
               <label className="form-label">
-                <b>Year</b>
+                <b>Unit</b>
               </label>
 
               <select
                 className={`form-control ${
-                  formData.year ? "field-filled" : ""
+                  formData.unitId
+                    ? "field-filled"
+                    : ""
                 }`}
-                name="year"
-                value={formData.year}
+                name="unitId"
+                value={formData.unitId}
                 onChange={handleInputChange}
               >
-                <option value="">Select Year</option>
+                <option value="">
+                  Select Unit
+                </option>
 
-                {Array.from(
-                  { length: 5 },
-                  (_, index) => new Date().getFullYear() - 2 + index,
-                ).map((year) => (
-                  <option key={year} value={year}>
-                    {year}
+                {units.map((unit) => (
+                  <option
+                    key={unit.id}
+                    value={unit.id}
+                  >
+                    {unit.unit}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Financial Year */}
+            <div className="col-md-3">
+              <label className="form-label">
+                <b>Financial Year</b>
+              </label>
+
+              <select
+                className={`form-control ${
+                  formData.financialYear
+                    ? "field-filled"
+                    : ""
+                }`}
+                name="financialYear"
+                value={formData.financialYear}
+                onChange={handleInputChange}
+              >
+                <option value="">
+                  Select Financial Year
+                </option>
+
+                {financialYears.map((fy) => (
+                  <option
+                    key={fy.value}
+                    value={fy.value}
+                  >
+                    {fy.label}
                   </option>
                 ))}
               </select>
@@ -261,16 +485,23 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
 
               <select
                 className={`form-control ${
-                  formData.month ? "field-filled" : ""
+                  formData.month
+                    ? "field-filled"
+                    : ""
                 }`}
                 name="month"
                 value={formData.month}
                 onChange={handleInputChange}
               >
-                <option value="">Select Month</option>
+                <option value="">
+                  Select Month
+                </option>
 
                 {months.map((month) => (
-                  <option key={month.value} value={month.value}>
+                  <option
+                    key={month.value}
+                    value={month.value}
+                  >
                     {month.label}
                   </option>
                 ))}
@@ -288,7 +519,9 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
                 step="0.01"
                 min="0"
                 className={`form-control ${
-                  formData.qty !== "" ? "field-filled" : ""
+                  formData.qty !== ""
+                    ? "field-filled"
+                    : ""
                 }`}
                 name="qty"
                 value={formData.qty}
@@ -308,7 +541,9 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
                 step="0.01"
                 min="0"
                 className={`form-control ${
-                  formData.rate !== "" ? "field-filled" : ""
+                  formData.rate !== ""
+                    ? "field-filled"
+                    : ""
                 }`}
                 name="rate"
                 value={formData.rate}

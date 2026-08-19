@@ -63,6 +63,103 @@ function RMDetailsForm({
   );
   const finalRmCost = (Number(formData.totalRmCost) || 0) + totalBopCost;
 
+  const fetchCompoundRate = async () => {
+    const {
+      compoundCode,
+      polymerName,
+      imCode,
+      productionUnit,
+      financialYear,
+      compMonth,
+    } = formData;
+
+    console.log("COMPOUND RATE LOOKUP:", {
+      compoundCode,
+      polymerName,
+      imCode,
+      productionUnit,
+      financialYear,
+      compMonth,
+    });
+
+    if (
+      !compoundCode ||
+      !polymerName ||
+      !imCode ||
+      !productionUnit ||
+      !financialYear ||
+      !compMonth
+    ) {
+      console.log("Missing compound lookup value");
+      return;
+    }
+
+    try {
+      const params = new URLSearchParams({
+        compoundCode: String(compoundCode),
+        polymerName: String(polymerName),
+        imCode: String(imCode),
+        unitId: String(productionUnit),
+        financial_year: String(financialYear),
+        month: String(compMonth),
+      });
+
+      const url = `http://localhost:5000/api/compound-rate-for-costing?${params.toString()}`;
+
+      console.log("COMPOUND RATE URL:", url);
+
+      const response = await fetch(url);
+
+      const result = await response.json();
+
+      console.log("COMPOUND RATE RESPONSE:", result);
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Failed to fetch compound rate");
+      }
+
+      if (!result.found) {
+        console.log("No matching compound monthly rate found");
+
+        handleInputChange({
+          target: {
+            name: "compoundRate",
+            value: "",
+          },
+        });
+
+        return;
+      }
+
+      handleInputChange({
+        target: {
+          name: "compoundRate",
+          value: result.rate,
+        },
+      });
+    } catch (error) {
+      console.error("COMPOUND RATE ERROR:", error);
+
+      handleInputChange({
+        target: {
+          name: "compoundRate",
+          value: "",
+        },
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchCompoundRate();
+  }, [
+    formData.compoundCode,
+    formData.polymerName,
+    formData.imCode,
+    formData.productionUnit,
+    formData.financialYear,
+    formData.compMonth,
+  ]);
+
   return (
     <>
       {/* Raw Material Details */}
@@ -85,59 +182,31 @@ function RMDetailsForm({
               <label className="form-label">
                 <b>Polymer Name</b>
               </label>
-              <select
+
+              <input
+                type="text"
                 className={`form-control ${
                   formData.polymerName ? "field-filled" : ""
                 }`}
-                name="polymerName"
                 value={formData.polymerName || ""}
-                onChange={(e) => handlePolymerChange(e.target.value)}
-              >
-                <option value="">Select</option>
-                {polymers.map((polymer) => (
-                  <option key={polymer} value={polymer}>
-                    {polymer}
-                  </option>
-                ))}
-              </select>
+                readOnly
+                placeholder="Auto"
+              />
             </div>
             {/* Compound */}
             <div className="col-md-2">
               <label className="form-label">
                 <b>Compound Code</b>
               </label>
-              <Select
-                className={
-                  formData.compoundCode
-                    ? "compound-select field-filled"
-                    : "compound-select"
-                }
-                classNamePrefix="compound-select"
-                options={compoundOptions}
-                value={selectedCompound}
-                onChange={(selected) => {
-                  if (selected) {
-                    handleCompoundChange(selected.data);
-                  } else {
-                    handleInputChange({
-                      target: {
-                        name: "compoundCode",
-                        value: "",
-                      },
-                    });
-                    handleInputChange({
-                      target: {
-                        name: "imCode",
-                        value: "",
-                      },
-                    });
-                  }
-                }}
-                isDisabled={!formData.polymerName}
-                isClearable
-                isSearchable
-                placeholder="Select"
-                noOptionsMessage={() => "No compound found"}
+
+              <input
+                type="text"
+                className={`form-control ${
+                  formData.compoundCode ? "field-filled" : ""
+                }`}
+                value={formData.compoundCode || ""}
+                readOnly
+                placeholder="Auto"
               />
             </div>
             {/* IM Code */}
@@ -145,14 +214,15 @@ function RMDetailsForm({
               <label className="form-label">
                 <b>IM Code</b>
               </label>
+
               <input
                 type="text"
                 className={`form-control ${
                   formData.imCode ? "field-filled" : ""
                 }`}
-                name="imCode"
                 value={formData.imCode || ""}
                 readOnly
+                placeholder="Auto"
               />
             </div>
             {/* Month */}
@@ -160,15 +230,17 @@ function RMDetailsForm({
               <label className="form-label">
                 <b>Month</b>
               </label>
+
               <select
                 className={`form-control ${
-                  formData.month ? "field-filled" : ""
+                  formData.compMonth ? "field-filled" : ""
                 }`}
-                name="month"
-                value={formData.month || ""}
+                name="compMonth"
+                value={formData.compMonth || ""}
                 onChange={handleInputChange}
               >
                 <option value="">Select</option>
+
                 {months.map((month) => (
                   <option key={month.value} value={month.value}>
                     {month.label}
@@ -188,7 +260,8 @@ function RMDetailsForm({
                 }`}
                 name="compoundRate"
                 value={formData.compoundRate || ""}
-                onChange={handleInputChange}
+                readOnly
+                placeholder="Auto"
               />
             </div>
           </div>

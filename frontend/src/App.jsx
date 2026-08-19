@@ -1,4 +1,4 @@
-import {BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Layout from "./components/layout/Layout";
@@ -17,25 +17,27 @@ import VenderMaster from "./pages/masters/VenderMaster";
 import SupplierMaster from "./pages/masters/SupplierMaster";
 import CompoundMonthlyReport from "./pages/monthly_masters/CompoundMonthlyReport";
 import PrivateRoute from "./components/PrivateRoute";
+import BopMonthlyReport from "./pages/monthly_masters/BopMonthlyReport";
 
 function App() {
   return (
     <Layout>
-       <Routes>
-
+      <Routes>
         {/* Public
         <Route path="/login" element={<Login />} />
       
       <Routes element={<PrivateRoute />}> */}
-        <Route path="/montly-compound-master" element={<CompoundMonthlyReport/>}/>
-        
+        <Route path="/monthly-compound-master" element={<CompoundMonthlyReport />}/>
+
+        <Route path="/monthly-bop-master" element={<BopMonthlyReport />} />
+
         <Route path="/dashboard" element={<Dashboard />} />
 
         <Route path="/molding/costing-wizard" element={<CostingWizard />} />
 
         <Route path="/molding/costing-wizard/:transactionId" element={<CostingWizard />}/>
-        
-        <Route path="/unit-master" element= {<UnitMaster />} />
+
+        <Route path="/unit-master" element={<UnitMaster />} />
 
         <Route path="/compound-master" element={<CompoundMaster />} />
 

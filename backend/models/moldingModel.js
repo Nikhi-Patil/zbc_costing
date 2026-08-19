@@ -108,7 +108,11 @@ export const createDraft = async (formData, bops) => {
     profit_on_subtotal_cost,
     packaging_on_subtotal_cost,
     transport_on_subtotal_cost,
-    part_cost
+    part_cost,
+    customer_sales_cost,
+sales_profit_loss,
+buying_cost,
+buying_profit_loss
 
 )
 VALUES (
@@ -175,6 +179,10 @@ VALUES (
     ?,
     ?,
 
+    ?,
+    ?,
+    ?,
+    ?,
     ?,
     ?,
     ?,
@@ -254,7 +262,11 @@ VALUES (
                 formData.profitOnSubtotalCost,
                 formData.packagingOnSubtotalCost,
                 formData.transportOnSubtotalCost,
-                formData.partCost
+                formData.partCost,
+                formData.customerSalesCost,
+                formData.salesProfitLoss,
+                formData.buyingCost,
+                formData.buyingProfitLoss
 
             ]
         );
@@ -403,7 +415,11 @@ export const updateDraft = async (
                 profit_on_subtotal_cost = ?,
                 packaging_on_subtotal_cost = ?,
                 transport_on_subtotal_cost = ?,
-                part_cost=?
+                part_cost=?,
+                customer_sales_cost = ?,
+sales_profit_loss = ?,
+buying_cost = ?,
+buying_profit_loss = ?
 
 
             WHERE transaction_id = ?
@@ -475,6 +491,10 @@ export const updateDraft = async (
                 formData.packagingOnSubtotalCost,
                 formData.transportOnSubtotalCost,
                 formData.partCost,
+                formData.customerSalesCost,
+                formData.salesProfitLoss,
+                formData.buyingCost,
+                formData.buyingProfitLoss,
 
                 transactionId
             ]

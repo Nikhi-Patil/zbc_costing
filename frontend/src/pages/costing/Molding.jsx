@@ -105,7 +105,7 @@ const Molding = () => {
                 transactions.map((transaction) => {
 
                   const profitLoss =
-                    Number(transaction.sell_cost || 0) -
+                    Number(transaction.customer_sales_cost || 0) -
                     Number(transaction.part_cost || 0);
 
                   return (
@@ -145,7 +145,7 @@ const Molding = () => {
                       <td>
                         ₹
                         {Number(
-                          transaction.sell_cost || 0
+                          transaction.customer_sales_cost || 0
                         ).toLocaleString("en-IN")}
                       </td>
 

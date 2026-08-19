@@ -1,4 +1,18 @@
 import React, { useState, useEffect } from "react";
+const months = [
+  { value: "01", label: "January" },
+  { value: "02", label: "February" },
+  { value: "03", label: "March" },
+  { value: "04", label: "April" },
+  { value: "05", label: "May" },
+  { value: "06", label: "June" },
+  { value: "07", label: "July" },
+  { value: "08", label: "August" },
+  { value: "09", label: "September" },
+  { value: "10", label: "October" },
+  { value: "11", label: "November" },
+  { value: "12", label: "December" },
+];
 
 const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
   const [bops, setBops] = useState([]);
@@ -23,6 +37,41 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
     fetchBops();
   }, []);
   const isRM = mode === "rm";
+  useEffect(() => {
+    if (!isRM || !bopList || bopList.length === 0 || bops.length === 0) {
+      return;
+    }
+
+    bopList.forEach((bop) => {
+      const bopMaster = bops.find(
+        (item) => String(item.id) === String(bop.bopFgCode),
+      );
+
+      if (!bopMaster) {
+        return;
+      }
+
+      const supplierIds = String(bopMaster.supplier_id || "")
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean);
+
+      const supplierNames = String(bopMaster.supplier_name || "")
+        .split(",")
+        .map((name) => name.trim())
+        .filter(Boolean);
+
+      const suppliers = supplierIds.map((id, index) => ({
+        id,
+        supplier_name: supplierNames[index] || `Supplier ${id}`,
+      }));
+
+      // Only update if suppliers aren't already loaded
+      if (JSON.stringify(bop.suppliers || []) !== JSON.stringify(suppliers)) {
+        updateBop(bop.id, "suppliers", suppliers);
+      }
+    });
+  }, [isRM, bopList, bops]);
 
   return (
     <div className="card mt-4">
@@ -129,7 +178,13 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                             supplier_name: supplierNames[index] || "",
                           }));
 
-                          updateBop(bop.id, "bopFgCode", selectedId);
+                          updateBop(bop.id, "bopId", selectedId);
+
+                          updateBop(
+                            bop.id,
+                            "bopFgCode",
+                            selectedBop.bop_erp_code || "",
+                          );
 
                           updateBop(
                             bop.id,
@@ -185,24 +240,52 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
 
                     {/* Supplier */}
                     <td>
-                      <select
-                        className={`form-control ${
-                          bop.supplierId ? "field-filled" : ""
-                        }`}
-                        value={bop.supplierId || ""}
-                        disabled={isRM}
-                        onChange={(e) =>
-                          updateBop(bop.id, "supplierId", e.target.value)
-                        }
-                      >
-                        <option value="">Select Supplier</option>
+                      {(() => {
+                        const selectedBop = bops.find(
+                          (item) => String(item.id) === String(bop.bopId),
+                        );
 
-                        {(bop.suppliers || []).map((supplier) => (
-                          <option key={supplier.id} value={supplier.id}>
-                            {supplier.supplier_name}
-                          </option>
-                        ))}
-                      </select>
+                        const supplierIds = String(
+                          selectedBop?.supplier_id || "",
+                        )
+                          .split(",")
+                          .map((id) => id.trim())
+                          .filter(Boolean);
+
+                        const supplierNames = String(
+                          selectedBop?.supplier_name || "",
+                        )
+                          .split(",")
+                          .map((name) => name.trim())
+                          .filter(Boolean);
+
+                        const supplierOptions = supplierIds.map(
+                          (id, index) => ({
+                            id,
+                            supplier_name:
+                              supplierNames[index] || `Supplier ${id}`,
+                          }),
+                        );
+
+                        return (
+                          <select
+                            className="form-control"
+                            value={bop.supplierId || ""}
+                            disabled={isRM}
+                            onChange={(e) =>
+                              updateBop(bop.id, "supplierId", e.target.value)
+                            }
+                          >
+                            <option value="">Select Supplier</option>
+
+                            {supplierOptions.map((supplier) => (
+                              <option key={supplier.id} value={supplier.id}>
+                                {supplier.supplier_name}
+                              </option>
+                            ))}
+                          </select>
+                        );
+                      })()}
                     </td>
 
                     {/* Commodity */}
@@ -224,14 +307,11 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                     <td>
                       <input
                         type="number"
-                        className={`form-control ${
-                          bop.bopAssemblyQty ? "field-filled" : ""
-                        }`}
+                        step="0.01"
                         value={bop.bopAssemblyQty || ""}
                         onChange={(e) =>
                           updateBop(bop.id, "bopAssemblyQty", e.target.value)
                         }
-                        placeholder="Assembly Qty"
                       />
                     </td>
 
@@ -241,27 +321,18 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                         {/* Month */}
                         <td>
                           <select
-                            className={`form-control ${
-                              bop.bopmonth ? "field-filled" : ""
-                            }`}
                             value={bop.bopmonth || ""}
                             onChange={(e) =>
                               updateBop(bop.id, "bopmonth", e.target.value)
                             }
                           >
                             <option value="">Select Month</option>
-                            <option value="January">January</option>
-                            <option value="February">February</option>
-                            <option value="March">March</option>
-                            <option value="April">April</option>
-                            <option value="May">May</option>
-                            <option value="June">June</option>
-                            <option value="July">July</option>
-                            <option value="August">August</option>
-                            <option value="September">September</option>
-                            <option value="October">October</option>
-                            <option value="November">November</option>
-                            <option value="December">December</option>
+
+                            {months.map((month) => (
+                              <option key={month.value} value={month.value}>
+                                {month.label}
+                              </option>
+                            ))}
                           </select>
                         </td>
 
@@ -269,15 +340,10 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                         <td>
                           <input
                             type="number"
-                            step="0.01"
-                            className={`form-control ${
-                              bop.bopRate ? "field-filled" : ""
-                            }`}
                             value={bop.bopRate || ""}
-                            onChange={(e) =>
-                              updateBop(bop.id, "bopRate", e.target.value)
-                            }
-                            placeholder="Bop Rate"
+                            readOnly
+                            className="form-control"
+                            placeholder="Auto"
                           />
                         </td>
 
@@ -285,11 +351,9 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                         <td>
                           <input
                             type="text"
-                            className={`form-control ${
-                              bop.bopCost ? "field-filled" : ""
-                            }`}
-                            value={bop.bopCost || ""}
+                            value={bop.bopCost || "0.00"}
                             readOnly
+                            className="form-control cost-highlight"
                           />
                         </td>
                       </>

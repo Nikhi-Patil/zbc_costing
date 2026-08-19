@@ -69,7 +69,7 @@ export const getMoldingTransactions = async (req, res) => {
                 sub_category,
                 part_no,
                 part_cost,
-                sell_cost,
+                customer_sales_cost,
                 status
             FROM molding_table
             ORDER BY id DESC
@@ -196,7 +196,7 @@ export const getMoldingTransactions = async (req, res) => {
             // Normal molding fields
             part_no: row.part_no,
             part_cost: row.part_cost,
-            sell_cost: row.sell_cost,
+            customer_sales_cost: row.customer_sales_cost,
             status: row.status
         }));
         res.json({

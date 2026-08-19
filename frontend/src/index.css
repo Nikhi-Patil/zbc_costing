@@ -402,14 +402,13 @@ h5 {
   font-weight: 600;
 }
 
-
 .bottom-line-table th:nth-child(1),
 .bottom-line-table td:nth-child(1) {
-width:5%;
+  width: 5%;
 }
 .bottom-line-table th:nth-child(6),
 .bottom-line-table td:nth-child(6) {
-width:7%;
+  width: 7%;
 }
 
 .bottom-line-table th:nth-child(3),
@@ -528,8 +527,6 @@ width:7%;
   box-shadow: none !important;
   font-size: 12px !important;
 }
-
-
 
 .compound-select__control--is-focused {
   border-color: #86b7fe !important;
@@ -761,23 +758,75 @@ width:7%;
 }
 
 .report-toolbar {
-  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  width: 100%;
   margin-bottom: 15px;
 }
 
-.year-filter {
-  width: 180px;
+.report-filters {
+  display: flex;
+  gap: 15px;
 }
 
-.year-filter .form-control {
-  width: 100%;
+.filter-field {
+  width: 160px;
 }
 
 .add-rate-btn {
   height: 38px;
-  padding: 6px 16px;
   white-space: nowrap;
 }
+
+.compound-report-table th,
+.compound-report-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.bop-monthly-header {
+  width: 100%;
+  min-height: 30px;
+  padding: 0 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background-color: lightgray;
+  border-bottom: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.bop-monthly-header h5 {
+  margin: 0;
+}
+
+.bop-monthly-header button {
+  margin-left: auto;
+  width: 30px;
+  height: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+}
+
+.bottom-line-profit-summary {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 5px;
+  padding: 10px 0;
+}
+
+.bottom-line-profit-summary .summary-field {
+  width: 200px;
+}
+
+.bottom-line-profit-summary input {
+  text-align: right;
+} 
