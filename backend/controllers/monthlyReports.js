@@ -455,3 +455,441 @@ export const getBopRateForCosting = async (req, res) => {
     });
   }
 };
+
+export const createBulkBopMonthlyRate = async (req, res) => {
+  try {
+    const { rows } = req.body;
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No Excel records received",
+      });
+    }
+
+    let insertedCount = 0;
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const excelRow = i + 2;
+
+      // -----------------------------------------
+      // Validation
+      // -----------------------------------------
+
+      if (!row.bopErpCode) {
+        return res.status(400).json({
+          success: false,
+          message: `Excel row ${excelRow}: BOP ERP Code is required`,
+        });
+      }
+
+      if (!row.supplierName || !String(row.supplierName).trim()) {
+        return res.status(400).json({
+          success: false,
+          message: `Excel row ${excelRow}: Supplier Name is required`,
+        });
+      }
+
+      if (!row.financial_year) {
+        return res.status(400).json({
+          success: false,
+          message: `Excel row ${excelRow}: Financial Year is required`,
+        });
+      }
+
+      const month = Number(row.month);
+
+      if (!month || month < 1 || month > 12) {
+        return res.status(400).json({
+          success: false,
+          message: `Excel row ${excelRow}: Invalid month`,
+        });
+      }
+
+      if (
+        row.qty === undefined ||
+        row.qty === null ||
+        row.qty === "" ||
+        isNaN(Number(row.qty))
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: `Excel row ${excelRow}: Invalid Qty`,
+        });
+      }
+
+      if (
+        row.rate === undefined ||
+        row.rate === null ||
+        row.rate === "" ||
+        isNaN(Number(row.rate))
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: `Excel row ${excelRow}: Invalid Rate`,
+        });
+      }
+
+      // -----------------------------------------
+      // Find BOP from ADMIN DB
+      // -----------------------------------------
+
+      const [bopRows] = await adminDB.query(
+        `
+        SELECT
+          p.id,
+          p.bop_part_name,
+          p.bop_part_no,
+          p.bop_quantity,
+          p.umo,
+          p.supplier_id,
+          p.part_id,
+          sd.part_no,
+          sd.fg_code,
+          p.bop_erp_code
+        FROM bop_master p
+        LEFT JOIN part_master sd
+          ON p.part_id = sd.id
+        WHERE p.bop_erp_code = ?
+        LIMIT 1
+        `,
+        [String(row.bopErpCode).trim()]
+      );
+
+      if (bopRows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message:
+            `Excel row ${excelRow}: BOP ERP Code '${row.bopErpCode}' not found`,
+        });
+      }
+
+      const bop = bopRows[0];
+
+      // -----------------------------------------
+      // Find Supplier from ADMIN DB
+      // -----------------------------------------
+
+      const [supplierRows] = await adminDB.query(
+        `
+        SELECT
+          id,
+          supplier_name
+        FROM supplier_master
+        WHERE LOWER(TRIM(supplier_name)) =
+              LOWER(TRIM(?))
+        LIMIT 1
+        `,
+        [String(row.supplierName).trim()]
+      );
+
+      if (supplierRows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message:
+            `Excel row ${excelRow}: Supplier '${row.supplierName}' not found`,
+        });
+      }
+
+      const supplier = supplierRows[0];
+      const supplierId = supplier.id;
+
+      // -----------------------------------------
+      // Validate supplier belongs to BOP
+      // -----------------------------------------
+
+      const bopSupplierIds = String(
+        bop.supplier_id || ""
+      )
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean);
+
+      if (
+        !bopSupplierIds.includes(
+          String(supplierId)
+        )
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            `Excel row ${excelRow}: Supplier '${row.supplierName}' is not assigned to BOP '${row.bopErpCode}'`,
+        });
+      }
+
+      // -----------------------------------------
+      // Insert / Update
+      // -----------------------------------------
+
+      await zbcDB.query(
+        `
+        INSERT INTO bop_monthly_report (
+          bop_id,
+          part_no,
+          fg_code,
+          bop_part_name,
+          bop_part_no,
+          bop_erp_code,
+          supplier_id,
+          financial_year,
+          month,
+          qty,
+          rate
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+        ON DUPLICATE KEY UPDATE
+          part_no = VALUES(part_no),
+          fg_code = VALUES(fg_code),
+          bop_part_name = VALUES(bop_part_name),
+          bop_part_no = VALUES(bop_part_no),
+          bop_erp_code = VALUES(bop_erp_code),
+          qty = VALUES(qty),
+          rate = VALUES(rate),
+          updated_at = CURRENT_TIMESTAMP
+        `,
+        [
+          bop.id,
+          bop.part_no || null,
+          bop.fg_code || null,
+          bop.bop_part_name || null,
+          bop.bop_part_no || null,
+          bop.bop_erp_code || null,
+          Number(supplierId),
+          String(row.financial_year).trim(),
+          month,
+          Number(row.qty),
+          Number(row.rate),
+        ]
+      );
+
+      insertedCount++;
+    }
+
+    // -----------------------------------------
+    // Success
+    // -----------------------------------------
+
+    return res.status(201).json({
+      success: true,
+      message:
+        "BOP monthly rates uploaded successfully",
+      insertedCount,
+    });
+  } catch (error) {
+    console.error(
+      "Bulk BOP upload error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Failed to upload BOP monthly rates",
+      error: error.message,
+      code: error.code,
+      sqlState: error.sqlState,
+    });
+  }
+};
+
+export const createBulkCompoundMonthlyRate = async (req, res) => {
+  try {
+    const { rows } = req.body;
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No Excel records received",
+      });
+    }
+
+    let insertedCount = 0;
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const excelRow = i + 2;
+
+      // -----------------------------------------
+      // Validation
+      // -----------------------------------------
+
+      if (!row.imCode || !String(row.imCode).trim()) {
+        return res.status(400).json({
+          success: false,
+          message: `Excel row ${excelRow}: IM Code is required`,
+        });
+      }
+
+      if (
+        !row.productionUnit ||
+        !String(row.productionUnit).trim()
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: `Excel row ${excelRow}: Production Unit is required`,
+        });
+      }
+
+      if (!row.financial_year) {
+        return res.status(400).json({
+          success: false,
+          message: `Excel row ${excelRow}: Financial Year is required`,
+        });
+      }
+
+      const month = Number(row.month);
+
+      if (!month || month < 1 || month > 12) {
+        return res.status(400).json({
+          success: false,
+          message: `Excel row ${excelRow}: Invalid month`,
+        });
+      }
+
+      if (
+        row.qty === undefined ||
+        row.qty === null ||
+        row.qty === "" ||
+        isNaN(Number(row.qty))
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: `Excel row ${excelRow}: Invalid Qty`,
+        });
+      }
+
+      if (
+        row.rate === undefined ||
+        row.rate === null ||
+        row.rate === "" ||
+        isNaN(Number(row.rate))
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: `Excel row ${excelRow}: Invalid Rate`,
+        });
+      }
+
+      // -----------------------------------------
+      // Find Compound using IM Code
+      // -----------------------------------------
+
+      const [compoundRows] = await adminDB.query(
+        `
+        SELECT
+          id,
+          polymer,
+          compound_code,
+          im_code
+        FROM compound_master
+        WHERE LOWER(TRIM(im_code)) =
+              LOWER(TRIM(?))
+        LIMIT 1
+        `,
+        [String(row.imCode).trim()]
+      );
+
+      if (compoundRows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message:
+            `Excel row ${excelRow}: IM Code '${row.imCode}' not found in compound master`,
+        });
+      }
+
+      const compound = compoundRows[0];
+
+      // -----------------------------------------
+      // Find Production Unit
+      // -----------------------------------------
+
+      const [unitRows] = await adminDB.query(
+        `
+        SELECT
+          id,
+          unit
+        FROM unit_master
+        WHERE LOWER(TRIM(unit)) =
+              LOWER(TRIM(?))
+        LIMIT 1
+        `,
+        [String(row.productionUnit).trim()]
+      );
+
+      if (unitRows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message:
+            `Excel row ${excelRow}: Production Unit '${row.productionUnit}' not found`,
+        });
+      }
+
+      const unit = unitRows[0];
+
+      // -----------------------------------------
+      // Insert / Update
+      // -----------------------------------------
+
+      await zbcDB.query(
+        `
+        INSERT INTO compound_monthly_report (
+          compound_id,
+          compound_code,
+          polymer_name,
+          im_code,
+          unit_id,
+          financial_year,
+          month,
+          qty,
+          rate
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+        ON DUPLICATE KEY UPDATE
+          compound_code = VALUES(compound_code),
+          polymer_name = VALUES(polymer_name),
+          im_code = VALUES(im_code),
+          qty = VALUES(qty),
+          rate = VALUES(rate),
+          updated_at = CURRENT_TIMESTAMP
+        `,
+        [
+          compound.id,
+          compound.compound_code || null,
+          compound.polymer || null,
+          compound.im_code || null,
+          unit.id,
+          String(row.financial_year).trim(),
+          month,
+          Number(row.qty),
+          Number(row.rate),
+        ]
+      );
+
+      insertedCount++;
+    }
+
+    return res.status(201).json({
+      success: true,
+      message:
+        "Compound monthly rates uploaded successfully",
+      insertedCount,
+    });
+  } catch (error) {
+    console.error(
+      "Bulk compound upload error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Failed to upload compound monthly rates",
+      error: error.message,
+      code: error.code,
+      sqlState: error.sqlState,
+    });
+  }
+};
