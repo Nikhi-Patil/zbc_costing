@@ -1,19 +1,17 @@
 import React, { useEffect, useState } from "react";
 import BopMonthlyRateForm from "./BopMonthlyRateForm";
-import BopBulkUpload from "../../components/costing/BopBulkUpload";
+import BopBulkUpload from "./BopBulkUpload";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 
 const BopMonthlyReport = () => {
   const financialYears = generateFinancialYears();
-
   const currentFinancialYear =
     financialYears.find((fy) => fy.selected)?.value ||
     financialYears[0]?.value ||
     "";
 
   const [financialYear, setFinancialYear] = useState(currentFinancialYear);
-
   const [viewType, setViewType] = useState("qty");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -27,19 +25,15 @@ const BopMonthlyReport = () => {
   const fetchReport = async () => {
     try {
       setLoading(true);
-
       const response = await fetch(
         `${API_BASE_URL}/monthly-bop-rate?financial_year=${encodeURIComponent(
           financialYear,
         )}`,
       );
-
       const result = await response.json();
-
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Failed to fetch report");
       }
-
       setData(result.data || []);
     } catch (error) {
       console.error("Error fetching BOP report:", error);
@@ -52,7 +46,6 @@ const BopMonthlyReport = () => {
   const groupedData = Object.values(
     data.reduce((acc, row) => {
       const key = `${row.bop_id}-${row.supplier_id}-${row.financial_year}`;
-
       if (!acc[key]) {
         acc[key] = {
           bop_id: row.bop_id,
@@ -67,12 +60,10 @@ const BopMonthlyReport = () => {
           months: {},
         };
       }
-
       acc[key].months[row.month] = {
         qty: Number(row.qty) || 0,
         rate: Number(row.rate) || 0,
       };
-
       return acc;
     }, {}),
   );
@@ -175,7 +166,6 @@ const BopMonthlyReport = () => {
                 <th>BOP Part No</th>
                 <th>BOP ERP Code</th>
                 <th>Supplier Name</th>
-
                 {months.map((month) => (
                   <th key={month.value}>
                     {month.label} {viewType === "qty" ? "Qty" : "Rate"}
@@ -200,25 +190,17 @@ const BopMonthlyReport = () => {
                     key={`${bop.bop_id}-${bop.supplier_id}-${bop.financial_year}`}
                   >
                     <td>{index + 1}</td>
-
                     <td>{bop.part_no || "-"}</td>
-
                     <td>{bop.fg_code || "-"}</td>
-
                     <td>{bop.bop_part_name || "-"}</td>
-
                     <td>{bop.bop_part_no || "-"}</td>
-
                     <td>{bop.bop_erp_code || "-"}</td>
-
                     <td>{bop.supplier_name || "-"}</td>
-
                     {months.map((month) => {
                       const monthData = bop.months[month.value] || {
                         qty: null,
                         rate: null,
                       };
-
                       return (
                         <td
                           key={month.value}

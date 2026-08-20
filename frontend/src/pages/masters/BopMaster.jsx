@@ -10,13 +10,10 @@ const BopMaster = () => {
     const fetchBops = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/bops`);
-
         if (!response.ok) {
           throw new Error("Failed to fetch bops");
         }
-
         const data = await response.json();
-
         setBops(data);
       } catch (err) {
         setError(err.message);
@@ -24,22 +21,18 @@ const BopMaster = () => {
         setLoading(false);
       }
     };
-
     fetchBops();
   }, []);
 
   if (loading) {
     return <p>Loading...</p>;
   }
-
   if (error) {
     return <p>Error: {error}</p>;
   }
-
   return (
     <div className="bop-master">
       <h2>Bop Master</h2>
-
       <table>
         <thead>
           <tr>
@@ -58,34 +51,21 @@ const BopMaster = () => {
             <th>Updated At</th>
           </tr>
         </thead>
-
         <tbody>
           {bops.map((bop) => (
             <tr key={bop.id}>
               <td>{bop.id}</td>
-
               <td>{bop.part_no}</td>
-
               <td>{bop.fg_code}</td>
-
               <td>{bop.bop_part_name}</td>
-
               <td>{bop.bop_part_no}</td>
-
               <td>{bop.bop_erp_code}</td>
-
               <td>{bop.supplier_name}</td>
-
               <td>{bop.bop_quantity}</td>
-
               <td>{bop.umo}</td>
-
               <td>{bop.created_by || "-"}</td>
-
               <td>{bop.created_at || "-"}</td>
-
               <td>{bop.updated_by || "-"}</td>
-
               <td>{bop.updated_at || "-"}</td>
             </tr>
           ))}

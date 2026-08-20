@@ -10,13 +10,10 @@ const CompoundMaster = () => {
     const fetchCompounds = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/compounds`);
-
         if (!response.ok) {
           throw new Error("Failed to fetch compounds");
         }
-
         const data = await response.json();
-
         setCompounds(data);
       } catch (err) {
         setError(err.message);
@@ -24,22 +21,17 @@ const CompoundMaster = () => {
         setLoading(false);
       }
     };
-
     fetchCompounds();
   }, []);
-
   if (loading) {
     return <p>Loading...</p>;
   }
-
   if (error) {
     return <p>Error: {error}</p>;
   }
-
   return (
     <div className="compound-master">
       <h2>Compound Master</h2>
-
       <table>
         <thead>
           <tr>
@@ -53,24 +45,16 @@ const CompoundMaster = () => {
             <th>Updated At</th>
           </tr>
         </thead>
-
         <tbody>
           {compounds.map((compound) => (
             <tr key={compound.id}>
               <td>{compound.id}</td>
-
               <td>{compound.polymer}</td>
-
               <td>{compound.compound_code}</td>
-
               <td>{compound.im_code}</td>
-
               <td>{compound.created_by || "-"}</td>
-
               <td>{compound.created_at || "-"}</td>
-
               <td>{compound.updated_by || "-"}</td>
-
               <td>{compound.updated_at || "-"}</td>
             </tr>
           ))}

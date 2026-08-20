@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import CompoundMonthlyRateForm from "./CompoundMonthlyRateForm";
-import CompoundBulkUpload from "../../components/costing/CompoundBulkUpload";
+import CompoundBulkUpload from "./CompoundBulkUpload";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 
@@ -25,66 +25,48 @@ const CompoundMonthlyReport = () => {
   useEffect(() => {
     fetchUnits();
   }, []);
-
   useEffect(() => {
     fetchReport();
   }, [financialYear]);
 
-  /* --------------------------------------------------
-     Fetch Units
-  -------------------------------------------------- */
+  /* Fetch Units */
   const fetchUnits = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/units`);
-
       if (!response.ok) {
         throw new Error("Failed to fetch units");
       }
-
       const result = await response.json();
-
       setUnits(result.data || result);
     } catch (error) {
       console.error("Error fetching units:", error);
     }
   };
-
-  /* --------------------------------------------------
-     Fetch Compound Monthly Report
-  -------------------------------------------------- */
+  /* Fetch Compound Monthly Report */
   const fetchReport = async () => {
     try {
       setLoading(true);
-
       const response = await fetch(
         `${API_BASE_URL}/monthly-compound-rate?financial_year=${encodeURIComponent(
           financialYear,
         )}`,
       );
-
       const result = await response.json();
-
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Failed to fetch report");
       }
-
       setData(result.data || []);
     } catch (error) {
       console.error("Error fetching report:", error);
-
       setData([]);
     } finally {
       setLoading(false);
     }
   };
-
-  /* --------------------------------------------------
-     Group Data
-  -------------------------------------------------- */
+  /* Group Data */
   const groupedData = Object.values(
     data.reduce((acc, row) => {
       const key = `${row.compound_id}-${row.unit_id}-${row.financial_year}`;
-
       if (!acc[key]) {
         acc[key] = {
           compound_id: row.compound_id,
@@ -96,27 +78,19 @@ const CompoundMonthlyReport = () => {
           months: {},
         };
       }
-
       acc[key].months[row.month] = {
         qty: Number(row.qty) || 0,
         rate: Number(row.rate) || 0,
       };
-
       return acc;
     }, {}),
   );
-
-  /* --------------------------------------------------
-     After Save
-  -------------------------------------------------- */
+  /*  After Save */
   const handleRateSaved = () => {
     setShowRateForm(false);
     fetchReport();
   };
-
-  /* --------------------------------------------------
-     Unit Map
-  -------------------------------------------------- */
+  /* Unit Map */
   const unitMap = new Map(units.map((unit) => [String(unit.id), unit.unit]));
 
   return (
@@ -213,7 +187,6 @@ const CompoundMonthlyReport = () => {
                 <th>Polymer Name</th>
                 <th>IM Code</th>
                 <th>Unit</th>
-
                 {months.map((month) => (
                   <th key={month.value}>
                     {month.label} {viewType === "qty" ? "Qty" : "Rate"}
@@ -238,21 +211,15 @@ const CompoundMonthlyReport = () => {
                     key={`${compound.compound_id}-${compound.unit_id}-${compound.financial_year}`}
                   >
                     <td>{index + 1}</td>
-
                     <td>{compound.compound_code || "-"}</td>
-
                     <td>{compound.polymer_name || "-"}</td>
-
                     <td>{compound.im_code || "-"}</td>
-
                     <td>{unitMap.get(String(compound.unit_id)) || "-"}</td>
-
                     {months.map((month) => {
                       const monthData = compound.months[month.value] || {
                         qty: null,
                         rate: null,
                       };
-
                       return (
                         <td
                           key={month.value}

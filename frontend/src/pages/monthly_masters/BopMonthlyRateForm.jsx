@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from "react";
-import {months,generateFinancialYears,} from "../../utils/costingUtils";
+import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 
 const BopMonthlyRateForm = ({ onClose, onSaved }) => {
   const [bops, setBops] = useState([]);
   const [loading, setLoading] = useState(false);
   const financialYears = generateFinancialYears();
-
   const currentFY =
     financialYears.find((fy) => fy.selected)?.value ||
     financialYears[0]?.value ||
     "";
-
   const [formData, setFormData] = useState({
     bopId: "",
     partNo: "",
@@ -33,13 +31,10 @@ const BopMonthlyRateForm = ({ onClose, onSaved }) => {
   const fetchBops = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/bops`);
-
       if (!response.ok) {
         throw new Error("Failed to fetch BOPs");
       }
-
       const result = await response.json();
-
       setBops(result.data || result);
     } catch (error) {
       console.error("Error fetching BOPs:", error);
@@ -48,9 +43,7 @@ const BopMonthlyRateForm = ({ onClose, onSaved }) => {
 
   const handleBopChange = (e) => {
     const bopId = e.target.value;
-
     const selectedBop = bops.find((bop) => String(bop.id) === String(bopId));
-
     if (!selectedBop) {
       setFormData((prev) => ({
         ...prev,
@@ -62,10 +55,8 @@ const BopMonthlyRateForm = ({ onClose, onSaved }) => {
         bopErpCode: "",
         supplierId: "",
       }));
-
       return;
     }
-
     setFormData((prev) => ({
       ...prev,
       bopId: selectedBop.id,
@@ -80,7 +71,6 @@ const BopMonthlyRateForm = ({ onClose, onSaved }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -89,56 +79,41 @@ const BopMonthlyRateForm = ({ onClose, onSaved }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!formData.bopId) {
       alert("Please select BOP");
       return;
     }
-
     if (!formData.supplierId || Number(formData.supplierId) <= 0) {
       alert("Please select Supplier");
       return;
     }
-
     if (!formData.financialYear) {
       alert("Please select Financial Year");
       return;
     }
-
     if (!formData.month) {
       alert("Please select Month");
       return;
     }
-
     try {
       setLoading(true);
-
       const payload = {
         ...formData,
         financial_year: formData.financialYear,
       };
-
       delete payload.financialYear;
-
-      const response = await fetch(
-        `${API_BASE_URL}/monthly-bop-rate`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
+      const response = await fetch(`${API_BASE_URL}/monthly-bop-rate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
-
+        body: JSON.stringify(payload),
+      });
       const result = await response.json();
-
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Failed to save BOP monthly rate");
       }
-
       alert("BOP monthly rate saved successfully");
-
       onSaved?.();
       onClose?.();
     } catch (error) {
@@ -148,18 +123,15 @@ const BopMonthlyRateForm = ({ onClose, onSaved }) => {
       setLoading(false);
     }
   };
-
   const selectedBop = bops.find(
     (bop) => String(bop.id) === String(formData.bopId),
   );
-
   return (
     <div className="card mt-4">
       <div className="bop-monthly-header">
         <h5 className="mb-0">
           <b>Add BOP Monthly Rate</b>
         </h5>
-
         <button
           type="button"
           className="btn btn-danger btn-sm"
