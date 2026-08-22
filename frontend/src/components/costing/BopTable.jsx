@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from "react";
-import {months} from "../../utils/costingUtils";
+import React, { useState, useRef, useEffect } from "react";
+import { months } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
+import TomSelect from "tom-select";
 
 const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
   const [bops, setBops] = useState([]);
+  const bopFgRefs = useRef({});
 
   useEffect(() => {
     const fetchBops = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/bops`);
+        const response = await fetch(`${API_BASE_URL}/bops`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch bops");
@@ -24,37 +26,220 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
 
     fetchBops();
   }, []);
+
   const isRM = mode === "rm";
+
+  // BOP FG CODE CHANGE
+  const handleBopFgCodeChange = (bop, selectedId) => {
+    // FIND SELECTED BOP MASTER
+    const selectedBop = bops.find(
+      (item) => String(item.id) === String(selectedId),
+    );
+    // NOTHING SELECTED
+    if (!selectedBop) {
+      updateBop(bop.id, "bopId", "");
+      updateBop(bop.id, "bopFgCode", "");
+      updateBop(bop.id, "bopPartNo", "");
+      updateBop(bop.id, "bopPartName", "");
+      updateBop(bop.id, "commodity", "");
+      updateBop(bop.id, "suppliers", []);
+      updateBop(bop.id, "supplierId", "");
+      return;
+    }
+    // SUPPLIER IDS
+    const supplierIds = String(selectedBop.supplier_id || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    // SUPPLIER NAMES
+    const supplierNames = String(selectedBop.supplier_name || "")
+      .split(",")
+      .map((name) => name.trim())
+      .filter(Boolean);
+    // CREATE SUPPLIER OPTIONS
+    const suppliers = supplierIds.map((id, index) => ({
+      id,
+      supplier_name: supplierNames[index] || `Supplier ${id}`,
+    }));
+    // UPDATE BOP
+    updateBop(bop.id, "bopId", selectedBop.id);
+    updateBop(bop.id, "bopFgCode", selectedBop.bop_erp_code || "");
+    updateBop(bop.id, "bopPartNo", selectedBop.bop_part_no || "");
+    updateBop(bop.id, "bopPartName", selectedBop.bop_part_name || "");
+    // IMPORTANT
+    updateBop(bop.id, "commodity", selectedBop.commodity || "");
+    updateBop(bop.id, "suppliers", suppliers);
+    // Clear previous supplier
+    updateBop(bop.id, "supplierId", "");
+  };
+
+  // INITIALIZE TOM SELECT FOR BOP FG CODE
   useEffect(() => {
-    if (!isRM || !bopList || bopList.length === 0 || bops.length === 0) {
+    if (!bops.length || !bopList?.length) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      bopList.forEach((bop) => {
+        // Get the actual select element
+        const element = bopFgRefs.current[bop.id];
+
+        if (!element) {
+          console.log("BOP FG select not found:", bop.id);
+          return;
+        }
+
+        // Already initialized
+        if (element.tomselect) {
+          return;
+        }
+
+        console.log("Initializing Tom Select:", bop.id);
+
+        // =================================================
+        // CREATE TOM SELECT
+        // =================================================
+
+        const tom = new TomSelect(element, {
+          create: false,
+
+          searchField: ["text"],
+
+          openOnFocus: true,
+
+          maxOptions: 1000,
+
+          sortField: {
+            field: "text",
+            direction: "asc",
+          },
+
+          placeholder: "Search BOP FG Code...",
+
+          allowEmptyOption: true,
+
+          // IMPORTANT
+          dropdownParent: "body",
+        });
+
+        // =================================================
+        // WHEN USER SELECTS BOP FG CODE
+        // =================================================
+
+        tom.on("change", (selectedId) => {
+          handleBopFgCodeChange(bop, selectedId);
+        });
+
+        // =================================================
+        // RESTORE EXISTING BOP FG CODE
+        // =================================================
+
+        if (bop.bopFgCode) {
+          const selectedBop = bops.find(
+            (item) =>
+              String(item.bop_erp_code || "")
+                .trim()
+                .toLowerCase() ===
+              String(bop.bopFgCode || "")
+                .trim()
+                .toLowerCase(),
+          );
+
+          if (selectedBop) {
+            tom.setValue(String(selectedBop.id), true);
+
+            tom.wrapper.classList.add("field-filled");
+          }
+        }
+      });
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [bops, bopList]);
+
+  // =====================================================
+  // RESTORE BOP MASTER DATA IN RM DETAILS
+  // =====================================================
+
+  useEffect(() => {
+    if (!isRM || !bopList?.length || !bops?.length) {
       return;
     }
 
     bopList.forEach((bop) => {
-      const bopMaster = bops.find(
-        (item) => String(item.id) === String(bop.bopFgCode),
+      // First try BOP master ID
+      let bopMaster = bops.find(
+        (item) => String(item.id) === String(bop.bopId),
       );
 
+      // Fallback for old transactions
+      // which don't have bopId saved
+      if (!bopMaster && bop.bopFgCode) {
+        bopMaster = bops.find(
+          (item) =>
+            String(item.bop_erp_code || "")
+              .trim()
+              .toLowerCase() ===
+            String(bop.bopFgCode || "")
+              .trim()
+              .toLowerCase(),
+        );
+      }
+
       if (!bopMaster) {
+        console.warn("BOP master not found:", bop.bopFgCode, bop.bopId);
         return;
       }
+
+      // =================================================
+      // RESTORE BOP MASTER ID
+      // =================================================
+
+      if (String(bop.bopId || "") !== String(bopMaster.id)) {
+        updateBop(bop.id, "bopId", bopMaster.id);
+      }
+
+      // =================================================
+      // RESTORE COMMODITY
+      // =================================================
+
+      if (bop.commodity !== bopMaster.commodity) {
+        updateBop(bop.id, "commodity", bopMaster.commodity || "");
+      }
+
+      // =================================================
+      // SUPPLIER IDS
+      // =================================================
 
       const supplierIds = String(bopMaster.supplier_id || "")
         .split(",")
         .map((id) => id.trim())
         .filter(Boolean);
 
+      // =================================================
+      // SUPPLIER NAMES
+      // =================================================
+
       const supplierNames = String(bopMaster.supplier_name || "")
         .split(",")
         .map((name) => name.trim())
         .filter(Boolean);
+
+      // =================================================
+      // CREATE SUPPLIER OPTIONS
+      // =================================================
 
       const suppliers = supplierIds.map((id, index) => ({
         id,
         supplier_name: supplierNames[index] || `Supplier ${id}`,
       }));
 
-      // Only update if suppliers aren't already loaded
+      // =================================================
+      // RESTORE SUPPLIERS
+      // =================================================
+
       if (JSON.stringify(bop.suppliers || []) !== JSON.stringify(suppliers)) {
         updateBop(bop.id, "suppliers", suppliers);
       }
@@ -123,76 +308,15 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                     {/* BOP FG Code */}
                     <td>
                       <select
-                        className={`form-control ${
-                          bop.bopFgCode ? "field-filled" : ""
-                        }`}
-                        value={bop.bopFgCode || ""}
-                        disabled={isRM}
-                        onChange={(e) => {
-                          const selectedId = e.target.value;
-
-                          const selectedBop = bops.find(
-                            (item) => String(item.id) === String(selectedId),
-                          );
-
-                          if (!selectedBop) {
-                            updateBop(bop.id, "bopFgCode", "");
-                            updateBop(bop.id, "bopPartNo", "");
-                            updateBop(bop.id, "bopPartName", "");
-                            updateBop(bop.id, "suppliers", []);
-                            updateBop(bop.id, "supplierId", "");
-                            return;
+                        ref={(element) => {
+                          if (element) {
+                            bopFgRefs.current[bop.id] = element;
                           }
-
-                          // Convert comma-separated supplier IDs
-                          const supplierIds = String(
-                            selectedBop.supplier_id || "",
-                          )
-                            .split(",")
-                            .map((id) => id.trim())
-                            .filter(Boolean);
-
-                          // Convert comma-separated supplier names
-                          const supplierNames = String(
-                            selectedBop.supplier_name || "",
-                          )
-                            .split(",")
-                            .map((name) => name.trim())
-                            .filter(Boolean);
-
-                          // Combine IDs + names
-                          const suppliers = supplierIds.map((id, index) => ({
-                            id,
-                            supplier_name: supplierNames[index] || "",
-                          }));
-
-                          updateBop(bop.id, "bopId", selectedId);
-
-                          updateBop(
-                            bop.id,
-                            "bopFgCode",
-                            selectedBop.bop_erp_code || "",
-                          );
-
-                          updateBop(
-                            bop.id,
-                            "bopPartNo",
-                            selectedBop.bop_part_no || "",
-                          );
-
-                          updateBop(
-                            bop.id,
-                            "bopPartName",
-                            selectedBop.bop_part_name || "",
-                          );
-
-                          updateBop(bop.id, "suppliers", suppliers);
-
-                          // Clear previously selected supplier
-                          updateBop(bop.id, "supplierId", "");
                         }}
+                        defaultValue=""
+                        disabled={isRM}
                       >
-                        <option value="">Select</option>
+                        <option value="">Select BOP FG Code</option>
 
                         {bops.map((fgCode) => (
                           <option key={fgCode.id} value={fgCode.id}>
@@ -229,10 +353,19 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                     {/* Supplier */}
                     <td>
                       {(() => {
-                        const selectedBop = bops.find(
-                          (item) => String(item.id) === String(bop.bopId),
-                        );
-
+                        const selectedBop =
+                          bops.find(
+                            (item) => String(item.id) === String(bop.bopId),
+                          ) ||
+                          bops.find(
+                            (item) =>
+                              String(item.bop_erp_code || "")
+                                .trim()
+                                .toLowerCase() ===
+                              String(bop.bopFgCode || "")
+                                .trim()
+                                .toLowerCase(),
+                          );
                         const supplierIds = String(
                           selectedBop?.supplier_id || "",
                         )
@@ -257,7 +390,9 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
 
                         return (
                           <select
-                            className="form-control"
+                            className={`form-control ${
+                              bop.supplierId ? "field-filled" : ""
+                            }`}
                             value={bop.supplierId || ""}
                             disabled={isRM}
                             onChange={(e) =>
@@ -284,9 +419,8 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                           bop.commodity ? "field-filled" : ""
                         }`}
                         value={bop.commodity || ""}
-                        onChange={(e) =>
-                          updateBop(bop.id, "commodity", e.target.value)
-                        }
+                        readOnly
+                        tabIndex={-1}
                         placeholder="Commodity"
                       />
                     </td>
@@ -296,7 +430,11 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                       <input
                         type="number"
                         step="0.01"
+                        className={`form-control ${
+                          bop.bopAssemblyQty ? "field-filled" : ""
+                        }`}
                         value={bop.bopAssemblyQty || ""}
+                        readOnly={isRM}
                         onChange={(e) =>
                           updateBop(bop.id, "bopAssemblyQty", e.target.value)
                         }
@@ -309,6 +447,9 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                         {/* Month */}
                         <td>
                           <select
+                            className={`form-control ${
+                              bop.bopmonth ? "field-filled" : ""
+                            }`}
                             value={bop.bopmonth || ""}
                             onChange={(e) =>
                               updateBop(bop.id, "bopmonth", e.target.value)
@@ -327,11 +468,12 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                         {/* Rate */}
                         <td>
                           <input
-                            type="number"
-                            value={bop.bopRate || ""}
+                            type="text"
+                            className={`form-control ${
+                              bop.bopRate ? "field-filled" : ""
+                            }`}
+                            value={bop.bopRate || "Auto"}
                             readOnly
-                            className="form-control"
-                            placeholder="Auto"
                           />
                         </td>
 
@@ -339,9 +481,11 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                         <td>
                           <input
                             type="text"
+                            className={`form-control ${
+                              bop.bopCost ? "field-filled" : ""
+                            }`}
                             value={bop.bopCost || "0.00"}
                             readOnly
-                            className="form-control cost-highlight"
                           />
                         </td>
                       </>

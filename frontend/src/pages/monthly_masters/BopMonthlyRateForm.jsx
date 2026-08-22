@@ -41,9 +41,27 @@ const BopMonthlyRateForm = ({ onClose, onSaved }) => {
     }
   };
 
-  const handleBopChange = (e) => {
-    const bopId = e.target.value;
-    const selectedBop = bops.find((bop) => String(bop.id) === String(bopId));
+  /* =====================================================
+   BOP ERP CODE CHANGE
+===================================================== */
+
+  const handleBopErpCodeChange = (e) => {
+    const bopErpCode = e.target.value;
+
+    const selectedBop = bops.find(
+      (bop) =>
+        String(bop.bop_erp_code || "")
+          .trim()
+          .toLowerCase() ===
+        String(bopErpCode || "")
+          .trim()
+          .toLowerCase(),
+    );
+
+    // ===================================================
+    // NO VALID BOP FOUND
+    // ===================================================
+
     if (!selectedBop) {
       setFormData((prev) => ({
         ...prev,
@@ -52,19 +70,32 @@ const BopMonthlyRateForm = ({ onClose, onSaved }) => {
         fgCode: "",
         bopPartName: "",
         bopPartNo: "",
-        bopErpCode: "",
+        bopErpCode: bopErpCode,
         supplierId: "",
       }));
+
       return;
     }
+
+    // ===================================================
+    // VALID BOP FOUND
+    // ===================================================
+
     setFormData((prev) => ({
       ...prev,
+
       bopId: selectedBop.id,
+
       partNo: selectedBop.part_no || "",
+
       fgCode: selectedBop.fg_code || "",
+
       bopPartName: selectedBop.bop_part_name || "",
+
       bopPartNo: selectedBop.bop_part_no || "",
+
       bopErpCode: selectedBop.bop_erp_code || "",
+
       supplierId: "",
     }));
   };
@@ -150,21 +181,23 @@ const BopMonthlyRateForm = ({ onClose, onSaved }) => {
                 <b>BOP ERP Code</b>
               </label>
 
-              <select
+              <input
+                type="text"
                 className={`form-control ${
                   formData.bopId ? "field-filled" : ""
                 }`}
-                value={formData.bopId}
-                onChange={handleBopChange}
-              >
-                <option value="">Select BOP</option>
+                list="bop-erp-code-list"
+                value={formData.bopErpCode}
+                onChange={handleBopErpCodeChange}
+                placeholder="Search BOP ERP Code"
+                autoComplete="off"
+              />
 
+              <datalist id="bop-erp-code-list">
                 {bops.map((bop) => (
-                  <option key={bop.id} value={bop.id}>
-                    {bop.bop_erp_code}
-                  </option>
+                  <option key={bop.id} value={bop.bop_erp_code} />
                 ))}
-              </select>
+              </datalist>
             </div>
             {/* Part No */}
             <div className="col-md-2">

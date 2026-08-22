@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 
@@ -59,13 +59,15 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
   };
 
   /* Polymer List */
-  const polymers = [
-    ...new Set(compounds.map((compound) => compound.polymer).filter(Boolean)),
-  ];
+  const polymers = useMemo(
+    () => [...new Set(compounds.map((compound) => compound.polymer).filter(Boolean))],
+    [compounds],
+  );
 
   /* Filter Compounds by Polymer */
-  const filteredCompounds = compounds.filter(
-    (compound) => compound.polymer === formData.polymer,
+  const filteredCompounds = useMemo(
+    () => compounds.filter((compound) => compound.polymer === formData.polymer),
+    [compounds, formData.polymer],
   );
 
   /* Polymer Change */
@@ -182,6 +184,40 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
     }
   };
 
+  /* =====================================================
+   COMPOUND CODE CHANGE
+===================================================== */
+
+  const handleCompoundCodeChange = (e) => {
+    const compoundCode = e.target.value;
+
+    const selectedCompound = filteredCompounds.find(
+      (compound) =>
+        String(compound.compound_code).trim().toLowerCase() ===
+        String(compoundCode).trim().toLowerCase(),
+    );
+
+    // If no valid compound is selected
+    if (!selectedCompound) {
+      setFormData((prev) => ({
+        ...prev,
+        compoundId: "",
+        compoundCode: compoundCode,
+        imCode: "",
+      }));
+
+      return;
+    }
+
+    // Valid compound selected
+    setFormData((prev) => ({
+      ...prev,
+      compoundId: selectedCompound.id,
+      compoundCode: selectedCompound.compound_code || "",
+      imCode: selectedCompound.im_code || "",
+    }));
+  };
+
   return (
     <div className="card mt-4">
       {/* Header */}
@@ -226,28 +262,31 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
               </select>
             </div>
 
-            {/* Compound Code */}
+            {/* COMPOUND CODE - SEARCHABLE DATALIST*/}
+
             <div className="col-md-3">
               <label className="form-label">
                 <b>Compound Code</b>
               </label>
 
-              <select
+              <input
+                type="text"
                 className={`form-control ${
                   formData.compoundId ? "field-filled" : ""
                 }`}
-                value={formData.compoundId}
-                onChange={handleCompoundChange}
+                list="compound-code-list"
+                value={formData.compoundCode}
+                onChange={handleCompoundCodeChange}
                 disabled={!formData.polymer}
-              >
-                <option value="">Select Compound</option>
+                placeholder="Search Compound Code"
+                autoComplete="off"
+              />
 
+              <datalist id="compound-code-list">
                 {filteredCompounds.map((compound) => (
-                  <option key={compound.id} value={compound.id}>
-                    {compound.compound_code}
-                  </option>
+                  <option key={compound.id} value={compound.compound_code} />
                 ))}
-              </select>
+              </datalist>
             </div>
 
             {/* IM Code */}

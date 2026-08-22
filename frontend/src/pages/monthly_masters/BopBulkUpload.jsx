@@ -8,14 +8,6 @@ const BopBulkUpload = ({ onClose, onSaved }) => {
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState("");
-  const requiredColumns = [
-    "BOP ERP Code",
-    "Supplier Name",
-    "Financial Year",
-    "Month",
-    "Qty",
-    "Rate",
-  ];
   // Download Excel Template
   const downloadTemplate = () => {
     const templateData = [

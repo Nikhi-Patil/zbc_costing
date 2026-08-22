@@ -33,44 +33,46 @@ const BopMaster = () => {
   return (
     <div className="bop-master">
       <h2>Bop Master</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Part No</th>
-            <th>FG Code</th>
-            <th>Bop Part Name</th>
-            <th>Bop Part No</th>
-            <th>Bop ERP Code</th>
-            <th>supplier Name</th>
-            <th>Qty</th>
-            <th>UMO</th>
-            <th>Created By</th>
-            <th>Created At</th>
-            <th>Updated By</th>
-            <th>Updated At</th>
-          </tr>
-        </thead>
-        <tbody>
-          {bops.map((bop) => (
-            <tr key={bop.id}>
-              <td>{bop.id}</td>
-              <td>{bop.part_no}</td>
-              <td>{bop.fg_code}</td>
-              <td>{bop.bop_part_name}</td>
-              <td>{bop.bop_part_no}</td>
-              <td>{bop.bop_erp_code}</td>
-              <td>{bop.supplier_name}</td>
-              <td>{bop.bop_quantity}</td>
-              <td>{bop.umo}</td>
-              <td>{bop.created_by || "-"}</td>
-              <td>{bop.created_at || "-"}</td>
-              <td>{bop.updated_by || "-"}</td>
-              <td>{bop.updated_at || "-"}</td>
+      <div className="master-table-container">
+        <table className="master-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Part No</th>
+              <th>FG Code</th>
+              <th>Bop Part Name</th>
+              <th>Bop Part No</th>
+              <th>Bop ERP Code</th>
+              <th>supplier Name</th>
+              <th>Qty</th>
+              <th>UMO</th>
+              <th>Created By</th>
+              <th>Created At</th>
+              <th>Updated By</th>
+              <th>Updated At</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {bops.map((bop) => (
+              <tr key={bop.id}>
+                <td>{bop.id}</td>
+                <td>{bop.part_no}</td>
+                <td>{bop.fg_code}</td>
+                <td>{bop.bop_part_name}</td>
+                <td>{bop.bop_part_no}</td>
+                <td>{bop.bop_erp_code}</td>
+                <td>{bop.supplier_name}</td>
+                <td>{bop.bop_quantity}</td>
+                <td>{bop.umo}</td>
+                <td>{bop.created_by || "-"}</td>
+                <td>{bop.created_at || "-"}</td>
+                <td>{bop.updated_by || "-"}</td>
+                <td>{bop.updated_at || "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

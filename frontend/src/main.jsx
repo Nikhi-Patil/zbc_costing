@@ -6,6 +6,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "admin-lte/dist/css/adminlte.min.css";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import "tom-select/dist/css/tom-select.css";
 
 import App from "./App";
 import "./index.css";

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import CompoundMonthlyRateForm from "./CompoundMonthlyRateForm";
 import CompoundBulkUpload from "./CompoundBulkUpload";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
@@ -64,34 +64,42 @@ const CompoundMonthlyReport = () => {
     }
   };
   /* Group Data */
-  const groupedData = Object.values(
-    data.reduce((acc, row) => {
-      const key = `${row.compound_id}-${row.unit_id}-${row.financial_year}`;
-      if (!acc[key]) {
-        acc[key] = {
-          compound_id: row.compound_id,
-          compound_code: row.compound_code,
-          polymer_name: row.polymer_name,
-          im_code: row.im_code,
-          unit_id: row.unit_id || null,
-          financial_year: row.financial_year,
-          months: {},
-        };
-      }
-      acc[key].months[row.month] = {
-        qty: Number(row.qty) || 0,
-        rate: Number(row.rate) || 0,
-      };
-      return acc;
-    }, {}),
+  const groupedData = useMemo(
+    () =>
+      Object.values(
+        data.reduce((acc, row) => {
+          const key = `${row.compound_id}-${row.unit_id}-${row.financial_year}`;
+
+          if (!acc[key]) {
+            acc[key] = {
+              compound_id: row.compound_id,
+              compound_code: row.compound_code,
+              polymer_name: row.polymer_name,
+              im_code: row.im_code,
+              unit_id: row.unit_id || null,
+              financial_year: row.financial_year,
+              months: {},
+            };
+          }
+
+          acc[key].months[row.month] = {
+            qty: Number(row.qty) || 0,
+            rate: Number(row.rate) || 0,
+          };
+
+          return acc;
+        }, {}),
+      ),
+    [data],
   );
+
   /*  After Save */
   const handleRateSaved = () => {
     setShowRateForm(false);
     fetchReport();
   };
   /* Unit Map */
-  const unitMap = new Map(units.map((unit) => [String(unit.id), unit.unit]));
+  const unitMap = useMemo (() => new Map(units.map((unit) => [String(unit.id), unit.unit])),   [units],  );
 
   return (
     <div className="compound-report-page">

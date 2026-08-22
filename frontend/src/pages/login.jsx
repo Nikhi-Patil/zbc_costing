@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../auth/auth";
-import "./Login.css";
+import "./login.css";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);

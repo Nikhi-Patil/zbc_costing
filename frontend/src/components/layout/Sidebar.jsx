@@ -181,7 +181,7 @@ function Sidebar({ isOpen }) {
               className={`menu repot-menu ${reportOpen ? "active" : ""}`}
               onClick={() => setreportOpen(!reportOpen)}>
               <i className="fa-solid fa-chart-column"></i>
-              <span>Report</span>
+              <span>Monthly Master</span>
               <i
                 className={`fas ${
                   reportOpen ? "fa-chevron-down" : "fa-chevron-right"
@@ -191,6 +191,7 @@ function Sidebar({ isOpen }) {
             {/* Report SUB MENU */}
             {reportOpen && (
               <ul className="master-submenu">
+                {/*Montly Compound Report */}
                 <li>
                   <NavLink
                     to="/monthly-compound-master"
@@ -201,6 +202,7 @@ function Sidebar({ isOpen }) {
                     <span>Montly Compound Master</span>
                   </NavLink>
                 </li>
+                {/* Montly Bop Report */}
                 <li>
                   <NavLink
                     to="/monthly-bop-master"
@@ -209,6 +211,17 @@ function Sidebar({ isOpen }) {
                     }>
                     <i className="fa-solid fa-flask"></i>
                     <span>Montly Bop Master</span>
+                  </NavLink>
+                </li>
+                {/* Montly Polymer Report */}
+                <li>
+                  <NavLink
+                    to="/compound-polymer-monthly-report"
+                    className={({ isActive }) =>
+                      isActive ? "menu active" : "menu"
+                    }>
+                    <i className="fa-solid fa-flask"></i>
+                    <span>Montly Polymer Report</span>
                   </NavLink>
                 </li>
               </ul>

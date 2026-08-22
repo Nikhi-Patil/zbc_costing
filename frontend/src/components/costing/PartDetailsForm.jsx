@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import BopTable from "./BopTable";
-import {months,generateFinancialYears,} from "../../utils/costingUtils";
+import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
+import TomSelect from "tom-select";
 
 function PartDetailsForm({
   formData,
@@ -20,6 +21,7 @@ function PartDetailsForm({
   const [subCategories, setSubCategories] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [parts, setParts] = useState([]);
+  const partNoRef = useRef(null);
 
   useEffect(() => {
     const fetchParts = async () => {
@@ -135,7 +137,90 @@ function PartDetailsForm({
     fetchSubDepartments();
   }, [formData.productionUnit]);
 
+  useEffect(() => {
+    if (!partNoRef.current || parts.length === 0) {
+      return;
+    }
 
+    // Prevent creating TomSelect more than once
+    if (partNoRef.current.tomselect) {
+      return;
+    }
+
+    const tomSelect = new TomSelect(partNoRef.current, {
+      create: false,
+
+      sortField: {
+        field: "text",
+        direction: "asc",
+      },
+
+      placeholder: "Search Part No...",
+
+      allowEmptyOption: true,
+    });
+
+    // ================================================
+    // SET EXISTING TRANSACTION PART NO
+    // ================================================
+
+    if (formData.partNo) {
+      const selectedPart = parts.find(
+        (part) =>
+          String(part.part_no).trim() === String(formData.partNo).trim(),
+      );
+
+      if (selectedPart) {
+        tomSelect.setValue(selectedPart.part_no, true);
+      }
+    }
+
+    return () => {
+      tomSelect.destroy();
+    };
+  }, [parts]);
+
+  useEffect(() => {
+    if (!partNoRef.current) {
+      return;
+    }
+
+    const tomSelect = partNoRef.current.tomselect;
+
+    if (!tomSelect) {
+      return;
+    }
+
+    // ================================================
+    // SYNC VALUE WITH REACT
+    // ================================================
+
+    const value = formData.partNo || "";
+
+    if (value) {
+      const selectedPart = parts.find(
+        (part) => String(part.part_no).trim() === String(value).trim(),
+      );
+
+      if (selectedPart) {
+        tomSelect.setValue(selectedPart.part_no, true);
+      }
+    } else {
+      tomSelect.clear(true);
+    }
+
+    // ================================================
+    // SYNC FILLED CLASS
+    // ================================================
+
+    const wrapper = tomSelect.wrapper;
+
+    if (value) {
+      wrapper.classList.add("field-filled");
+    } else {
+      wrapper.classList.remove("field-filled");
+    }
+  }, [formData.partNo, parts]);
 
   return (
     <>
@@ -338,20 +423,18 @@ function PartDetailsForm({
               </label>
 
               <select
-                className={`form-control ${
-                  formData.partNo ? "field-filled" : ""
-                }`}
-                name="partNo"
-                value={formData.partNo}
-                onChange={(e) =>
-                  handlePartSelect(
-                    parts.find(
-                      (part) => String(part.part_no) === String(e.target.value),
-                    ) || null,
-                  )
-                }
+                ref={partNoRef}
+                value={formData.partNo || ""}
+                onChange={(e) => {
+                  const selectedPart = parts.find(
+                    (part) => String(part.part_no) === String(e.target.value),
+                  );
+
+                  handlePartSelect(selectedPart || null);
+                }}
               >
-                <option value="">Select</option>
+                <option value="">Select Part No</option>
+
                 {parts.map((part) => (
                   <option key={part.id} value={part.part_no}>
                     {part.part_no}

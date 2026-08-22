@@ -40,45 +40,47 @@ function CustomerMaster() {
     <div className="customer-master">
       <h2>Customer Master</h2>
 
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Customer Name</th>
-            <th>SUb Customer Code</th>
-            <th>Domestic/Export</th>
-            <th>Zone</th>
-            <th>Created By</th>
-            <th>Created At</th>
-            <th>Updated By</th>
-            <th>Updated At</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {customer.map((customer) => (
-            <tr key={customer.id}>
-              <td>{customer.id}</td>
-
-              <td>{customer.customer_name}</td>
-
-              <td>{customer.sub_customer}</td>
-
-              <td>{customer.geo_type}</td>
-
-              <td>{customer.zone}</td>
-
-              <td>{customer.created_by || "-"}</td>
-
-              <td>{customer.created_at || "-"}</td>
-
-              <td>{customer.updated_by || "-"}</td>
-
-              <td>{customer.updated_at || "-"}</td>
+      <div className="master-table-container">
+        <table className="master-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Customer Name</th>
+              <th>SUb Customer Code</th>
+              <th>Domestic/Export</th>
+              <th>Zone</th>
+              <th>Created By</th>
+              <th>Created At</th>
+              <th>Updated By</th>
+              <th>Updated At</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {customer.map((customer) => (
+              <tr key={customer.id}>
+                <td>{customer.id}</td>
+
+                <td>{customer.customer_name}</td>
+
+                <td>{customer.sub_customer}</td>
+
+                <td>{customer.geo_type}</td>
+
+                <td>{customer.zone}</td>
+
+                <td>{customer.created_by || "-"}</td>
+
+                <td>{customer.created_at || "-"}</td>
+
+                <td>{customer.updated_by || "-"}</td>
+
+                <td>{customer.updated_at || "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -261,7 +261,9 @@ function BottomLineForm({
               name="customerSalesCost"
               value={formData.customerSalesCost || ""}
               onChange={handleInputChange}
-              className="form-control"
+              className={`form-control ${
+                formData.customerSalesCost ? "field-filled" : ""
+              }`}
               placeholder="Enter Sales Cost"
             />
           </div>
@@ -292,7 +294,9 @@ function BottomLineForm({
               name="buyingCost"
               value={formData.buyingCost || ""}
               onChange={handleInputChange}
-              className="form-control"
+              className={`form-control ${
+                formData.buyingCost ? "field-filled" : ""
+              }`}
               placeholder="Enter Buying Cost"
             />
           </div>

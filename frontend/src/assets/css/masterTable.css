@@ -1,216 +1,168 @@
+/* =====================================================
+   COMMON MASTER PAGE
+===================================================== */
 
-/* =========================================
-   UNIT MASTER
-========================================= */
-
-.unit-master h2 {
-    margin-bottom: 20px;
-}
-
-.unit-master table {
+.unit-master,
+.part-master,
+.bop-master,
+.compound-master,
+.customer-master,
+.employee-master,
+.supplier-master {
     width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-
-.unit-master th,
-.unit-master td {
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-
-.unit-master th {
-    background: #f5f5f5;
-    font-weight: 600;
-}
-
-.unit-master tr:hover {
-    background: #f9f9f9;
-}
-
-/* =========================================
-   Part MASTER
-========================================= */
-
-.part-master h2 {
-    margin-bottom: 20px;
-}
-
-.part-master table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-
-.part-master th,
-.part-master td {
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-
-.part-master th {
-    background: #f5f5f5;
-    font-weight: 600;
-}
-
-.part-master tr:hover {
-    background: #f9f9f9;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 
-/* =========================================
-   Bop MASTER
-========================================= */
+/* =====================================================
+   MASTER TITLE
+===================================================== */
 
-.bop-master h2 {
-    margin-bottom: 20px;
-}
-
-.bop-master table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-
-.bop-master th,
-.bop-master td {
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-
-.bop-master th {
-    background: #f5f5f5;
-    font-weight: 600;
-}
-
-.bop-master tr:hover {
-    background: #f9f9f9;
-}
-
-
-
-/* =========================================
-   compound MASTER
-========================================= */
-
-.compound-master h2 {
-    margin-bottom: 20px;
-}
-
-.compound-master table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-
-.compound-master th,
-.compound-master td {
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-
-.compound-master th {
-    background: #f5f5f5;
-    font-weight: 600;
-}
-
-.compound-master tr:hover {
-    background: #f9f9f9;
-}
-
-
-/* =========================================
-  customer  MASTER
-========================================= */
-
-.customer-master h2 {
-    margin-bottom: 20px;
-}
-
-.customer-master table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-
-.customer-master th,
-.customer-master td {
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-
-.customer-master th {
-    background: #f5f5f5;
-    font-weight: 600;
-}
-
-.customer-master tr:hover {
-    background: #f9f9f9;
-}
-
-
-/* =========================================
-   employee MASTER
-========================================= */
-
-.employee-master h2 {
-    margin-bottom: 20px;
-}
-
-.employee-master table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-
-.employee-master th,
-.employee-master td {
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-
-.employee-master th {
-    background: #f5f5f5;
-    font-weight: 600;
-}
-
-.employee-master tr:hover {
-    background: #f9f9f9;
-}
-
-
-/* =========================================
-   supplier MASTER
-========================================= */
-
+.unit-master h2,
+.part-master h2,
+.bop-master h2,
+.compound-master h2,
+.customer-master h2,
+.employee-master h2,
 .supplier-master h2 {
     margin-bottom: 20px;
 }
 
-.supplier-master table {
+
+/* =====================================================
+   MASTER TABLE CONTAINER
+   Horizontal scroll stays inside table
+===================================================== */
+
+.master-table-container {
     width: 100%;
+    max-width: 100%;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    box-sizing: border-box;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+
+/* =====================================================
+   MASTER TABLE
+===================================================== */
+
+.master-table {
+    width: 100%;
+
+    /*
+       Allows wide tables to scroll instead
+       of pushing the whole page outside
+    */
+    min-width: 1000px;
+
     border-collapse: collapse;
-    background: white;
+
+    background: #fff;
+
+    table-layout: auto;
+
+    font-size: 14px;
 }
 
-.supplier-master th,
-.supplier-master td {
+
+/* =====================================================
+   TABLE HEADER
+===================================================== */
+
+.master-table th {
     padding: 12px 15px;
+
     border: 1px solid #ddd;
-    text-align: left;
-}
 
-.supplier-master th {
     background: #f5f5f5;
+
+    text-align: left;
+
     font-weight: 600;
+
+    white-space: nowrap;
+
+    vertical-align: middle;
 }
 
-.supplier-master tr:hover {
+
+/* =====================================================
+   TABLE BODY
+===================================================== */
+
+.master-table td {
+    padding: 12px 15px;
+
+    border: 1px solid #ddd;
+
+    text-align: left;
+
+    vertical-align: middle;
+
+    /*
+       Long text wraps instead of
+       making the table unexpectedly wider
+    */
+    white-space: normal;
+
+    overflow-wrap: anywhere;
+
+    word-break: break-word;
+}
+
+
+/* =====================================================
+   ROW HOVER
+===================================================== */
+
+.master-table tbody tr:hover {
     background: #f9f9f9;
+}
+
+
+/* =====================================================
+   LONG TEXT
+===================================================== */
+
+.master-table td {
+    max-width: 300px;
+}
+
+
+/* =====================================================
+   EMAIL / LONG COLUMNS
+===================================================== */
+
+.master-table td.email-column {
+    min-width: 220px;
+    max-width: 300px;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 768px) {
+
+    .master-table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .master-table {
+        min-width: 900px;
+        font-size: 13px;
+    }
+
+    .master-table th,
+    .master-table td {
+        padding: 8px 10px;
+    }
 }

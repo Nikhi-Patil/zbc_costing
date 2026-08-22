@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import BopMonthlyRateForm from "./BopMonthlyRateForm";
 import BopBulkUpload from "./BopBulkUpload";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
@@ -43,29 +43,36 @@ const BopMonthlyReport = () => {
     }
   };
 
-  const groupedData = Object.values(
-    data.reduce((acc, row) => {
-      const key = `${row.bop_id}-${row.supplier_id}-${row.financial_year}`;
-      if (!acc[key]) {
-        acc[key] = {
-          bop_id: row.bop_id,
-          part_no: row.part_no,
-          fg_code: row.fg_code,
-          bop_part_name: row.bop_part_name,
-          bop_part_no: row.bop_part_no,
-          bop_erp_code: row.bop_erp_code,
-          supplier_id: row.supplier_id,
-          supplier_name: row.supplier_name,
-          financial_year: row.financial_year,
-          months: {},
-        };
-      }
-      acc[key].months[row.month] = {
-        qty: Number(row.qty) || 0,
-        rate: Number(row.rate) || 0,
-      };
-      return acc;
-    }, {}),
+  const groupedData = useMemo(
+    () =>
+      Object.values(
+        data.reduce((acc, row) => {
+          const key = `${row.bop_id}-${row.supplier_id}-${row.financial_year}`;
+
+          if (!acc[key]) {
+            acc[key] = {
+              bop_id: row.bop_id,
+              part_no: row.part_no,
+              fg_code: row.fg_code,
+              bop_part_name: row.bop_part_name,
+              bop_part_no: row.bop_part_no,
+              bop_erp_code: row.bop_erp_code,
+              supplier_id: row.supplier_id,
+              supplier_name: row.supplier_name,
+              financial_year: row.financial_year,
+              months: {},
+            };
+          }
+
+          acc[key].months[row.month] = {
+            qty: Number(row.qty) || 0,
+            rate: Number(row.rate) || 0,
+          };
+
+          return acc;
+        }, {}),
+      ),
+    [data],
   );
 
   const handleRateSaved = () => {

@@ -1,7 +1,4 @@
-/* =========================================
-   GLOBAL
-========================================= */
-
+/* GLOBAL */
 * {
   margin: 0;
   padding: 0;
@@ -22,78 +19,50 @@ body {
   overflow-x: hidden;
 }
 
-/* =========================================
-   MAIN LAYOUT
-========================================= */
-
+/*MAIN LAYOUT */
 .layout {
   width: 100%;
   min-height: 100vh;
   background: #f4f6f9;
 }
 
-/* =========================================
-   MAIN CONTENT
-   Header = 50px
-   Sidebar Open = 210px
-   Sidebar Closed = 70px
-========================================= */
-
+/*MAIN CONTENT*/
 .main-content {
   margin-top: 50px;
   margin-left: 210px;
-
   width: calc(100% - 210px);
   min-width: 0;
-
   min-height: calc(100vh - 50px);
-
   display: flex;
   flex-direction: column;
-
   transition:
     margin-left 0.3s ease,
     width 0.3s ease;
 }
 
-/* =========================================
-   SIDEBAR OPEN
-========================================= */
-
+/* SIDEBAR OPEN */
 .main-content.sidebar-open {
   margin-left: 210px;
   width: calc(100% - 210px);
 }
 
-/* =========================================
-   SIDEBAR CLOSED
-========================================= */
-
+/*  SIDEBAR CLOSED */
 .main-content.sidebar-close {
   margin-left: 70px;
   width: calc(100% - 70px);
 }
 
-/* =========================================
-   PAGE CONTENT
-========================================= */
-
+/* PAGE CONTENT */
 .page-content {
   flex: 1;
-
   width: 100%;
   min-width: 0;
-
   padding: 20px;
-
   overflow-x: hidden;
   overflow-y: auto;
 }
 
-/* =========================================
-   TABULATOR
-========================================= */
-
+/* TABULATOR */
 .tabulator .tabulator-footer .tabulator-footer-contents {
   display: flex !important;
   justify-content: space-between !important;
@@ -143,10 +112,7 @@ body {
   border-color: #dee2e6 !important;
 }
 
-/* =========================================
-   TABLE
-========================================= */
-
+/* TABLE */
 .table-container {
   width: 100%;
   overflow-x: auto;
@@ -165,10 +131,7 @@ body {
   padding: 0;
 }
 
-/* =========================================
-   ACTION BUTTONS
-========================================= */
-
+/*  ACTION BUTTONS */
 .action-btn {
   min-width: 110px;
   height: 38px;
@@ -176,37 +139,26 @@ body {
   font-weight: 500;
 }
 
-/* =========================================
-   WIZARD BUTTON
-========================================= */
-
+/*  WIZARD BUTTON */
 .wizard-btn {
   width: 40px;
   height: 40px;
   border-radius: 6px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   padding: 0;
 }
 
-/* =========================================
-   BOP HEADER
-========================================= */
-
+/*  BOP HEADER */
 .bop-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   width: 100%;
   padding: 0 20px;
-
   border: 1px solid #ddd;
   border-radius: 6px;
-
   background: lightgray;
 }
 
@@ -216,55 +168,37 @@ body {
   font-weight: 600;
 }
 
-/* =========================================
-   ADD BOP BUTTON
-========================================= */
-
+/* ADD BOP BUTTON */
 .add-bop-btn {
   min-width: 60px;
   height: 28px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   font-weight: 600;
 }
 
-/* =========================================
-   BOP SECTION
-========================================= */
-
+/*  BOP SECTION */
 .bop-section {
   width: 100%;
   margin-top: 15px;
 }
 
-/* =========================================
-   BOP CARD
-========================================= */
-
+/* BOP CARD */
 .bop-card {
   margin-top: 15px;
-
   border: 1px solid #ddd;
   border-radius: 6px;
-
   background: #fff;
 }
 
-/* =========================================
-   BOP CARD HEADER
-========================================= */
-
+/* BOP CARD HEADER */
 .bop-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   width: 100%;
   padding: 0 20px;
-
   background-color: #acc4ef;
   border-bottom: 1px solid #ddd;
 }
@@ -274,25 +208,17 @@ body {
   font-size: 18px;
 }
 
-/* =========================================
-   DELETE BOP
-========================================= */
-
+/* DELETE BOP */
 .delete-bop-btn {
   min-width: 60px;
   height: 28px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   font-weight: 600;
 }
 
-/* =========================================
-   BOP BODY
-========================================= */
-
+/*BOP BODY */
 .bop-card-body {
   padding: 15px;
 }
@@ -300,20 +226,12 @@ body {
 .form-select {
   font-size: 12px;
   border: var(--bs-border-width) solid #a6a7a8 !important;
-  /* color: #1e00ff !important;
-   font-weight: 600; */
 }
 
 .form-control {
   font-size: 12px;
   border: var(--bs-border-width) solid #a6a7a8 !important;
-  /* font-weight: 600;
-  color: #1e00ff !important; */
 }
-/* 
-input::placeholder {
-  color: #1e00ff !important;
-} */
 
 b,
 strong {
@@ -331,31 +249,22 @@ h5 {
   font-size: 18px;
 }
 
-/* =========================================
-   BOTTOM LINE
-========================================= */
-
+/* BOTTOM LINE */
 .bottom-line-container {
   width: 100%;
   background: #fff;
   border: 1px solid #d3d3d3;
-
   box-sizing: border-box;
 }
 
-/* =========================================
-   BOTTOM LINE HEADER
-========================================= */
+/*BOTTOM LINE HEADER */
 
 .bottom-line-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   padding: 0 15px 0px 15px;
-
   border-bottom: 1px solid #d3d3d3;
-
   font-size: 15px;
 }
 
@@ -371,20 +280,14 @@ h5 {
   font-weight: 600;
 }
 
-/* =========================================
-   TABLE WRAPPER
-========================================= */
-
+/*TABLE WRAPPER */
 .bottom-line-table-wrapper {
   width: 100%;
   overflow-x: auto;
   margin-top: 20px;
 }
 
-/* =========================================
-   BOTTOM LINE TABLE
-========================================= */
-
+/* BOTTOM LINE TABLE */
 .bottom-line-table {
   width: 100%;
   border-collapse: collapse;
@@ -394,10 +297,8 @@ h5 {
 
 .bottom-line-table thead th {
   height: 35px;
-
   background: #fff;
   border: 1px solid #d9d9d9;
-
   text-align: center;
   font-weight: 600;
 }
@@ -426,19 +327,17 @@ h5 {
   box-sizing: border-box;
   overflow: hidden;
 }
+
 .percentage-input input {
   width: 100%;
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
 }
-/* =========================================
-   BODY
-========================================= */
 
+/* BODY */
 .bottom-line-table tbody td {
   height: 30px;
-
   border: 1px solid #d9d9d9;
   padding: 0px 10px;
 }
@@ -451,34 +350,25 @@ h5 {
   background: #dcdcdc;
 }
 
-/* =========================================
-   PERCENTAGE
-========================================= */
-
+/* PERCENTAGE */
 .percentage-cell {
   text-align: right;
 }
 
 .percentage-input {
   display: flex;
-
   justify-content: flex-end;
   align-items: center;
-
   gap: 3px;
 }
 
 .percentage-input input {
   width: 165px;
   height: 25px;
-
   padding: 3px 6px;
-
   border: 1px solid #999;
   border-radius: 0;
-
   background: #fff;
-
   font-size: 13px;
   box-sizing: border-box;
 }
@@ -487,10 +377,7 @@ h5 {
   font-size: 13px;
 }
 
-/* =========================================
-   ACTION
-========================================= */
-
+/* ACTION */
 .action-cell {
   text-align: center;
 }
@@ -498,26 +385,20 @@ h5 {
 .bottom-edit-btn {
   width: 45px;
   height: 31px;
-
   padding: 0;
-
   border: none;
   border-radius: 4px;
-
   background: #50bfae;
-
   color: #fff;
-
   font-size: 13px;
-
   cursor: pointer;
-
   transition: 0.2s;
 }
 
 .bottom-edit-btn:hover {
   background: #3eaa9a;
 }
+
 /* Compound Code react-select */
 .compound-select__control {
   min-height: 31px !important;
@@ -662,7 +543,6 @@ h5 {
 .wizard-buttons-body {
   min-height: 30px;
   padding: 0px 0px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -789,11 +669,9 @@ h5 {
   width: 100%;
   min-height: 30px;
   padding: 0 12px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   background-color: lightgray;
   border-bottom: 1px solid #ccc;
   box-sizing: border-box;
@@ -807,11 +685,9 @@ h5 {
   margin-left: auto;
   width: 30px;
   height: 25px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   padding: 0;
 }
 
@@ -829,4 +705,349 @@ h5 {
 
 .bottom-line-profit-summary input {
   text-align: right;
-} 
+}
+
+/*  TOM SELECT - SAME AS FORM CONTROL*/
+.ts-wrapper {
+  width: 100% !important;
+  font-size: 12px !important;
+}
+
+/* Main Tom Select box */
+.ts-wrapper .ts-control {
+  width: 100% !important;
+  min-height: 30.1px !important;
+  height: 30px !important;
+  padding: 5.25px 10.5px !important;
+  font-size: 12px !important;
+  border: var(--bs-border-width) solid #a6a7a8 !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: #212529;
+}
+
+/* Search input inside Tom Select */
+.ts-wrapper .ts-control > input {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 12px !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: #212529;
+}
+
+/* Focus - same Bootstrap style */
+.ts-wrapper.focus .ts-control {
+  border-color: #86b7fe !important;
+  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15) !important;
+}
+
+/* FILLED STATE */
+.ts-wrapper.field-filled .ts-control {
+  background-color: #cbffd0 !important;
+  font-weight: 600 !important;
+  color: #1e00ff !important;
+}
+
+.ts-wrapper.field-filled .ts-control > input {
+  color: #1e00ff !important;
+}
+
+/* Selected value */
+.ts-wrapper .ts-control .item {
+  font-size: 12px !important;
+  color: #1e00ff;
+}
+
+/* DROPDOWN */
+.ts-dropdown {
+  z-index: 99999 !important;
+  font-size: 12px !important;
+  border: 1px solid #a6a7a8 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ts-dropdown .option {
+  padding: 2px 10px !important;
+  font-size: 12px !important;
+}
+
+.ts-dropdown .option:hover {
+  background: #f1f1f1 !important;
+}
+
+.ts-dropdown .option.active {
+  background: #0d6efd !important;
+  color: #fff !important;
+}
+
+/* ARROW */
+.ts-wrapper.single .ts-control::after {
+  border-color: #6c757d transparent transparent transparent !important;
+}
+
+/* BOP TABLE - CONSOLIDATED / OPTIMIZED */
+.bop-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.bop-table th,
+.bop-table td {
+  vertical-align: middle;
+  padding: 3px 5px;
+}
+
+.bop-table th:nth-child(1),
+.bop-table td:nth-child(1) {
+  width: 5%;
+}
+
+.bop-table input,
+.bop-table select {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+/* All normal BOP controls start white */
+.bop-table .form-control,
+.bop-table select.form-control {
+  width: 100%;
+  height: 38px;
+  min-height: 38px;
+  padding: 6px 12px;
+  border: 1px solid #adb5bd !important;
+  border-radius: 6px !important;
+  background-color: #fff !important;
+  color: #212529 !important;
+  font-size: 14px;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* Filled fields become green */
+.bop-table .field-filled,
+.bop-table .form-control.field-filled,
+.bop-table select.form-control.field-filled {
+  background-color: #cbffd0 !important;
+  color: #0000ff !important;
+  -webkit-text-fill-color: #0000ff !important;
+  opacity: 1 !important;
+}
+
+/* Read-only filled fields */
+.bop-table input[readonly].field-filled,
+.bop-table .form-control[readonly].field-filled {
+  background-color: #cbffd0 !important;
+  color: #0000ff !important;
+  -webkit-text-fill-color: #0000ff !important;
+  cursor: not-allowed;
+  opacity: 1 !important;
+}
+
+/* Disabled filled selects */
+.bop-table select:disabled.field-filled {
+  background-color: #cbffd0 !important;
+  color: #0000ff !important;
+  -webkit-text-fill-color: #0000ff !important;
+  cursor: not-allowed;
+  opacity: 1 !important;
+}
+
+/* Empty disabled fields remain white */
+.bop-table input:disabled:not(.field-filled),
+.bop-table select:disabled:not(.field-filled) {
+  background-color: #fff !important;
+  color: #6c757d !important;
+  opacity: 1 !important;
+}
+
+/* RM table - locked fields */
+.rm-bop-table input[readonly],
+.rm-bop-table select:disabled {
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+
+/* RM filled locked fields stay green */
+.rm-bop-table input[readonly].field-filled,
+.rm-bop-table select:disabled.field-filled {
+  background-color: #cbffd0 !important;
+  color: #0000ff !important;
+  -webkit-text-fill-color: #0000ff !important;
+}
+
+/* RM month: editable and dynamically green when filled */
+.rm-bop-table select.form-control:not(:disabled) {
+  cursor: pointer;
+}
+
+/* TOM SELECT - BOP FG CODE*/
+.bop-table .ts-wrapper {
+  width: 100% !important;
+  font-size: 14px !important;
+}
+
+.bop-table .ts-wrapper .ts-control {
+  width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 6px 12px !important;
+  border: 1px solid #adb5bd !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  color: #212529 !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+}
+
+/* Tom Select selected value */
+.bop-table .ts-control .item {
+  color: #0000ff !important;
+  font-size: 14px !important;
+}
+
+/* Tom Select filled state */
+.bop-table .ts-wrapper.field-filled .ts-control {
+  background-color: #cbffd0 !important;
+  color: #0000ff !important;
+}
+
+.bop-table .ts-wrapper.field-filled .ts-control .item {
+  color: #0000ff !important;
+}
+
+/* Tom Select disabled/locked state */
+.rm-bop-table .ts-wrapper.disabled .ts-control {
+  background-color: #cbffd0 !important;
+  color: #0000ff !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+}
+
+.rm-bop-table .ts-wrapper.disabled .ts-control .item {
+  color: #0000ff !important;
+  opacity: 1 !important;
+}
+
+/* MASTER TABLES - COMMON RESPONSIVE STYLE */
+.master-table-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+}
+
+.master-table {
+  width: 100%;
+  min-width: 1000px;
+  border-collapse: collapse;
+  table-layout: auto;
+  background: #fff;
+  font-size: 14px;
+}
+
+.master-table th {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  background: #f5f5f5;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.master-table td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  text-align: left;
+  vertical-align: middle;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.master-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .master-table-container {
+    overflow-x: auto;
+  }
+  .master-table {
+    min-width: 900px;
+    font-size: 13px;
+  }
+  .master-table th,
+  .master-table td {
+    padding: 8px 10px;
+  }
+}
+
+/* EXPORT EXCEL BUTTON */
+.molding-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Export Excel */
+.export-excel-btn {
+  height: 38px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  background: #fff;
+  color: #198754;
+  border: 1px solid #198754;
+  border-radius: 6px;
+
+  font-family: "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.export-excel-btn:hover {
+  background: #198754;
+  color: #fff;
+}
+
+.add-transaction-btn {
+  height: 38px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  background: #fff;
+  color: hsl(243, 100%, 67%);
+  border: 1px solid hsl(243, 100%, 67%);
+  border-radius: 6px;
+
+  font-family: "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.add-transaction-btn:hover {
+  background: hsl(243, 100%, 67%);
+  color: #fff;
+}

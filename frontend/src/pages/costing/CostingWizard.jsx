@@ -72,12 +72,12 @@ function CostingWizard() {
 
     partCost: "",
 
-    iccOnRm: "",
-    rejOnSubtotal: "",
-    ohOnSubtotal: "",
-    profitOnSubtotal: "",
-    packagingOnSubtotal: "",
-    transportOnSubtotal: "",
+    iccOnRm: "1",
+    rejOnSubtotal: "3",
+    ohOnSubtotal: "10",
+    profitOnSubtotal: "10",
+    packagingOnSubtotal: "2",
+    transportOnSubtotal: "2",
     iccOnRmCost: "",
     rejOnSubtotalCost: "",
     ohOnSubtotalCost: "",
@@ -205,25 +205,16 @@ function CostingWizard() {
       setBops(
         (data.bops || []).map((bop) => ({
           id: bop.id,
-
-          bopId: bop.bop_id ?? bop.bopId ?? bop.bop_fg_code ?? "",
-
+          bopId: bop.bop_id ?? "",
           bopFgCode: bop.bop_fg_code || "",
           bopPartNo: bop.bop_part_no || "",
           bopPartName: bop.bop_part_name || "",
-
           supplierId: bop.supplier_id ?? "",
-
           suppliers: bop.suppliers || [],
-
           commodity: bop.commodity || "",
-
           bopAssemblyQty: bop.bop_assembly_qty ?? "",
-
           bopmonth: bop.bop_month || "",
-
           bopRate: bop.bop_rate ?? "",
-
           bopCost: bop.bop_cost ?? "",
         })),
       );

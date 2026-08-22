@@ -18,6 +18,7 @@ import SupplierMaster from "./pages/masters/SupplierMaster";
 import CompoundMonthlyReport from "./pages/monthly_masters/CompoundMonthlyReport";
 import PrivateRoute from "./components/PrivateRoute";
 import BopMonthlyReport from "./pages/monthly_masters/BopMonthlyReport";
+import CompoundPolymerMonthlyReport from "./pages/monthly_masters/CompoundPolymerMonthlyReport";
 
 function App() {
   return (
@@ -27,7 +28,14 @@ function App() {
         <Route path="/login" element={<Login />} />
       
       <Routes element={<PrivateRoute />}> */}
-        <Route path="/monthly-compound-master" element={<CompoundMonthlyReport />}/>
+        <Route
+          path="/monthly-compound-master"
+          element={<CompoundMonthlyReport />}
+        />
+        <Route
+          path="/compound-polymer-monthly-report"
+          element={<CompoundPolymerMonthlyReport />}
+        />
 
         <Route path="/monthly-bop-master" element={<BopMonthlyReport />} />
 
@@ -35,7 +43,10 @@ function App() {
 
         <Route path="/molding/costing-wizard" element={<CostingWizard />} />
 
-        <Route path="/molding/costing-wizard/:transactionId" element={<CostingWizard />}/>
+        <Route
+          path="/molding/costing-wizard/:transactionId"
+          element={<CostingWizard />}
+        />
 
         <Route path="/unit-master" element={<UnitMaster />} />
 
