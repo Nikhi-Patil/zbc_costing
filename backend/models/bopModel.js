@@ -10,7 +10,7 @@ const Bop
                  p.id,
                     p.bop_part_name,
                     p.bop_part_no,
-                    p.bop_quantity,
+                    p.commodity,
                     p.umo,
                     p.supplier_id,
                     p.part_id,

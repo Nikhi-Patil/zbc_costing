@@ -1,6 +1,7 @@
 import zbcDB from "../config/zbcDB.js";
 import adminDB from "../config/adminDB.js";
 
+//Get Compound Monthly Report
 export const getCompoundMonthlyReport = async (req, res) => {
   try {
     const { financial_year } = req.query;
@@ -38,7 +39,7 @@ export const getCompoundMonthlyReport = async (req, res) => {
     });
   }
 };
-
+//Create Compound Monthly Rate
 export const createCompoundMonthlyRate = async (req, res) => {
   try {
     const {
@@ -110,7 +111,7 @@ export const createCompoundMonthlyRate = async (req, res) => {
     });
   }
 };
-
+//Get Bop Monthly Report
 export const getBopMonthlyReport = async (req, res) => {
   try {
     const { financial_year } = req.query;
@@ -193,7 +194,7 @@ export const getBopMonthlyReport = async (req, res) => {
     });
   }
 };
-
+//Create Bop Monthly Rate
 export const createBopMonthlyRate = async (req, res) => {
   try {
     const {
@@ -298,7 +299,7 @@ export const createBopMonthlyRate = async (req, res) => {
     });
   }
 };
-
+//Get Compound Rate For Costing
 export const getCompoundRateForCosting = async (req, res) => {
   try {
     const {
@@ -385,7 +386,7 @@ export const getCompoundRateForCosting = async (req, res) => {
     });
   }
 };
-
+//Get Bop Rate For Costing
 export const getBopRateForCosting = async (req, res) => {
   try {
     const {
@@ -455,7 +456,7 @@ export const getBopRateForCosting = async (req, res) => {
     });
   }
 };
-
+// Create Bulk Bop Monthly Rate
 export const createBulkBopMonthlyRate = async (req, res) => {
   try {
     const { rows } = req.body;
@@ -693,7 +694,7 @@ export const createBulkBopMonthlyRate = async (req, res) => {
     });
   }
 };
-
+//Create Bulk Compound Monthly Rate
 export const createBulkCompoundMonthlyRate = async (req, res) => {
   try {
     const { rows } = req.body;
@@ -890,6 +891,52 @@ export const createBulkCompoundMonthlyRate = async (req, res) => {
       error: error.message,
       code: error.code,
       sqlState: error.sqlState,
+    });
+  }
+};
+// GET COMPOUND POLYMER-WISE MONTHLY REPORT
+export const getCompoundPolymerMonthlyReport = async (req, res) => {
+  try {
+    const { financial_year } = req.query;
+
+    if (!financial_year) {
+      return res.status(400).json({
+        success: false,
+        message: "Financial year is required",
+      });
+    }
+
+    const [rows] = await zbcDB.query(
+      `
+      SELECT
+        polymer_name,
+        month,
+        SUM(qty) AS total_qty,
+        SUM(qty * rate) AS total_cost
+      FROM compound_monthly_report
+      WHERE financial_year = ?
+        AND polymer_name IS NOT NULL
+        AND TRIM(polymer_name) <> ''
+      GROUP BY polymer_name, month
+      ORDER BY polymer_name, month
+      `,
+      [financial_year]
+    );
+
+    res.json({
+      success: true,
+      data: rows,
+    });
+  } catch (error) {
+    console.error(
+      "Error fetching compound polymer monthly report:",
+      error
+    );
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch compound polymer monthly report",
+      error: error.message,
     });
   }
 };

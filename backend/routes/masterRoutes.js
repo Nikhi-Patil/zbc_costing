@@ -22,6 +22,7 @@ import {
     getBopRateForCosting,
     createBulkBopMonthlyRate,
     createBulkCompoundMonthlyRate,
+    getCompoundPolymerMonthlyReport,
 } from "../controllers/monthlyReports.js";
 
 
@@ -46,5 +47,6 @@ router.get("/bop-rate-for-costing", getBopRateForCosting);
 router.get("/compound-by-im-code", getCompoundByImCode);
 router.post("/monthly-bop-rate/bulk", createBulkBopMonthlyRate);
 router.post("/monthly-compound-rate/bulk", createBulkCompoundMonthlyRate);
+router.get("/monthly-compound-polymer-report",getCompoundPolymerMonthlyReport);
 
 export default router;

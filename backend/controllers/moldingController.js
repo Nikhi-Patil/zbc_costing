@@ -269,3 +269,210 @@ export const getMoldingTransactionById = async (req, res) => {
         });
     }
 };
+
+export const exportMoldingData = async (req, res) => {
+    try {
+        // ============================================
+        // 1. GET ALL MOLDING DATA
+        // ============================================
+
+        const [moldingRows] = await zbcDB.query(`
+            SELECT *
+            FROM molding_table
+            ORDER BY id DESC
+        `);
+
+        // ============================================
+        // 2. GET ALL BOP DATA
+        // ============================================
+
+        const [bopRows] = await zbcDB.query(`
+            SELECT
+                b.id,
+                b.molding_id,
+                m.transaction_id,
+                b.bop_part_no,
+                b.bop_part_name,
+                b.commodity,
+                b.supplier_id,
+                b.bop_assembly_qty,
+                b.bop_fg_code,
+                b.bop_month,
+                b.bop_rate,
+                b.bop_cost
+            FROM molding_bop_table b
+            LEFT JOIN molding_table m
+                ON m.id = b.molding_id
+            ORDER BY b.id ASC
+        `);
+
+        // ============================================
+        // 3. GET CUSTOMER MASTER DATA
+        // ============================================
+
+        const customerIds = [
+            ...new Set(
+                moldingRows
+                    .map(row => row.customer_name)
+                    .filter(Boolean)
+            )
+        ];
+
+        const [customers] = customerIds.length
+            ? await adminDB.query(`
+                SELECT
+                    id,
+                    customer_name
+                FROM customer_master
+                WHERE id IN (?)
+            `, [customerIds])
+            : [[]];
+
+        const customerMap = new Map(
+            customers.map(row => [
+                String(row.id),
+                row.customer_name
+            ])
+        );
+
+        // ============================================
+        // 4. GET PRODUCTION UNIT DATA
+        // ============================================
+
+        const productionUnitIds = [
+            ...new Set(
+                moldingRows
+                    .map(row => row.production_unit)
+                    .filter(Boolean)
+            )
+        ];
+
+        const [productionUnits] = productionUnitIds.length
+            ? await adminDB.query(`
+                SELECT
+                    id,
+                    unit
+                FROM unit_master
+                WHERE id IN (?)
+            `, [productionUnitIds])
+            : [[]];
+
+        const productionUnitMap = new Map(
+            productionUnits.map(row => [
+                String(row.id),
+                row.unit
+            ])
+        );
+
+        // ============================================
+        // 5. GET SUB DEPARTMENT DATA
+        // ============================================
+
+        const subDepartmentIds = [
+            ...new Set(
+                moldingRows
+                    .map(row => row.sub_department)
+                    .filter(Boolean)
+            )
+        ];
+
+        const [subDepartments] = subDepartmentIds.length
+            ? await adminDB.query(`
+                SELECT
+                    id,
+                    sub_department_name
+                FROM sub_department_master
+                WHERE id IN (?)
+            `, [subDepartmentIds])
+            : [[]];
+
+        const subDepartmentMap = new Map(
+            subDepartments.map(row => [
+                String(row.id),
+                row.sub_department_name
+            ])
+        );
+
+        // ============================================
+        // 6. GET SUB CATEGORY DATA
+        // ============================================
+
+        const subCategoryIds = [
+            ...new Set(
+                moldingRows
+                    .map(row => row.sub_category)
+                    .filter(Boolean)
+            )
+        ];
+
+        const [subCategories] = subCategoryIds.length
+            ? await adminDB.query(`
+                SELECT
+                    id,
+                    sub_category_name
+                FROM sub_category_master
+                WHERE id IN (?)
+            `, [subCategoryIds])
+            : [[]];
+
+        const subCategoryMap = new Map(
+            subCategories.map(row => [
+                String(row.id),
+                row.sub_category_name
+            ])
+        );
+
+        // ============================================
+        // 7. REPLACE IDs WITH NAMES
+        // ============================================
+
+        const moldingData = moldingRows.map(row => ({
+            ...row,
+
+            customer_name:
+                customerMap.get(String(row.customer_name))
+                || row.customer_name
+                || "",
+
+            production_unit:
+                productionUnitMap.get(String(row.production_unit))
+                || row.production_unit
+                || "",
+
+            sub_department:
+                subDepartmentMap.get(String(row.sub_department))
+                || row.sub_department
+                || "",
+
+            sub_category:
+                subCategoryMap.get(String(row.sub_category))
+                || row.sub_category
+                || ""
+        }));
+
+        // ============================================
+        // 8. RETURN DATA
+        // ============================================
+
+        res.json({
+            success: true,
+
+            moldingData,
+
+            bopData: bopRows
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Error exporting molding data:",
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to export molding data",
+            error: error.message
+        });
+    }
+};
