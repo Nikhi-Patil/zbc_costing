@@ -91,6 +91,8 @@ function CostingWizard() {
     salesProfitLoss: "",
     buyingCost: "",
     buyingProfitLoss: "",
+    monthlyQuantity: "",
+    monthlyProfitLoss: "",
   });
 
   useEffect(() => {
@@ -180,6 +182,9 @@ function CostingWizard() {
         buyingCost: data.buying_cost ?? prev.buyingCost,
 
         buyingProfitLoss: data.buying_profit_loss ?? prev.buyingProfitLoss,
+        monthlyQuantity: data.monthly_quantity ?? prev.monthlyQuantity,
+
+        monthlyProfitLoss: data.monthly_profit_loss ?? prev.monthlyProfitLoss,
 
         iccOnRm: data.icc_on_rm ?? prev.iccOnRm,
         rejOnSubtotal: data.rej_on_subtotal ?? prev.rejOnSubtotal,
@@ -250,6 +255,12 @@ function CostingWizard() {
             transportOnSubtotalCost: transportOnSubtotalCost.toFixed(2),
 
             partCost: totalPartCost.toFixed(2),
+            monthlyQuantity: Number(formData.monthlyQuantity) || 0,
+
+            monthlyProfitLoss:
+              (Number(formData.customerSalesCost) || 0) *
+                Number(formData.monthlyQuantity || 0) -
+              totalPartCost * Number(formData.monthlyQuantity || 0),
           },
 
           bops,

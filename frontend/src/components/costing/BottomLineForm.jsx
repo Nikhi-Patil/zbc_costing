@@ -21,6 +21,10 @@ function BottomLineForm({
 
   const buyingProfitLoss = customerSalesCost - buyingCost;
 
+  const monthlyQuantity = Number(formData.monthlyQuantity) || 0;
+
+  const monthlyProfitLoss = salesProfitLoss * monthlyQuantity;
+
   const bottomLineData = [
     {
       id: 1,
@@ -209,7 +213,7 @@ function BottomLineForm({
           {/* Subtotal A */}
           <div className="summary-field ">
             <label>
-              <b>Subtotal A</b>
+              <b>RM + Conversion Cost</b>
             </label>
 
             <input
@@ -223,7 +227,7 @@ function BottomLineForm({
           {/* Subtotal B */}
           <div className="summary-field ">
             <label>
-              <b>Subtotal B</b>
+              <b>Rej + O/H + Profit</b>
             </label>
 
             <input
@@ -247,7 +251,24 @@ function BottomLineForm({
               readOnly
             />
           </div>
+
+          <div className="summary-field">
+            <label>
+              <b>Out Source / In House</b>
+            </label>
+
+            <select
+              name="buyingType"
+              value={formData.buyingType || "INHOUSE"}
+              onChange={handleInputChange}
+              className="form-control"
+            >
+              <option value="INHOUSE">INHOUSE</option>
+              <option value="OUTSOURCE">OUTSOURCE</option>
+            </select>
+          </div>
         </div>
+
         <div className="bottom-line-profit-summary">
           {/* Customer Sales Cost */}
           <div className="summary-field">
@@ -282,38 +303,78 @@ function BottomLineForm({
             />
           </div>
 
-          {/* Buying Cost */}
+          {/* Monthly Quantity */}
           <div className="summary-field">
             <label>
-              <b>Buying Cost</b>
+              <b>Monthly Quantity</b>
             </label>
 
             <input
               type="number"
               step="0.01"
-              name="buyingCost"
-              value={formData.buyingCost || ""}
+              name="monthlyQuantity"
+              value={formData.monthlyQuantity || ""}
               onChange={handleInputChange}
               className={`form-control ${
-                formData.buyingCost ? "field-filled" : ""
+                formData.monthlyQuantity ? "field-filled" : ""
               }`}
-              placeholder="Enter Buying Cost"
+              placeholder="Enter Monthly Quantity"
             />
           </div>
 
-          {/* Profit / Loss on Buying */}
+          {/* Monthly Profit / Loss */}
           <div className="summary-field">
             <label>
-              <b>Profit / Loss on Buying</b>
+              <b>Monthly Profit / Loss</b>
             </label>
 
             <input
               type="text"
-              value={buyingProfitLoss.toFixed(2)}
+              value={monthlyProfitLoss.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
               readOnly
               className="form-control conversion-highlight"
             />
           </div>
+
+          {/* Buying Cost - Only for OUTSOURCE */}
+          {formData.buyingType === "OUTSOURCE" && (
+            <>
+              <div className="summary-field">
+                <label>
+                  <b>Buying Cost</b>
+                </label>
+
+                <input
+                  type="number"
+                  step="0.01"
+                  name="buyingCost"
+                  value={formData.buyingCost || ""}
+                  onChange={handleInputChange}
+                  className={`form-control ${
+                    formData.buyingCost ? "field-filled" : ""
+                  }`}
+                  placeholder="Enter Buying Cost"
+                />
+              </div>
+
+              {/* Profit / Loss on Buying */}
+              <div className="summary-field">
+                <label>
+                  <b>Profit / Loss on Buying</b>
+                </label>
+
+                <input
+                  type="text"
+                  value={buyingProfitLoss.toFixed(2)}
+                  readOnly
+                  className="form-control conversion-highlight"
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

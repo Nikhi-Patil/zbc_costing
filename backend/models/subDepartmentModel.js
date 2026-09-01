@@ -1,4 +1,4 @@
-import adminDb from "../config/adminDb.js";
+import adminDb from "../config/adminDB.js";
 
 const SubDepartment = {
 

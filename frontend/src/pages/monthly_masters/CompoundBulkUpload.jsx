@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import API_BASE_URL from "../../config/api";
 
-const CompoundBulkUpload = ({ onClose, onSaved }) => {
+const CompoundBulkUpload = () => {
+  const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -233,73 +235,41 @@ const CompoundBulkUpload = ({ onClose, onSaved }) => {
     }
 
     if (!rows.length) {
-      setError("No valid rows found in Excel file.");
-      return;
-    }
-
-    // -----------------------------------------------
-    // Check validation errors
-    // -----------------------------------------------
-
-    const invalidRows = rows.filter(
-      (row) => row.errors && row.errors.length > 0,
-    );
-
-    if (invalidRows.length > 0) {
-      setError(
-        `Please fix ${invalidRows.length} invalid row(s) before uploading.`,
-      );
-      return;
-    }
-
-    // -----------------------------------------------
-    // Extra validation
-    // -----------------------------------------------
-
-    const missingImCode = rows.find(
-      (row) => !row.imCode || !String(row.imCode).trim(),
-    );
-
-    if (missingImCode) {
-      setError(`Excel row ${missingImCode.rowNumber}: IM Code is required`);
-      return;
-    }
-
-    const missingUnit = rows.find(
-      (row) => !row.productionUnit || !String(row.productionUnit).trim(),
-    );
-
-    if (missingUnit) {
-      setError(
-        `Excel row ${missingUnit.rowNumber}: Production Unit is required`,
-      );
+      setError("No records found in Excel file.");
       return;
     }
 
     try {
       setLoading(true);
-      setUploadProgress(0);
+      setUploadProgress(10);
 
-      // -----------------------------------------------
+      // =====================================================
       // Prepare API data
-      // -----------------------------------------------
+      // Send ALL rows to backend.
+      // Backend will identify valid/invalid rows.
+      // =====================================================
 
       const uploadData = rows.map((row) => ({
-        imCode: String(row.imCode).trim(),
+        rowNumber: row.rowNumber,
 
-        productionUnit: String(row.productionUnit).trim(),
+        imCode: String(row.imCode || "").trim(),
 
-        financial_year: String(row.financialYear).trim(),
+        productionUnit: String(row.productionUnit || "").trim(),
 
-        month: Number(row.month),
+        financial_year: String(row.financialYear || "").trim(),
 
-        qty: Number(row.qty),
+        month: row.month,
 
-        rate: Number(row.rate),
+        qty: row.qty,
+
+        rate: row.rate,
       }));
-      // -----------------------------------------------
+
+      setUploadProgress(30);
+
+      // =====================================================
       // API request
-      // -----------------------------------------------
+      // =====================================================
 
       const response = await fetch(
         `${API_BASE_URL}/monthly-compound-rate/bulk`,
@@ -316,22 +286,70 @@ const CompoundBulkUpload = ({ onClose, onSaved }) => {
         },
       );
 
+      setUploadProgress(70);
+
       const result = await response.json();
 
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Compound bulk upload failed");
       }
 
+      // =====================================================
+      // Convert backend errors into row errors
+      // =====================================================
+
+      const backendErrors = result.errors || [];
+
+      const errorMap = new Map();
+
+      backendErrors.forEach((errorItem) => {
+        errorMap.set(Number(errorItem.rowNumber), errorItem.errors || []);
+      });
+
+      const updatedRows = rows.map((row) => {
+        const rowErrors = errorMap.get(Number(row.rowNumber));
+
+        if (rowErrors) {
+          return {
+            ...row,
+            errors: [...(row.errors || []), ...rowErrors],
+          };
+        }
+
+        return row;
+      });
+
+      setRows(updatedRows);
+
       setUploadProgress(100);
 
-      alert(
-        `Successfully uploaded ${
-          result.insertedCount || rows.length
-        } record(s).`,
-      );
+      // =====================================================
+      // Result
+      // =====================================================
 
-      onSaved?.();
-      onClose?.();
+      const insertedCount = Number(result.insertedCount) || 0;
+
+      const errorCount = Number(result.errorCount) || backendErrors.length;
+
+      // -----------------------------------------------------
+      // Partial upload
+      // -----------------------------------------------------
+
+      if (errorCount > 0) {
+        setError(
+          `Upload completed. ${insertedCount} record(s) uploaded successfully, ${errorCount} row(s) have errors.`,
+        );
+
+        return;
+      }
+
+      // -----------------------------------------------------
+      // Complete success
+      // -----------------------------------------------------
+
+      alert(`Successfully uploaded ${insertedCount} record(s).`);
+
+      navigate("/monthly-master/compound");
     } catch (error) {
       console.error("Compound bulk upload error:", error);
 
@@ -340,7 +358,6 @@ const CompoundBulkUpload = ({ onClose, onSaved }) => {
       setLoading(false);
     }
   };
-
   // =====================================================
   // Remove File
   // =====================================================
@@ -377,7 +394,7 @@ const CompoundBulkUpload = ({ onClose, onSaved }) => {
         <button
           type="button"
           className="btn btn-danger btn-sm"
-          onClick={onClose}
+          onClick={() => navigate("/monthly-master/compound")}
           disabled={loading}
           title="Close"
         >
@@ -559,7 +576,7 @@ const CompoundBulkUpload = ({ onClose, onSaved }) => {
           <button
             type="button"
             className="btn btn-secondary"
-            onClick={onClose}
+            onClick={() => navigate("/monthly-master/compound")}
             disabled={loading}
           >
             Cancel
@@ -569,7 +586,7 @@ const CompoundBulkUpload = ({ onClose, onSaved }) => {
             type="button"
             className="btn btn-success"
             onClick={handleUpload}
-            disabled={loading || !file || !rows.length || invalidCount > 0}
+            disabled={loading || !file || !rows.length}
           >
             {loading ? (
               <>
@@ -579,7 +596,7 @@ const CompoundBulkUpload = ({ onClose, onSaved }) => {
             ) : (
               <>
                 <i className="fas fa-upload me-2"></i>
-                Upload {rows.length} Records
+                Upload Valid Records
               </>
             )}
           </button>

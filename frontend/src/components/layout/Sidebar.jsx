@@ -28,7 +28,6 @@ function Sidebar({ isOpen }) {
               className={({ isActive }) => (isActive ? "menu active" : "menu")}
             >
               <i className="fa-solid fa-gauge-high"></i>
-
               <span>Dashboard</span>
             </NavLink>
           </li>
@@ -39,7 +38,6 @@ function Sidebar({ isOpen }) {
               className={({ isActive }) => (isActive ? "menu active" : "menu")}
             >
               <i className="fas fa-solid fa-gears"></i>
-
               <span>Molding</span>
             </NavLink>
           </li>
@@ -50,7 +48,6 @@ function Sidebar({ isOpen }) {
               className={({ isActive }) => (isActive ? "menu active" : "menu")}
             >
               <i className="fas fa-solid fa-arrows-rotate"></i>
-
               <span>Extrusion</span>
             </NavLink>
           </li>
@@ -61,9 +58,7 @@ function Sidebar({ isOpen }) {
               onClick={() => setMasterOpen(!masterOpen)}
             >
               <i className="fas fa-solid fa-database"></i>
-
               <span>Masters</span>
-
               <i
                 className={`fas ${
                   masterOpen ? "fa-chevron-down" : "fa-chevron-right"
@@ -79,7 +74,8 @@ function Sidebar({ isOpen }) {
                     to="/employee-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }>
+                    }
+                  >
                     <i className="fa-solid fa-user-tie"></i>
                     <span>Employee Master</span>
                   </NavLink>
@@ -90,7 +86,8 @@ function Sidebar({ isOpen }) {
                     to="/unit-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }>
+                    }
+                  >
                     <i className="fa-solid fa-building"></i>
                     <span>Unit Master</span>
                   </NavLink>
@@ -101,7 +98,8 @@ function Sidebar({ isOpen }) {
                     to="/customer-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }>
+                    }
+                  >
                     <i className="fa-solid fa-users"></i>
                     <span>Customer Master</span>
                   </NavLink>
@@ -112,7 +110,8 @@ function Sidebar({ isOpen }) {
                     to="/part-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }>
+                    }
+                  >
                     <i className="fa-solid fa-puzzle-piece"></i>
                     <span>Part Master</span>
                   </NavLink>
@@ -123,7 +122,8 @@ function Sidebar({ isOpen }) {
                     to="/compound-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }>
+                    }
+                  >
                     <i className="fa-solid fa-flask"></i>
                     <span>Compound Master</span>
                   </NavLink>
@@ -134,7 +134,8 @@ function Sidebar({ isOpen }) {
                     to="/bop-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }>
+                    }
+                  >
                     <i className="fa-solid fa-boxes-stacked"></i>
                     <span>Bop Master</span>
                   </NavLink>
@@ -145,7 +146,8 @@ function Sidebar({ isOpen }) {
                     to="/sales-rate-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }>
+                    }
+                  >
                     <i className="fa-solid fa-tags"></i>
                     <span>Sales Rate Master</span>
                   </NavLink>
@@ -156,7 +158,8 @@ function Sidebar({ isOpen }) {
                     to="/sales-qty-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }>
+                    }
+                  >
                     <i className="fa-solid fa-chart-simple"></i>
                     <span>Sales Qty Master</span>
                   </NavLink>
@@ -167,7 +170,8 @@ function Sidebar({ isOpen }) {
                     to="/vendor-master"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }>
+                    }
+                  >
                     <i className="fa-solid fa-handshake"></i>
                     <span>Vendor Master</span>
                   </NavLink>
@@ -179,7 +183,8 @@ function Sidebar({ isOpen }) {
           <li>
             <div
               className={`menu repot-menu ${reportOpen ? "active" : ""}`}
-              onClick={() => setreportOpen(!reportOpen)}>
+              onClick={() => setreportOpen(!reportOpen)}
+            >
               <i className="fa-solid fa-chart-column"></i>
               <span>Monthly Master</span>
               <i
@@ -194,10 +199,11 @@ function Sidebar({ isOpen }) {
                 {/*Montly Compound Report */}
                 <li>
                   <NavLink
-                    to="/monthly-compound-master"
+                    to="/monthly-master/compound"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }>
+                    }
+                  >
                     <i className="fa-solid fa-flask"></i>
                     <span>Montly Compound Master</span>
                   </NavLink>
@@ -205,10 +211,11 @@ function Sidebar({ isOpen }) {
                 {/* Montly Bop Report */}
                 <li>
                   <NavLink
-                    to="/monthly-bop-master"
+                    to="/monthly-master/bop"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }>
+                    }
+                  >
                     <i className="fa-solid fa-flask"></i>
                     <span>Montly Bop Master</span>
                   </NavLink>
@@ -219,7 +226,8 @@ function Sidebar({ isOpen }) {
                     to="/compound-polymer-monthly-report"
                     className={({ isActive }) =>
                       isActive ? "menu active" : "menu"
-                    }>
+                    }
+                  >
                     <i className="fa-solid fa-flask"></i>
                     <span>Montly Polymer Report</span>
                   </NavLink>

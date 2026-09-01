@@ -496,22 +496,6 @@ function PartDetailsForm({
           <div className="row g-2 mt-1 form-row">
             <div className="col-md-3">
               <label className="form-label">
-                <b> Gross Wt. </b>
-              </label>
-              <input
-                type="number"
-                className={`form-control ${
-                  formData.grossWeight ? "field-filled" : ""
-                }`}
-                name="grossWeight"
-                value={formData.grossWeight}
-                onChange={handleInputChange}
-                step="0.01"
-              />
-            </div>
-
-            <div className="col-md-3">
-              <label className="form-label">
                 <b> Net Wt. </b>
               </label>
               <input
@@ -521,6 +505,22 @@ function PartDetailsForm({
                 }`}
                 name="netWeight"
                 value={formData.netWeight}
+                onChange={handleInputChange}
+                step="0.01"
+              />
+            </div>
+
+            <div className="col-md-3">
+              <label className="form-label">
+                <b> Gross Wt. </b>
+              </label>
+              <input
+                type="number"
+                className={`form-control ${
+                  formData.grossWeight ? "field-filled" : ""
+                }`}
+                name="grossWeight"
+                value={formData.grossWeight}
                 onChange={handleInputChange}
                 step="0.01"
               />

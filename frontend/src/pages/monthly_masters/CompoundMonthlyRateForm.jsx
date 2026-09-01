@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 
-const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
+const CompoundMonthlyRateForm = () => {
+  const navigate = useNavigate();
   const [compounds, setCompounds] = useState([]);
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -60,7 +62,9 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
 
   /* Polymer List */
   const polymers = useMemo(
-    () => [...new Set(compounds.map((compound) => compound.polymer).filter(Boolean))],
+    () => [
+      ...new Set(compounds.map((compound) => compound.polymer).filter(Boolean)),
+    ],
     [compounds],
   );
 
@@ -174,8 +178,7 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
         );
       }
       alert("Compound monthly rate saved successfully");
-      onSaved?.();
-      onClose?.();
+      navigate("/monthly-master/compound");
     } catch (error) {
       console.error("Save error:", error);
       alert(error.message);
@@ -184,13 +187,9 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
     }
   };
 
-  /* =====================================================
-   COMPOUND CODE CHANGE
-===================================================== */
-
+  /* COMPOUND CODE CHANGE */
   const handleCompoundCodeChange = (e) => {
     const compoundCode = e.target.value;
-
     const selectedCompound = filteredCompounds.find(
       (compound) =>
         String(compound.compound_code).trim().toLowerCase() ===
@@ -205,7 +204,6 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
         compoundCode: compoundCode,
         imCode: "",
       }));
-
       return;
     }
 
@@ -229,7 +227,7 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
         <button
           type="button"
           className="btn btn-danger btn-sm"
-          onClick={onClose}
+          onClick={() => navigate("/monthly-master/compound")}
           title="Close"
         >
           <i className="fas fa-times"></i>
@@ -424,7 +422,7 @@ const CompoundMonthlyRateForm = ({ onClose, onSaved }) => {
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={onClose}
+              onClick={() => navigate("/monthly-master/compound")}
             >
               Cancel
             </button>

@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import API_BASE_URL from "../../config/api";
 
-const BopBulkUpload = ({ onClose, onSaved }) => {
+const BopBulkUpload = () => {
+  const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -48,9 +50,7 @@ const BopBulkUpload = ({ onClose, onSaved }) => {
     reader.onload = (event) => {
       try {
         const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, {
-          type: "array",
-        });
+        const workbook = XLSX.read(data, { type: "array" });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
         const excelRows = XLSX.utils.sheet_to_json(worksheet, {
@@ -140,7 +140,6 @@ const BopBulkUpload = ({ onClose, onSaved }) => {
         setError("Unable to read the Excel file.");
       }
     };
-
     reader.readAsArrayBuffer(selectedFile);
   };
   // Upload
@@ -158,22 +157,7 @@ const BopBulkUpload = ({ onClose, onSaved }) => {
     const invalidRows = rows.filter(
       (row) => row.errors && row.errors.length > 0,
     );
-    if (invalidRows.length > 0) {
-      setError(
-        `Please fix ${invalidRows.length} invalid row(s) before uploading.`,
-      );
-      return;
-    }
-    // Validate Supplier Name
-    const missingSupplier = rows.find(
-      (row) => !row.supplierName || !String(row.supplierName).trim(),
-    );
-    if (missingSupplier) {
-      setError(
-        `Excel row ${missingSupplier.rowNumber}: Supplier Name is required`,
-      );
-      return;
-    }
+
     try {
       setLoading(true);
       setUploadProgress(0);
@@ -187,30 +171,35 @@ const BopBulkUpload = ({ onClose, onSaved }) => {
         rate: Number(row.rate),
       }));
       // API request
-      const response = await fetch(
-        `${API_BASE_URL}/monthly-bop-rate/bulk`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            rows: uploadData,
-          }),
-        },
-      );
+      const response = await fetch(`${API_BASE_URL}/monthly-bop-rate/bulk`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rows: uploadData }),
+      });
       const result = await response.json();
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Bulk upload failed");
       }
       setUploadProgress(100);
+
+      if (result.errorCount && result.errorCount > 0) {
+        setError(
+          `Upload completed. ${result.insertedCount} record(s) uploaded successfully. ${result.errorCount} row(s) have errors.`,
+        );
+
+        // Keep the user on this page
+        // so they can see the error rows.
+        return;
+      }
+
       alert(
         `Successfully uploaded ${
           result.insertedCount || rows.length
         } record(s).`,
       );
-      onSaved?.();
-      onClose?.();
+
+      navigate("/monthly-master/bop");
+      navigate("/monthly-master/bop");
     } catch (error) {
       console.error("Bulk upload error:", error);
       setError(error.message);
@@ -240,7 +229,7 @@ const BopBulkUpload = ({ onClose, onSaved }) => {
         <button
           type="button"
           className="btn btn-danger btn-sm"
-          onClick={onClose}
+          onClick={() => navigate("/monthly-master/bop")}
           title="Close"
           disabled={loading}
         >
@@ -320,10 +309,7 @@ const BopBulkUpload = ({ onClose, onSaved }) => {
             </div>
             <div
               className="table-responsive"
-              style={{
-                maxHeight: "400px",
-                overflowY: "auto",
-              }}
+              style={{ maxHeight: "400px", overflowY: "auto" }}
             >
               <table className="table table-bordered table-sm">
                 <thead>
@@ -381,9 +367,7 @@ const BopBulkUpload = ({ onClose, onSaved }) => {
               <div
                 className="progress-bar progress-bar-striped progress-bar-animated"
                 role="progressbar"
-                style={{
-                  width: `${uploadProgress}%`,
-                }}
+                style={{ width: `${uploadProgress}%` }}
               >
                 {uploadProgress}%
               </div>
@@ -395,7 +379,7 @@ const BopBulkUpload = ({ onClose, onSaved }) => {
           <button
             type="button"
             className="btn btn-secondary"
-            onClick={onClose}
+            onClick={() => navigate("/monthly-master/bop")}
             disabled={loading}
           >
             Cancel

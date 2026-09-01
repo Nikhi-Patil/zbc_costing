@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 
-const BopMonthlyRateForm = ({ onClose, onSaved }) => {
+const BopMonthlyRateForm = () => {
+  const navigate = useNavigate();
   const [bops, setBops] = useState([]);
   const [loading, setLoading] = useState(false);
   const financialYears = generateFinancialYears();
@@ -145,8 +147,7 @@ const BopMonthlyRateForm = ({ onClose, onSaved }) => {
         throw new Error(result.message || "Failed to save BOP monthly rate");
       }
       alert("BOP monthly rate saved successfully");
-      onSaved?.();
-      onClose?.();
+      navigate("/monthly-master/bop");
     } catch (error) {
       console.error("Save error:", error);
       alert(error.message);
@@ -166,7 +167,7 @@ const BopMonthlyRateForm = ({ onClose, onSaved }) => {
         <button
           type="button"
           className="btn btn-danger btn-sm"
-          onClick={onClose}
+          onClick={() => navigate("/monthly-master/bop")}
           title="Close"
         >
           <i className="fas fa-times"></i>
@@ -383,7 +384,7 @@ const BopMonthlyRateForm = ({ onClose, onSaved }) => {
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={onClose}
+              onClick={() => navigate("/monthly-master/bop")}
             >
               Cancel
             </button>

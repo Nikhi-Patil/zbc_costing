@@ -663,6 +663,375 @@ h5 {
 .compound-report-table td {
   text-align: center;
   vertical-align: middle;
+  padding: 0px 5px;
+  height: 35px;
+}
+
+/* =====================================================
+   COMPOUND MONTHLY MASTER TABLE
+   ===================================================== */
+
+.compound-report-table {
+  width: 100%;
+  min-width: 1450px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 13px;
+}
+
+/* -----------------------------------------------------
+   ALL CELLS
+   ----------------------------------------------------- */
+
+.compound-report-table th,
+.compound-report-table td {
+  border: 1px solid #d9dee5;
+  text-align: center;
+  vertical-align: middle;
+  padding: 4px 6px;
+  height: 35px;
+  box-sizing: border-box;
+}
+
+/* -----------------------------------------------------
+   HEADER
+   ----------------------------------------------------- */
+
+.compound-report-table thead th {
+  background: #f8f9fa;
+  font-weight: 600;
+  white-space: normal;
+  line-height: 1.2;
+  height: 42px;
+}
+
+/* -----------------------------------------------------
+   FIXED INFORMATION COLUMNS
+   ----------------------------------------------------- */
+
+/* Sr. No. */
+.compound-report-table th:nth-child(1),
+.compound-report-table td:nth-child(1) {
+  width: 55px;
+  min-width: 55px;
+  max-width: 55px;
+}
+
+/* Compound Code */
+.compound-report-table th:nth-child(2),
+.compound-report-table td:nth-child(2) {
+  width: 170px;
+  min-width: 170px;
+  max-width: 170px;
+}
+
+/* Polymer Name */
+.compound-report-table th:nth-child(3),
+.compound-report-table td:nth-child(3) {
+  width: 110px;
+  min-width: 110px;
+  max-width: 110px;
+}
+
+/* IM Code */
+.compound-report-table th:nth-child(4),
+.compound-report-table td:nth-child(4) {
+  width: 110px;
+  min-width: 110px;
+  max-width: 110px;
+}
+
+/* Unit */
+.compound-report-table th:nth-child(5),
+.compound-report-table td:nth-child(5) {
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
+}
+
+/* -----------------------------------------------------
+   MONTH COLUMNS
+   January - December
+   ----------------------------------------------------- */
+
+.compound-report-table th:nth-child(n + 6),
+.compound-report-table td:nth-child(n + 6) {
+  width: 85px;
+  min-width: 85px;
+  max-width: 85px;
+}
+
+/* -----------------------------------------------------
+   MONTH HEADER
+   ----------------------------------------------------- */
+
+.compound-report-table thead th:nth-child(n + 6) {
+  white-space: normal;
+  line-height: 1.15;
+  padding: 4px 3px;
+}
+
+/* -----------------------------------------------------
+   DATA CELLS
+   ----------------------------------------------------- */
+
+.compound-report-table tbody td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Compound code can wrap */
+.compound-report-table tbody td:nth-child(2) {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Polymer name can wrap */
+.compound-report-table tbody td:nth-child(3) {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+/* Unit */
+.compound-report-table tbody td:nth-child(5) {
+  white-space: normal;
+}
+
+/* -----------------------------------------------------
+   ROW HEIGHT
+   ----------------------------------------------------- */
+
+.compound-report-table tbody tr {
+  height: 35px;
+}
+
+.compound-report-table tbody td {
+  height: 35px;
+}
+
+/* -----------------------------------------------------
+   HOVER
+   ----------------------------------------------------- */
+
+.compound-report-table tbody tr:hover {
+  background-color: #f5f8fc;
+}
+
+/* -----------------------------------------------------
+   TABLE WRAPPER
+   ----------------------------------------------------- */
+
+.compound-report-page .table-responsive {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Keep scrollbar inside table area */
+.compound-report-page .table-responsive::-webkit-scrollbar {
+  height: 8px;
+}
+
+.compound-report-page .table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.compound-report-page .table-responsive::-webkit-scrollbar-thumb {
+  background: #aeb4bb;
+  border-radius: 4px;
+}
+
+.compound-report-page .table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #858b92;
+}
+/* =====================================================
+   COMPOUND REPORT CONTAINER
+   ===================================================== */
+
+.compound-report-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* =====================================================
+   TABLE SCROLL AREA
+   IMPORTANT:
+   Scrollbar belongs ONLY to the table
+   ===================================================== */
+
+.compound-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* =====================================================
+   TABLE
+   ===================================================== */
+
+.compound-report-table {
+  width: 100%;
+  min-width: 1450px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin-bottom: 0 !important;
+}
+
+/* =====================================================
+   HORIZONTAL SCROLLBAR
+   ===================================================== */
+
+.compound-table-scroll::-webkit-scrollbar {
+  height: 9px;
+}
+
+.compound-table-scroll::-webkit-scrollbar-track {
+  background: #eeeeee;
+}
+
+.compound-table-scroll::-webkit-scrollbar-thumb {
+  background: #aeb4bb;
+  border-radius: 5px;
+}
+
+.compound-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #858b92;
+}
+
+/* Firefox */
+
+.compound-table-scroll {
+  scrollbar-width: auto;
+}
+
+/* =====================================================
+   PAGINATION
+   BELOW THE SCROLLBAR
+   ===================================================== */
+
+.compound-pagination {
+  width: 100%;
+  min-height: 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 15px;
+
+  padding: 8px 0 0 0;
+
+  box-sizing: border-box;
+}
+
+/* =====================================================
+   SHOW DROPDOWN
+   ===================================================== */
+
+.pagination-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-left span {
+  white-space: nowrap;
+}
+
+.pagination-left .form-select {
+  width: 118px;
+  height: 38px;
+}
+
+/* =====================================================
+   PAGINATION BUTTONS
+   ===================================================== */
+
+.pagination-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-right button {
+  width: 42px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid #dee2e6;
+  background: #fff;
+
+  border-radius: 5px;
+
+  font-size: 15px;
+}
+
+.pagination-right button:hover:not(:disabled) {
+  background: #f1f3f5;
+}
+
+/* Disabled buttons */
+
+.pagination-right button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* =====================================================
+   PAGE INFORMATION
+   ===================================================== */
+
+.page-info {
+  min-width: 95px;
+
+  text-align: center;
+
+  white-space: nowrap;
+
+  font-size: 14px;
+  color: #212529;
+}
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 768px) {
+  .compound-pagination {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pagination-left .form-select {
+    width: 90px;
+  }
+
+  .pagination-right {
+    gap: 4px;
+  }
+
+  .pagination-right button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .page-info {
+    min-width: 85px;
+    font-size: 13px;
+  }
 }
 
 .bop-monthly-header {
@@ -1050,4 +1419,334 @@ h5 {
 .add-transaction-btn:hover {
   background: hsl(243, 100%, 67%);
   color: #fff;
+}
+
+/* =====================================================
+   BOP MONTHLY REPORT
+   ===================================================== */
+
+.bop-report-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* =====================================================
+   TABLE SCROLL AREA
+   ===================================================== */
+
+.bop-table-scroll {
+  width: 100%;
+  max-width: 100%;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+/* =====================================================
+   TABLE
+   ===================================================== */
+
+.bop-report-table {
+  width: 100%;
+  min-width: 1750px;
+
+  table-layout: fixed;
+  border-collapse: collapse;
+
+  margin-bottom: 0 !important;
+
+  background: #fff;
+
+  font-size: 13px;
+}
+
+/* =====================================================
+   CELLS
+   ===================================================== */
+
+.bop-report-table th,
+.bop-report-table td {
+  border: 1px solid #d9dee5;
+
+  text-align: center;
+  vertical-align: middle;
+
+  padding: 5px 6px;
+
+  box-sizing: border-box;
+}
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.bop-report-table thead th {
+  background: #f8f9fa;
+
+  font-weight: 600;
+
+  line-height: 1.15;
+
+  white-space: normal;
+
+  height: 44px;
+}
+
+/* =====================================================
+   FIXED COLUMNS
+   ===================================================== */
+
+/* Sr No */
+
+.bop-report-table th:nth-child(1),
+.bop-report-table td:nth-child(1) {
+  width: 55px;
+  min-width: 55px;
+  max-width: 55px;
+}
+
+/* Part No */
+
+.bop-report-table th:nth-child(2),
+.bop-report-table td:nth-child(2) {
+  width: 130px;
+  min-width: 130px;
+  max-width: 130px;
+}
+
+/* FG Code */
+
+.bop-report-table th:nth-child(3),
+.bop-report-table td:nth-child(3) {
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+}
+
+/* BOP Part Name */
+
+.bop-report-table th:nth-child(4),
+.bop-report-table td:nth-child(4) {
+  width: 180px;
+  min-width: 180px;
+  max-width: 180px;
+}
+
+/* BOP Part No */
+
+.bop-report-table th:nth-child(5),
+.bop-report-table td:nth-child(5) {
+  width: 130px;
+  min-width: 130px;
+  max-width: 130px;
+}
+
+/* BOP ERP Code */
+
+.bop-report-table th:nth-child(6),
+.bop-report-table td:nth-child(6) {
+  width: 130px;
+  min-width: 130px;
+  max-width: 130px;
+}
+
+/* Supplier */
+
+.bop-report-table th:nth-child(7),
+.bop-report-table td:nth-child(7) {
+  width: 180px;
+  min-width: 180px;
+  max-width: 180px;
+}
+
+/* =====================================================
+   MONTH COLUMNS
+   January - December
+   ===================================================== */
+
+.bop-report-table th:nth-child(n + 8),
+.bop-report-table td:nth-child(n + 8) {
+  width: 85px;
+  min-width: 85px;
+  max-width: 85px;
+}
+
+/* =====================================================
+   DATA
+   ===================================================== */
+
+.bop-report-table tbody td {
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  height: 38px;
+}
+
+/* Allow long names to wrap */
+
+.bop-report-table tbody td:nth-child(4),
+.bop-report-table tbody td:nth-child(7) {
+  white-space: normal;
+
+  overflow-wrap: break-word;
+
+  word-break: break-word;
+}
+
+/* =====================================================
+   HOVER
+   ===================================================== */
+
+.bop-report-table tbody tr:hover {
+  background: #f5f8fc;
+}
+
+/* =====================================================
+   SCROLLBAR
+   ===================================================== */
+
+.bop-table-scroll::-webkit-scrollbar {
+  height: 9px;
+}
+
+.bop-table-scroll::-webkit-scrollbar-track {
+  background: #eeeeee;
+}
+
+.bop-table-scroll::-webkit-scrollbar-thumb {
+  background: #aeb4bb;
+  border-radius: 5px;
+}
+
+.bop-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #858b92;
+}
+
+/* =====================================================
+   PAGINATION
+   ===================================================== */
+
+.bop-pagination {
+  width: 100%;
+
+  min-height: 55px;
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  align-items: center;
+
+  gap: 15px;
+
+  padding-top: 8px;
+
+  box-sizing: border-box;
+}
+
+/* Show */
+
+.bop-pagination-left {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.bop-pagination-left span {
+  white-space: nowrap;
+}
+
+.bop-pagination-left select {
+  width: 118px;
+
+  height: 38px;
+}
+
+/* Pagination buttons */
+
+.bop-pagination-right {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+}
+
+.bop-pagination-right button {
+  width: 42px;
+
+  height: 38px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid #dee2e6;
+
+  background: #fff;
+
+  border-radius: 5px;
+}
+
+.bop-pagination-right button:hover:not(:disabled) {
+  background: #f1f3f5;
+}
+
+.bop-pagination-right button:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+/* Page information */
+
+.bop-page-info {
+  min-width: 95px;
+
+  text-align: center;
+
+  white-space: nowrap;
+
+  font-size: 14px;
+}
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 768px) {
+  .bop-pagination {
+    flex-wrap: wrap;
+
+    gap: 8px;
+  }
+
+  .bop-pagination-left select {
+    width: 90px;
+  }
+
+  .bop-pagination-right {
+    gap: 4px;
+  }
+
+  .bop-pagination-right button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .bop-page-info {
+    min-width: 85px;
+    font-size: 13px;
+  }
 }
