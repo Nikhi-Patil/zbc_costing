@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { months, generateFinancialYears } from "../../utils/costingUtils";
 
 import Stepper from "../../components/costing/Stepper";
 import WizardButtons from "../../components/costing/WizardButtons";
@@ -12,6 +13,16 @@ import API_BASE_URL from "../../config/api";
 
 function CostingWizard() {
   const { transactionId: urlTransactionId } = useParams();
+  const financialYears = generateFinancialYears();
+
+  const defaultFinancialYear =
+    financialYears.find((fy) => fy.selected)?.value ||
+    financialYears[0]?.value ||
+    "";
+
+  const defaultMonth =
+    months.find((month) => month.value === new Date().getMonth() + 1)?.value ||
+    "";
 
   const [currentStep, setCurrentStep] = useState(1);
   const [bops, setBops] = useState([]);
@@ -22,14 +33,15 @@ function CostingWizard() {
 
   // FORM DATA
   const [formData, setFormData] = useState({
-    financialYear: "",
-    month: "",
+    financialYear: defaultFinancialYear,
+    month: defaultMonth,
     effectiveDate: "",
     customerName: "",
     productionUnit: "",
     billingUnit: "",
     subDepartment: "",
     subCategory: "",
+    subCategoryName: "",
     partNo: "",
     partName: "",
     fgcode: "",
@@ -64,6 +76,13 @@ function CostingWizard() {
     postCuring: "",
     finishing: "",
     inspection: "",
+    shotBlasting: "",
+    vapourDegreasing: "",
+    chromating: "",
+    phospating: "",
+    adhesive: "",
+    painting: "",
+    cylindricalGrinding: "",
     assemblyQty: "",
     assemblyPerCost: "",
     totalAssemblyCost: "",
@@ -93,6 +112,9 @@ function CostingWizard() {
     buyingProfitLoss: "",
     monthlyQuantity: "",
     monthlyProfitLoss: "",
+
+    subtotalA: "",
+    subtotalB: "",
   });
 
   useEffect(() => {
@@ -103,6 +125,15 @@ function CostingWizard() {
     setTransactionId(urlTransactionId);
     fetchTransaction(urlTransactionId);
   }, [urlTransactionId]);
+
+  useEffect(() => {
+    if (!formData.subCategory) return;
+    if (formData.subCategoryName) return;
+
+    // If the API already returned the name it will be used above.
+    // Otherwise PartDetailsForm will populate it when its subcategory
+    // master is available.
+  }, [formData.subCategory, formData.subCategoryName]);
 
   const fetchTransaction = async (id) => {
     try {
@@ -128,6 +159,10 @@ function CostingWizard() {
         billingUnit: data.billing_unit ?? prev.billingUnit,
         subDepartment: data.sub_department ?? prev.subDepartment,
         subCategory: data.sub_category ?? prev.subCategory,
+        subCategoryName:
+          data.sub_category_name ??
+          data.subCategoryName ??
+          prev.subCategoryName,
 
         partNo: data.part_no ?? prev.partNo,
         partName: data.part_name ?? prev.partName,
@@ -167,6 +202,20 @@ function CostingWizard() {
         postCuring: data.post_curing ?? prev.postCuring,
         finishing: data.finishing ?? prev.finishing,
         inspection: data.inspection ?? prev.inspection,
+        shotBlasting:
+          data.shot_blasting ?? data.shotBlasting ?? prev.shotBlasting,
+        vapourDegreasing:
+          data.vapour_degreasing ??
+          data.vapourDegreasing ??
+          prev.vapourDegreasing,
+        chromating: data.chromating ?? prev.chromating,
+        phospating: data.phospating ?? data.phosphating ?? prev.phospating,
+        adhesive: data.adhesive ?? prev.adhesive,
+        painting: data.painting ?? prev.painting,
+        cylindricalGrinding:
+          data.cylindrical_grinding ??
+          data.cylindricalGrinding ??
+          prev.cylindricalGrinding,
         assemblyQty: data.assembly_qty ?? prev.assemblyQty,
         assemblyPerCost: data.assembly_per_cost ?? prev.assemblyPerCost,
         totalAssemblyCost: data.total_assembly_cost ?? prev.totalAssemblyCost,
@@ -205,6 +254,9 @@ function CostingWizard() {
           data.packaging_on_subtotal_cost ?? prev.packagingOnSubtotalCost,
         transportOnSubtotalCost:
           data.transport_on_subtotal_cost ?? prev.transportOnSubtotalCost,
+        subtotalA: data.subtotal_a ?? data.subtotalA ?? prev.subtotalA,
+
+        subtotalB: data.subtotal_b ?? data.subtotalB ?? prev.subtotalB,
       }));
 
       setBops(
@@ -253,6 +305,9 @@ function CostingWizard() {
             profitOnSubtotalCost: profitOnSubtotalCost.toFixed(2),
             packagingOnSubtotalCost: packagingOnSubtotalCost.toFixed(2),
             transportOnSubtotalCost: transportOnSubtotalCost.toFixed(2),
+
+            subtotalA: subtotalA.toFixed(2),
+            subtotalB: subtotalB.toFixed(2),
 
             partCost: totalPartCost.toFixed(2),
             monthlyQuantity: Number(formData.monthlyQuantity) || 0,
@@ -464,6 +519,13 @@ function CostingWizard() {
       name === "postCuring" ||
       name === "finishing" ||
       name === "inspection" ||
+      name === "shotBlasting" ||
+      name === "vapourDegreasing" ||
+      name === "chromating" ||
+      name === "phospating" ||
+      name === "adhesive" ||
+      name === "painting" ||
+      name === "cylindricalGrinding" ||
       name === "assemblyPerCost"
     ) {
       setFormData((prev) => {
@@ -482,6 +544,41 @@ function CostingWizard() {
             ? parseFloat(value) || 0
             : parseFloat(prev.inspection) || 0;
 
+        const shotBlasting =
+          name === "shotBlasting"
+            ? parseFloat(value) || 0
+            : parseFloat(prev.shotBlasting) || 0;
+
+        const vapourDegreasing =
+          name === "vapourDegreasing"
+            ? parseFloat(value) || 0
+            : parseFloat(prev.vapourDegreasing) || 0;
+
+        const chromating =
+          name === "chromating"
+            ? parseFloat(value) || 0
+            : parseFloat(prev.chromating) || 0;
+
+        const phospating =
+          name === "phospating"
+            ? parseFloat(value) || 0
+            : parseFloat(prev.phospating) || 0;
+
+        const adhesive =
+          name === "adhesive"
+            ? parseFloat(value) || 0
+            : parseFloat(prev.adhesive) || 0;
+
+        const painting =
+          name === "painting"
+            ? parseFloat(value) || 0
+            : parseFloat(prev.painting) || 0;
+
+        const cylindricalGrinding =
+          name === "cylindricalGrinding"
+            ? parseFloat(value) || 0
+            : parseFloat(prev.cylindricalGrinding) || 0;
+
         const assemblyPerCost =
           name === "assemblyPerCost"
             ? parseFloat(value) || 0
@@ -493,7 +590,17 @@ function CostingWizard() {
 
         // Process Cost B
         const processCostB =
-          postCuring + finishing + inspection + totalAssemblyCost;
+          postCuring +
+          finishing +
+          inspection +
+          shotBlasting +
+          vapourDegreasing +
+          chromating +
+          phospating +
+          adhesive +
+          painting +
+          cylindricalGrinding +
+          totalAssemblyCost;
 
         return {
           ...prev,
@@ -515,8 +622,136 @@ function CostingWizard() {
     }));
   };
 
+  // LOAD SAVED BOP CONFIGURATION FOR SELECTED PART
+  const loadBopConfiguration = async (partNo) => {
+    const selectedPartNo = String(partNo || "").trim();
+
+    // Always clear the previous part's BOP configuration first.
+    setBops([]);
+
+    if (!selectedPartNo) {
+      setFormData((prev) => ({
+        ...prev,
+        hasBop: "",
+      }));
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/part-bops/${encodeURIComponent(selectedPartNo)}`,
+      );
+
+      if (response.status === 404) {
+        setFormData((prev) => ({
+          ...prev,
+          hasBop: "No",
+          assemblyQty: "",
+          totalAssemblyCost: "0.00",
+        }));
+        return;
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to load BOP configuration");
+      }
+
+      // Support all common response formats:
+      // [...]
+      // { data: [...] }
+      // { bops: [...] }
+      const savedBops = Array.isArray(result)
+        ? result
+        : Array.isArray(result?.data)
+          ? result.data
+          : Array.isArray(result?.bops)
+            ? result.bops
+            : [];
+
+      if (savedBops.length === 0) {
+        setFormData((prev) => ({
+          ...prev,
+          hasBop: "No",
+          assemblyQty: "",
+          totalAssemblyCost: "0.00",
+        }));
+        return;
+      }
+
+      // Convert saved BOP Management rows into the structure
+      // already used by the Costing Wizard.
+      const loadedBops = savedBops.map((bop, index) => ({
+        id: bop.id ?? `saved-bop-${selectedPartNo}-${index}-${Date.now()}`,
+
+        bopId: bop.bop_id ?? bop.bopId ?? "",
+        bopFgCode: bop.bop_fg_code ?? bop.bopFgCode ?? bop.bop_erp_code ?? "",
+
+        bopPartNo: bop.bop_part_no ?? bop.bopPartNo ?? "",
+
+        bopPartName: bop.bop_part_name ?? bop.bopPartName ?? "",
+
+        supplierId: bop.supplier_id ?? bop.supplierId ?? "",
+
+        supplierName: bop.supplier_name ?? bop.supplierName ?? "",
+
+        // BopTable uses this list to display the supplier dropdown.
+        suppliers: Array.isArray(bop.suppliers)
+          ? bop.suppliers
+          : bop.supplier_id
+            ? [
+                {
+                  id: bop.supplier_id,
+                  supplier_name: bop.supplier_name || "",
+                },
+              ]
+            : [],
+
+        commodity: bop.commodity ?? "",
+
+        bopAssemblyQty:
+          bop.assembly_qty ?? bop.bop_assembly_qty ?? bop.bopAssemblyQty ?? "",
+
+        // These are filled by the monthly BOP rate lookup later.
+        bopmonth: bop.bop_month ?? bop.bopmonth ?? "",
+        bopRate: bop.bop_rate ?? bop.bopRate ?? "",
+        bopCost: bop.bop_cost ?? bop.bopCost ?? "0.00",
+      }));
+
+      setBops(loadedBops);
+
+      setFormData((prev) => ({
+        ...prev,
+        hasBop: "Yes",
+      }));
+    } catch (error) {
+      console.error(
+        "Error loading BOP configuration for Part No:",
+        selectedPartNo,
+        error,
+      );
+
+      // Do not leave the previous part's BOP data on screen.
+      setBops([]);
+
+      setFormData((prev) => ({
+        ...prev,
+        hasBop: "No",
+        assemblyQty: "",
+        totalAssemblyCost: "0.00",
+      }));
+
+      alert(
+        `Unable to load BOP configuration for Part No ${selectedPartNo}: ${error.message}`,
+      );
+    }
+  };
+
   const handlePartSelect = async (part) => {
     if (!part) {
+      setBops([]);
+
       setFormData((prev) => ({
         ...prev,
 
@@ -533,6 +768,10 @@ function CostingWizard() {
         compMonth: "",
         compoundRate: "",
         totalRmCost: "",
+
+        hasBop: "",
+        assemblyQty: "",
+        totalAssemblyCost: "0.00",
       }));
 
       return;
@@ -560,7 +799,19 @@ function CostingWizard() {
       compMonth: "",
       compoundRate: "",
       totalRmCost: "",
+
+      // BOP will be loaded from BOP Management
+      hasBop: "",
+      assemblyQty: "",
+      totalAssemblyCost: "0.00",
     }));
+
+    // ============================================================
+    // IMPORTANT:
+    // BOP is NOT created manually in Costing Wizard anymore.
+    // Load the saved BOP configuration for this Part No.
+    // ============================================================
+    await loadBopConfiguration(part.part_no);
 
     if (!partImCode) {
       console.warn("Selected part does not have an IM Code");
@@ -660,6 +911,13 @@ function CostingWizard() {
     const finishing = parseFloat(formData.finishing) || 0;
 
     const inspection = parseFloat(formData.inspection) || 0;
+    const shotBlasting = parseFloat(formData.shotBlasting) || 0;
+    const vapourDegreasing = parseFloat(formData.vapourDegreasing) || 0;
+    const chromating = parseFloat(formData.chromating) || 0;
+    const phospating = parseFloat(formData.phospating) || 0;
+    const adhesive = parseFloat(formData.adhesive) || 0;
+    const painting = parseFloat(formData.painting) || 0;
+    const cylindricalGrinding = parseFloat(formData.cylindricalGrinding) || 0;
 
     const processCostA = parseFloat(formData.processCostA) || 0;
 
@@ -669,7 +927,17 @@ function CostingWizard() {
 
     // Process Cost B
     const processCostB =
-      postCuring + finishing + inspection + totalAssemblyCost;
+      postCuring +
+      finishing +
+      inspection +
+      shotBlasting +
+      vapourDegreasing +
+      chromating +
+      phospating +
+      adhesive +
+      painting +
+      cylindricalGrinding +
+      totalAssemblyCost;
 
     // Total Conversion Cost
     const conversionCost = processCostA + processCostB;
@@ -690,6 +958,13 @@ function CostingWizard() {
     formData.postCuring,
     formData.finishing,
     formData.inspection,
+    formData.shotBlasting,
+    formData.vapourDegreasing,
+    formData.chromating,
+    formData.phospating,
+    formData.adhesive,
+    formData.painting,
+    formData.cylindricalGrinding,
     formData.processCostA,
   ]);
 
@@ -798,61 +1073,45 @@ function CostingWizard() {
   const addBop = () => {
     setBops((prev) => [...prev, createEmptyBop()]);
   };
+
   // DELETE BOP
   const deleteBop = (id) => {
     setBops((prev) => prev.filter((bop) => bop.id !== id));
   };
 
-  // const fetchBopRate = async ({ bopId, supplierId, financialYear, month }) => {
-  //   try {
-  //     if (!bopId || !supplierId || !financialYear || !month) {
-  //       return null;
-  //     }
-
-  //     const params = new URLSearchParams({
-  //       bopId: String(bopId),
-  //       supplierId: String(supplierId),
-  //       financial_year: String(financialYear),
-  //       month: String(month),
-  //     });
-
-  //     const response = await fetch(
-  //       `${API_BASE_URL}/bop-rate-for-costing?${params.toString()}`,
-  //     );
-
-  //     const result = await response.json();
-
-  //     if (!response.ok || !result.success) {
-  //       throw new Error(result.message || "Failed to fetch BOP rate");
-  //     }
-
-  //     if (!result.found) {
-  //       return null;
-  //     }
-
-  //     return Number(result.rate) || 0;
-  //   } catch (error) {
-  //     console.error("BOP RATE ERROR:", error);
-  //     return null;
-  //   }
-  // };
-  // update BOP
-  const fetchBopRate = async ({ bopId, supplierId, financialYear, month }) => {
+  const fetchBopRate = async ({
+    bopId,
+    bopErpCode,
+    supplierId,
+    financialYear,
+    month,
+  }) => {
     try {
-      console.log("BOP RATE LOOKUP:", {
-        bopId,
-        supplierId,
-        financialYear,
-        month,
-      });
+      console.log("========================================");
+      console.log("BOP RATE LOOKUP");
+      console.log("bopId:", bopId);
+      console.log("bopErpCode:", bopErpCode);
+      console.log("supplierId:", supplierId);
+      console.log("financialYear:", financialYear);
+      console.log("month:", month);
+      console.log("========================================");
 
-      if (!bopId || !supplierId || !financialYear || !month) {
-        console.log("Missing BOP lookup value");
+      // Use ERP code as the primary BOP identifier.
+      const lookupCode = String(bopErpCode || "").trim();
+
+      if (!lookupCode || !supplierId || !financialYear || !month) {
+        console.log("Missing BOP lookup value:", {
+          bopErpCode: lookupCode,
+          supplierId,
+          financialYear,
+          month,
+        });
+
         return null;
       }
 
       const params = new URLSearchParams({
-        bopId: String(bopId),
+        bopErpCode: lookupCode,
         supplierId: String(supplierId),
         financial_year: String(financialYear),
         month: String(month),
@@ -873,7 +1132,14 @@ function CostingWizard() {
       }
 
       if (!result.found) {
-        console.log("No monthly BOP rate found");
+        console.log(
+          "No monthly BOP rate found for:",
+          lookupCode,
+          supplierId,
+          financialYear,
+          month,
+        );
+
         return null;
       }
 
@@ -883,150 +1149,6 @@ function CostingWizard() {
       return null;
     }
   };
-  // const updateBop = async (id, field, value) => {
-  //   const currentBop = bops.find((bop) => bop.id === id);
-
-  //   if (!currentBop) {
-  //     return;
-  //   }
-
-  //   // ==========================================
-  //   // SUPPLIER CHANGE
-  //   // ==========================================
-  //   if (field === "supplierId") {
-  //     setBops((prev) =>
-  //       prev.map((bop) =>
-  //         bop.id === id
-  //           ? {
-  //               ...bop,
-  //               supplierId: value,
-  //               bopRate: "",
-  //               bopCost: "0.00",
-  //             }
-  //           : bop,
-  //       ),
-  //     );
-
-  //     // In RM mode supplier is normally fixed,
-  //     // but keep this lookup for Part Details.
-  //     if (value && formData.financialYear && currentBop.bopmonth) {
-  //       const rate = await fetchBopRate({
-  //         bopId: currentBop.bopId || currentBop.bopFgCode,
-  //         supplierId: value,
-  //         financialYear: formData.financialYear,
-  //         month: currentBop.bopmonth,
-  //       });
-
-  //       setBops((prev) =>
-  //         prev.map((bop) => {
-  //           if (bop.id !== id) {
-  //             return bop;
-  //           }
-
-  //           const updatedRate = rate !== null ? rate : "";
-
-  //           const qty = Number(bop.bopAssemblyQty) || 0;
-
-  //           return {
-  //             ...bop,
-  //             supplierId: value,
-  //             bopRate: updatedRate,
-  //             bopCost:
-  //               updatedRate !== ""
-  //                 ? (qty * Number(updatedRate)).toFixed(2)
-  //                 : "0.00",
-  //           };
-  //         }),
-  //       );
-  //     }
-
-  //     return;
-  //   }
-
-  //   // ==========================================
-  //   // MONTH CHANGE
-  //   // ==========================================
-  //   if (field === "bopmonth") {
-  //     const bopId = currentBop.bopId || currentBop.bopFgCode;
-
-  //     const supplierId = currentBop.supplierId;
-
-  //     let rate = null;
-
-  //     if (bopId && supplierId && formData.financialYear && value) {
-  //       rate = await fetchBopRate({
-  //         bopId,
-  //         supplierId,
-  //         financialYear: formData.financialYear,
-  //         month: value,
-  //       });
-  //     }
-
-  //     setBops((prev) =>
-  //       prev.map((bop) => {
-  //         if (bop.id !== id) {
-  //           return bop;
-  //         }
-
-  //         const updatedRate = rate !== null ? rate : "";
-
-  //         const qty = Number(bop.bopAssemblyQty) || 0;
-
-  //         return {
-  //           ...bop,
-  //           bopmonth: value,
-  //           bopRate: updatedRate,
-  //           bopCost:
-  //             updatedRate !== ""
-  //               ? (qty * Number(updatedRate)).toFixed(2)
-  //               : "0.00",
-  //         };
-  //       }),
-  //     );
-
-  //     return;
-  //   }
-
-  //   // ==========================================
-  //   // ASSEMBLY QTY CHANGE
-  //   // ==========================================
-  //   if (field === "bopAssemblyQty") {
-  //     setBops((prev) =>
-  //       prev.map((bop) => {
-  //         if (bop.id !== id) {
-  //           return bop;
-  //         }
-
-  //         const qty = Number(value) || 0;
-  //         const rate = Number(bop.bopRate) || 0;
-
-  //         return {
-  //           ...bop,
-  //           bopAssemblyQty: value,
-  //           bopCost: (qty * rate).toFixed(2),
-  //         };
-  //       }),
-  //     );
-
-  //     return;
-  //   }
-
-  //   // ==========================================
-  //   // OTHER FIELDS
-  //   // ==========================================
-  //   setBops((prev) =>
-  //     prev.map((bop) => {
-  //       if (bop.id !== id) {
-  //         return bop;
-  //       }
-
-  //       return {
-  //         ...bop,
-  //         [field]: value,
-  //       };
-  //     }),
-  //   );
-  // };
 
   const updateBop = async (id, field, value) => {
     const currentBop = bops.find((bop) => bop.id === id);
@@ -1037,11 +1159,17 @@ function CostingWizard() {
     // BOP MONTH CHANGED
     // ------------------------------------------
     if (field === "bopmonth") {
-      const bopId = currentBop.bopId;
+      const bopErpCode =
+        currentBop.bopFgCode ||
+        currentBop.bop_erp_code ||
+        currentBop.bopErpCode ||
+        "";
+
       const supplierId = currentBop.supplierId;
 
       const rate = await fetchBopRate({
-        bopId,
+        bopId: currentBop.bopId,
+        bopErpCode,
         supplierId,
         financialYear: formData.financialYear,
         month: value,
@@ -1126,6 +1254,7 @@ function CostingWizard() {
       ),
     );
   };
+
   const formatDateForInput = (value) => {
     if (!value) return "";
 
@@ -1148,6 +1277,7 @@ function CostingWizard() {
       String(date.getDate()).padStart(2, "0"),
     ].join("-");
   };
+
   // NEXT
   const nextStep = async () => {
     // Save current page before going to next page
@@ -1162,6 +1292,7 @@ function CostingWizard() {
       setCurrentStep((prev) => prev + 1);
     }
   };
+
   // PREVIOUS
   const previousStep = () => {
     if (currentStep > 1) {

@@ -1,4 +1,3 @@
-/* GLOBAL */
 * {
   margin: 0;
   padding: 0;
@@ -19,14 +18,12 @@ body {
   overflow-x: hidden;
 }
 
-/*MAIN LAYOUT */
 .layout {
   width: 100%;
   min-height: 100vh;
   background: #f4f6f9;
 }
 
-/*MAIN CONTENT*/
 .main-content {
   margin-top: 50px;
   margin-left: 210px;
@@ -40,19 +37,16 @@ body {
     width 0.3s ease;
 }
 
-/* SIDEBAR OPEN */
 .main-content.sidebar-open {
   margin-left: 210px;
   width: calc(100% - 210px);
 }
 
-/*  SIDEBAR CLOSED */
 .main-content.sidebar-close {
   margin-left: 70px;
   width: calc(100% - 70px);
 }
 
-/* PAGE CONTENT */
 .page-content {
   flex: 1;
   width: 100%;
@@ -62,7 +56,6 @@ body {
   overflow-y: auto;
 }
 
-/* TABULATOR */
 .tabulator .tabulator-footer .tabulator-footer-contents {
   display: flex !important;
   justify-content: space-between !important;
@@ -112,7 +105,6 @@ body {
   border-color: #dee2e6 !important;
 }
 
-/* TABLE */
 .table-container {
   width: 100%;
   overflow-x: auto;
@@ -131,7 +123,6 @@ body {
   padding: 0;
 }
 
-/*  ACTION BUTTONS */
 .action-btn {
   min-width: 110px;
   height: 38px;
@@ -139,7 +130,6 @@ body {
   font-weight: 500;
 }
 
-/*  WIZARD BUTTON */
 .wizard-btn {
   width: 40px;
   height: 40px;
@@ -150,7 +140,6 @@ body {
   padding: 0;
 }
 
-/*  BOP HEADER */
 .bop-header {
   display: flex;
   align-items: center;
@@ -168,7 +157,6 @@ body {
   font-weight: 600;
 }
 
-/* ADD BOP BUTTON */
 .add-bop-btn {
   min-width: 60px;
   height: 28px;
@@ -178,13 +166,11 @@ body {
   font-weight: 600;
 }
 
-/*  BOP SECTION */
 .bop-section {
   width: 100%;
   margin-top: 15px;
 }
 
-/* BOP CARD */
 .bop-card {
   margin-top: 15px;
   border: 1px solid #ddd;
@@ -192,7 +178,6 @@ body {
   background: #fff;
 }
 
-/* BOP CARD HEADER */
 .bop-card-header {
   display: flex;
   align-items: center;
@@ -208,7 +193,6 @@ body {
   font-size: 18px;
 }
 
-/* DELETE BOP */
 .delete-bop-btn {
   min-width: 60px;
   height: 28px;
@@ -218,13 +202,13 @@ body {
   font-weight: 600;
 }
 
-/*BOP BODY */
 .bop-card-body {
   padding: 15px;
 }
 
 .form-select {
   font-size: 12px;
+  padding: 0px 5px;
   border: var(--bs-border-width) solid #a6a7a8 !important;
 }
 
@@ -242,6 +226,9 @@ strong {
 .card-header {
   padding: 0 20px;
   background-color: lightgray;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .h5,
@@ -249,15 +236,12 @@ h5 {
   font-size: 18px;
 }
 
-/* BOTTOM LINE */
 .bottom-line-container {
   width: 100%;
   background: #fff;
   border: 1px solid #d3d3d3;
   box-sizing: border-box;
 }
-
-/*BOTTOM LINE HEADER */
 
 .bottom-line-header {
   display: flex;
@@ -280,14 +264,12 @@ h5 {
   font-weight: 600;
 }
 
-/*TABLE WRAPPER */
 .bottom-line-table-wrapper {
   width: 100%;
   overflow-x: auto;
   margin-top: 20px;
 }
 
-/* BOTTOM LINE TABLE */
 .bottom-line-table {
   width: 100%;
   border-collapse: collapse;
@@ -335,7 +317,6 @@ h5 {
   box-sizing: border-box;
 }
 
-/* BODY */
 .bottom-line-table tbody td {
   height: 30px;
   border: 1px solid #d9d9d9;
@@ -350,7 +331,6 @@ h5 {
   background: #dcdcdc;
 }
 
-/* PERCENTAGE */
 .percentage-cell {
   text-align: right;
 }
@@ -377,7 +357,6 @@ h5 {
   font-size: 13px;
 }
 
-/* ACTION */
 .action-cell {
   text-align: center;
 }
@@ -399,7 +378,6 @@ h5 {
   background: #3eaa9a;
 }
 
-/* Compound Code react-select */
 .compound-select__control {
   min-height: 31px !important;
   height: 31px !important;
@@ -509,12 +487,6 @@ h5 {
   color: #1e00ff !important;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .transaction-id-header {
   margin-left: auto;
   font-weight: 600;
@@ -588,7 +560,6 @@ h5 {
   padding: 3px 5px;
 }
 
-/* Make every control use the full cell width */
 .bop-table input,
 .bop-table select {
   width: 100%;
@@ -667,10 +638,6 @@ h5 {
   height: 35px;
 }
 
-/* =====================================================
-   COMPOUND MONTHLY MASTER TABLE
-   ===================================================== */
-
 .compound-report-table {
   width: 100%;
   min-width: 1450px;
@@ -679,10 +646,6 @@ h5 {
   background: #fff;
   font-size: 13px;
 }
-
-/* -----------------------------------------------------
-   ALL CELLS
-   ----------------------------------------------------- */
 
 .compound-report-table th,
 .compound-report-table td {
@@ -694,10 +657,6 @@ h5 {
   box-sizing: border-box;
 }
 
-/* -----------------------------------------------------
-   HEADER
-   ----------------------------------------------------- */
-
 .compound-report-table thead th {
   background: #f8f9fa;
   font-weight: 600;
@@ -706,11 +665,6 @@ h5 {
   height: 42px;
 }
 
-/* -----------------------------------------------------
-   FIXED INFORMATION COLUMNS
-   ----------------------------------------------------- */
-
-/* Sr. No. */
 .compound-report-table th:nth-child(1),
 .compound-report-table td:nth-child(1) {
   width: 55px;
@@ -718,7 +672,6 @@ h5 {
   max-width: 55px;
 }
 
-/* Compound Code */
 .compound-report-table th:nth-child(2),
 .compound-report-table td:nth-child(2) {
   width: 170px;
@@ -726,7 +679,6 @@ h5 {
   max-width: 170px;
 }
 
-/* Polymer Name */
 .compound-report-table th:nth-child(3),
 .compound-report-table td:nth-child(3) {
   width: 110px;
@@ -734,7 +686,6 @@ h5 {
   max-width: 110px;
 }
 
-/* IM Code */
 .compound-report-table th:nth-child(4),
 .compound-report-table td:nth-child(4) {
   width: 110px;
@@ -742,18 +693,12 @@ h5 {
   max-width: 110px;
 }
 
-/* Unit */
 .compound-report-table th:nth-child(5),
 .compound-report-table td:nth-child(5) {
   width: 70px;
   min-width: 70px;
   max-width: 70px;
 }
-
-/* -----------------------------------------------------
-   MONTH COLUMNS
-   January - December
-   ----------------------------------------------------- */
 
 .compound-report-table th:nth-child(n + 6),
 .compound-report-table td:nth-child(n + 6) {
@@ -762,19 +707,11 @@ h5 {
   max-width: 85px;
 }
 
-/* -----------------------------------------------------
-   MONTH HEADER
-   ----------------------------------------------------- */
-
 .compound-report-table thead th:nth-child(n + 6) {
   white-space: normal;
   line-height: 1.15;
   padding: 4px 3px;
 }
-
-/* -----------------------------------------------------
-   DATA CELLS
-   ----------------------------------------------------- */
 
 .compound-report-table tbody td {
   white-space: nowrap;
@@ -782,27 +719,20 @@ h5 {
   text-overflow: ellipsis;
 }
 
-/* Compound code can wrap */
 .compound-report-table tbody td:nth-child(2) {
   white-space: normal;
   overflow-wrap: break-word;
   word-break: break-word;
 }
 
-/* Polymer name can wrap */
 .compound-report-table tbody td:nth-child(3) {
   white-space: normal;
   overflow-wrap: break-word;
 }
 
-/* Unit */
 .compound-report-table tbody td:nth-child(5) {
   white-space: normal;
 }
-
-/* -----------------------------------------------------
-   ROW HEIGHT
-   ----------------------------------------------------- */
 
 .compound-report-table tbody tr {
   height: 35px;
@@ -812,17 +742,9 @@ h5 {
   height: 35px;
 }
 
-/* -----------------------------------------------------
-   HOVER
-   ----------------------------------------------------- */
-
 .compound-report-table tbody tr:hover {
   background-color: #f5f8fc;
 }
-
-/* -----------------------------------------------------
-   TABLE WRAPPER
-   ----------------------------------------------------- */
 
 .compound-report-page .table-responsive {
   width: 100%;
@@ -832,7 +754,6 @@ h5 {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Keep scrollbar inside table area */
 .compound-report-page .table-responsive::-webkit-scrollbar {
   height: 8px;
 }
@@ -849,20 +770,11 @@ h5 {
 .compound-report-page .table-responsive::-webkit-scrollbar-thumb:hover {
   background: #858b92;
 }
-/* =====================================================
-   COMPOUND REPORT CONTAINER
-   ===================================================== */
 
 .compound-report-container {
   width: 100%;
   max-width: 100%;
 }
-
-/* =====================================================
-   TABLE SCROLL AREA
-   IMPORTANT:
-   Scrollbar belongs ONLY to the table
-   ===================================================== */
 
 .compound-table-scroll {
   width: 100%;
@@ -872,10 +784,6 @@ h5 {
   -webkit-overflow-scrolling: touch;
 }
 
-/* =====================================================
-   TABLE
-   ===================================================== */
-
 .compound-report-table {
   width: 100%;
   min-width: 1450px;
@@ -883,10 +791,6 @@ h5 {
   border-collapse: collapse;
   margin-bottom: 0 !important;
 }
-
-/* =====================================================
-   HORIZONTAL SCROLLBAR
-   ===================================================== */
 
 .compound-table-scroll::-webkit-scrollbar {
   height: 9px;
@@ -905,35 +809,20 @@ h5 {
   background: #858b92;
 }
 
-/* Firefox */
-
 .compound-table-scroll {
   scrollbar-width: auto;
 }
 
-/* =====================================================
-   PAGINATION
-   BELOW THE SCROLLBAR
-   ===================================================== */
-
 .compound-pagination {
   width: 100%;
-  min-height: 55px;
-
+  min-height: 30px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-
   gap: 15px;
-
   padding: 8px 0 0 0;
-
   box-sizing: border-box;
 }
-
-/* =====================================================
-   SHOW DROPDOWN
-   ===================================================== */
 
 .pagination-left {
   display: flex;
@@ -946,13 +835,9 @@ h5 {
 }
 
 .pagination-left .form-select {
-  width: 118px;
-  height: 38px;
+  width: 50px;
+  height: 20px;
 }
-
-/* =====================================================
-   PAGINATION BUTTONS
-   ===================================================== */
 
 .pagination-right {
   display: flex;
@@ -961,20 +846,15 @@ h5 {
 }
 
 .pagination-right button {
-  width: 42px;
-  height: 38px;
-
+  width: 30px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-
   padding: 0;
-
   border: 1px solid #dee2e6;
   background: #fff;
-
   border-radius: 5px;
-
   font-size: 15px;
 }
 
@@ -982,31 +862,18 @@ h5 {
   background: #f1f3f5;
 }
 
-/* Disabled buttons */
-
 .pagination-right button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
-/* =====================================================
-   PAGE INFORMATION
-   ===================================================== */
-
 .page-info {
-  min-width: 95px;
-
+  min-width: 70px;
   text-align: center;
-
   white-space: nowrap;
-
-  font-size: 14px;
+  font-size: 11px;
   color: #212529;
 }
-
-/* =====================================================
-   MOBILE
-   ===================================================== */
 
 @media (max-width: 768px) {
   .compound-pagination {
@@ -1076,13 +943,11 @@ h5 {
   text-align: right;
 }
 
-/*  TOM SELECT - SAME AS FORM CONTROL*/
 .ts-wrapper {
   width: 100% !important;
   font-size: 12px !important;
 }
 
-/* Main Tom Select box */
 .ts-wrapper .ts-control {
   width: 100% !important;
   min-height: 30.1px !important;
@@ -1096,25 +961,27 @@ h5 {
   color: #212529;
 }
 
-/* Search input inside Tom Select */
 .ts-wrapper .ts-control > input {
   margin: 0 !important;
   padding: 0 !important;
-  font-size: 12px !important;
+  width: auto !important;
+  min-width: 20px !important;
+  height: 24px !important;
+  line-height: 24px !important;
+  font-size: 14px !important;
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
   background: transparent !important;
-  color: #212529;
+  color: #212529 !important;
+  box-sizing: border-box !important;
 }
 
-/* Focus - same Bootstrap style */
 .ts-wrapper.focus .ts-control {
   border-color: #86b7fe !important;
   box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15) !important;
 }
 
-/* FILLED STATE */
 .ts-wrapper.field-filled .ts-control {
   background-color: #cbffd0 !important;
   font-weight: 600 !important;
@@ -1125,13 +992,11 @@ h5 {
   color: #1e00ff !important;
 }
 
-/* Selected value */
 .ts-wrapper .ts-control .item {
   font-size: 12px !important;
   color: #1e00ff;
 }
 
-/* DROPDOWN */
 .ts-dropdown {
   z-index: 99999 !important;
   font-size: 12px !important;
@@ -1154,12 +1019,10 @@ h5 {
   color: #fff !important;
 }
 
-/* ARROW */
 .ts-wrapper.single .ts-control::after {
   border-color: #6c757d transparent transparent transparent !important;
 }
 
-/* BOP TABLE - CONSOLIDATED / OPTIMIZED */
 .bop-table {
   width: 100%;
   table-layout: fixed;
@@ -1185,7 +1048,6 @@ h5 {
   box-sizing: border-box;
 }
 
-/* All normal BOP controls start white */
 .bop-table .form-control,
 .bop-table select.form-control {
   width: 100%;
@@ -1201,7 +1063,6 @@ h5 {
   opacity: 1 !important;
 }
 
-/* Filled fields become green */
 .bop-table .field-filled,
 .bop-table .form-control.field-filled,
 .bop-table select.form-control.field-filled {
@@ -1211,7 +1072,6 @@ h5 {
   opacity: 1 !important;
 }
 
-/* Read-only filled fields */
 .bop-table input[readonly].field-filled,
 .bop-table .form-control[readonly].field-filled {
   background-color: #cbffd0 !important;
@@ -1221,7 +1081,6 @@ h5 {
   opacity: 1 !important;
 }
 
-/* Disabled filled selects */
 .bop-table select:disabled.field-filled {
   background-color: #cbffd0 !important;
   color: #0000ff !important;
@@ -1230,7 +1089,6 @@ h5 {
   opacity: 1 !important;
 }
 
-/* Empty disabled fields remain white */
 .bop-table input:disabled:not(.field-filled),
 .bop-table select:disabled:not(.field-filled) {
   background-color: #fff !important;
@@ -1238,14 +1096,12 @@ h5 {
   opacity: 1 !important;
 }
 
-/* RM table - locked fields */
 .rm-bop-table input[readonly],
 .rm-bop-table select:disabled {
   opacity: 1 !important;
   cursor: not-allowed;
 }
 
-/* RM filled locked fields stay green */
 .rm-bop-table input[readonly].field-filled,
 .rm-bop-table select:disabled.field-filled {
   background-color: #cbffd0 !important;
@@ -1253,12 +1109,10 @@ h5 {
   -webkit-text-fill-color: #0000ff !important;
 }
 
-/* RM month: editable and dynamically green when filled */
 .rm-bop-table select.form-control:not(:disabled) {
   cursor: pointer;
 }
 
-/* TOM SELECT - BOP FG CODE*/
 .bop-table .ts-wrapper {
   width: 100% !important;
   font-size: 14px !important;
@@ -1277,13 +1131,11 @@ h5 {
   font-size: 14px !important;
 }
 
-/* Tom Select selected value */
 .bop-table .ts-control .item {
   color: #0000ff !important;
   font-size: 14px !important;
 }
 
-/* Tom Select filled state */
 .bop-table .ts-wrapper.field-filled .ts-control {
   background-color: #cbffd0 !important;
   color: #0000ff !important;
@@ -1293,7 +1145,6 @@ h5 {
   color: #0000ff !important;
 }
 
-/* Tom Select disabled/locked state */
 .rm-bop-table .ts-wrapper.disabled .ts-control {
   background-color: #cbffd0 !important;
   color: #0000ff !important;
@@ -1306,7 +1157,6 @@ h5 {
   opacity: 1 !important;
 }
 
-/* MASTER TABLES - COMMON RESPONSIVE STYLE */
 .master-table-container {
   width: 100%;
   max-width: 100%;
@@ -1349,7 +1199,6 @@ h5 {
   background: #f9f9f9;
 }
 
-/* MOBILE */
 @media (max-width: 768px) {
   .master-table-container {
     overflow-x: auto;
@@ -1364,7 +1213,6 @@ h5 {
   }
 }
 
-/* EXPORT EXCEL BUTTON */
 .molding-actions {
   display: flex;
   align-items: center;
@@ -1372,7 +1220,6 @@ h5 {
   gap: 10px;
 }
 
-/* Export Excel */
 .export-excel-btn {
   height: 38px;
   padding: 0 16px;
@@ -1380,23 +1227,19 @@ h5 {
   align-items: center;
   justify-content: center;
   gap: 6px;
-
   background: #fff;
   color: #198754;
   border: 1px solid #198754;
   border-radius: 6px;
-
   font-family: "Segoe UI", sans-serif;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
 }
-
 .export-excel-btn:hover {
   background: #198754;
   color: #fff;
 }
-
 .add-transaction-btn {
   height: 38px;
   padding: 0 16px;
@@ -1404,258 +1247,145 @@ h5 {
   align-items: center;
   justify-content: center;
   gap: 6px;
-
   background: #fff;
   color: hsl(243, 100%, 67%);
   border: 1px solid hsl(243, 100%, 67%);
   border-radius: 6px;
-
   font-family: "Segoe UI", sans-serif;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
 }
-
 .add-transaction-btn:hover {
   background: hsl(243, 100%, 67%);
   color: #fff;
 }
-
-/* =====================================================
-   BOP MONTHLY REPORT
-   ===================================================== */
-
 .bop-report-container {
   width: 100%;
   max-width: 100%;
 }
-
-/* =====================================================
-   TABLE SCROLL AREA
-   ===================================================== */
-
 .bop-table-scroll {
   width: 100%;
   max-width: 100%;
-
   overflow-x: auto;
   overflow-y: hidden;
-
   -webkit-overflow-scrolling: touch;
 }
-
-/* =====================================================
-   TABLE
-   ===================================================== */
-
 .bop-report-table {
   width: 100%;
   min-width: 1750px;
-
   table-layout: fixed;
   border-collapse: collapse;
-
   margin-bottom: 0 !important;
-
   background: #fff;
-
   font-size: 13px;
 }
-
-/* =====================================================
-   CELLS
-   ===================================================== */
-
 .bop-report-table th,
 .bop-report-table td {
   border: 1px solid #d9dee5;
-
   text-align: center;
   vertical-align: middle;
-
   padding: 5px 6px;
-
   box-sizing: border-box;
 }
-
-/* =====================================================
-   HEADER
-   ===================================================== */
-
 .bop-report-table thead th {
   background: #f8f9fa;
-
   font-weight: 600;
-
   line-height: 1.15;
-
   white-space: normal;
-
   height: 44px;
 }
-
-/* =====================================================
-   FIXED COLUMNS
-   ===================================================== */
-
-/* Sr No */
-
 .bop-report-table th:nth-child(1),
 .bop-report-table td:nth-child(1) {
   width: 55px;
   min-width: 55px;
   max-width: 55px;
 }
-
-/* Part No */
-
 .bop-report-table th:nth-child(2),
 .bop-report-table td:nth-child(2) {
   width: 130px;
   min-width: 130px;
   max-width: 130px;
 }
-
-/* FG Code */
-
 .bop-report-table th:nth-child(3),
 .bop-report-table td:nth-child(3) {
   width: 120px;
   min-width: 120px;
   max-width: 120px;
 }
-
-/* BOP Part Name */
-
 .bop-report-table th:nth-child(4),
 .bop-report-table td:nth-child(4) {
   width: 180px;
   min-width: 180px;
   max-width: 180px;
 }
-
-/* BOP Part No */
-
 .bop-report-table th:nth-child(5),
 .bop-report-table td:nth-child(5) {
   width: 130px;
   min-width: 130px;
   max-width: 130px;
 }
-
-/* BOP ERP Code */
-
 .bop-report-table th:nth-child(6),
 .bop-report-table td:nth-child(6) {
   width: 130px;
   min-width: 130px;
   max-width: 130px;
 }
-
-/* Supplier */
-
 .bop-report-table th:nth-child(7),
 .bop-report-table td:nth-child(7) {
   width: 180px;
   min-width: 180px;
   max-width: 180px;
 }
-
-/* =====================================================
-   MONTH COLUMNS
-   January - December
-   ===================================================== */
-
 .bop-report-table th:nth-child(n + 8),
 .bop-report-table td:nth-child(n + 8) {
   width: 85px;
   min-width: 85px;
   max-width: 85px;
 }
-
-/* =====================================================
-   DATA
-   ===================================================== */
-
 .bop-report-table tbody td {
   white-space: nowrap;
-
   overflow: hidden;
-
   text-overflow: ellipsis;
-
   height: 38px;
 }
-
-/* Allow long names to wrap */
-
 .bop-report-table tbody td:nth-child(4),
 .bop-report-table tbody td:nth-child(7) {
   white-space: normal;
-
   overflow-wrap: break-word;
-
   word-break: break-word;
 }
-
-/* =====================================================
-   HOVER
-   ===================================================== */
-
 .bop-report-table tbody tr:hover {
   background: #f5f8fc;
 }
-
-/* =====================================================
-   SCROLLBAR
-   ===================================================== */
-
 .bop-table-scroll::-webkit-scrollbar {
   height: 9px;
 }
-
 .bop-table-scroll::-webkit-scrollbar-track {
   background: #eeeeee;
 }
-
 .bop-table-scroll::-webkit-scrollbar-thumb {
   background: #aeb4bb;
   border-radius: 5px;
 }
-
 .bop-table-scroll::-webkit-scrollbar-thumb:hover {
   background: #858b92;
 }
 
-/* =====================================================
-   PAGINATION
-   ===================================================== */
-
 .bop-pagination {
   width: 100%;
-
-  min-height: 55px;
-
+  min-height: 30px;
   display: flex;
-
   justify-content: flex-end;
-
   align-items: center;
-
   gap: 15px;
-
   padding-top: 8px;
-
   box-sizing: border-box;
 }
 
-/* Show */
-
 .bop-pagination-left {
   display: flex;
-
   align-items: center;
-
   gap: 8px;
 }
 
@@ -1664,38 +1394,25 @@ h5 {
 }
 
 .bop-pagination-left select {
-  width: 118px;
-
-  height: 38px;
+  width: 60px;
+  height: 20px;
 }
-
-/* Pagination buttons */
 
 .bop-pagination-right {
   display: flex;
-
   align-items: center;
-
   gap: 6px;
 }
 
 .bop-pagination-right button {
-  width: 42px;
-
-  height: 38px;
-
+  width: 30px;
+  height: 20px;
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   padding: 0;
-
   border: 1px solid #dee2e6;
-
   background: #fff;
-
   border-radius: 5px;
 }
 
@@ -1705,30 +1422,19 @@ h5 {
 
 .bop-pagination-right button:disabled {
   opacity: 0.55;
-
   cursor: not-allowed;
 }
 
-/* Page information */
-
 .bop-page-info {
-  min-width: 95px;
-
+  min-width: 60px;
   text-align: center;
-
   white-space: nowrap;
-
-  font-size: 14px;
+  font-size: 11px;
 }
-
-/* =====================================================
-   MOBILE
-   ===================================================== */
 
 @media (max-width: 768px) {
   .bop-pagination {
     flex-wrap: wrap;
-
     gap: 8px;
   }
 

@@ -1,251 +1,610 @@
+/* MOLDING PAGE */
 .molding-page {
   width: 100%;
-  padding: 25px;
-  background: #f5f7fa;
   min-height: calc(100vh - 70px);
+  padding: 5px;
+  background: #f5f7fa;
+  box-sizing: border-box;
 }
 
-/* =========================
-   PAGE HEADER
-========================= */
-
+/* PAGE HEADER */
 .molding-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 15px;
   margin-bottom: 22px;
 }
-
 .molding-header h2 {
   margin: 0;
   font-size: 25px;
   font-weight: 600;
   color: #1f2937;
 }
-
 .molding-header p {
   margin: 5px 0 0;
   color: #6b7280;
   font-size: 14px;
 }
+.molding-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-/* =========================
-   ADD BUTTON
-========================= */
+/* EXPORT BUTTON */
+.export-excel-btn {
+  border: 1px solid #198754;
+  background: #fff;
+  color: #198754;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: 0.2s;
+}
+.export-excel-btn span {
+  font-size: 16px;
+}
+.export-excel-btn:hover {
+  background: #198754;
+  color: #fff;
+}
 
+/* ADD BUTTON */
 .add-transaction-btn {
   border: none;
   background: #2563eb;
-  color: white;
+  color: #fff;
   padding: 11px 18px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-
   transition: 0.2s;
 }
-
 .add-transaction-btn span {
   font-size: 20px;
   line-height: 14px;
 }
-
 .add-transaction-btn:hover {
   background: #1d4ed8;
 }
 
-/* =========================
-   TABLE CARD
-========================= */
-
+/* TABLE CARD */
 .molding-table-card {
-  background: white;
-  border-radius: 8px;
+  width: 100%;
+  background: #fff;
   border: 1px solid #e5e7eb;
+  border-radius: 8px;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
-/* =========================
-   TABLE HEADER
-========================= */
-
-.table-header {
-  height: 60px;
+/* TABLE HEADER */
+.molding-page .table-header {
+  height: 40px;
   padding: 0 20px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   border-bottom: 1px solid #e5e7eb;
+  box-sizing: border-box;
 }
-
-.table-header h3 {
+.molding-page .table-header h3 {
   margin: 0;
   font-size: 17px;
   font-weight: 600;
   color: #1f2937;
 }
-
-.table-header span {
+.molding-page .table-header span {
   font-size: 13px;
   color: #6b7280;
 }
 
-/* =========================
-   TABLE
-========================= */
-
-.table-wrapper {
+/* TABLE SCROLL AREA */
+.molding-table-scroll {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+.molding-table-scroll::-webkit-scrollbar {
+  height: 9px;
+}
+.molding-table-scroll::-webkit-scrollbar-track {
+  background: #eeeeee;
+}
+.molding-table-scroll::-webkit-scrollbar-thumb {
+  background: #aeb4bb;
+  border-radius: 5px;
+}
+.molding-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #858b92;
 }
 
+/* Firefox */
+.molding-table-scroll {
+  scrollbar-width: auto;
+}
+
+/* MOLDING TABLE */
 .molding-table {
   width: 100%;
+  min-width: 1770px;
+  table-layout: fixed;
   border-collapse: collapse;
-  min-width: 1250px;
+  border-spacing: 0;
+  background: #fff;
+  font-size: 13px;
 }
 
+/* ALL CELLS */
+.molding-table th,
+.molding-table td {
+  box-sizing: border-box;
+  border: 1px solid #cccccc;
+  text-align: center;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+/* HEADER */
 .molding-table thead {
   background: #f8fafc;
 }
-
-.molding-table th {
-  padding: 13px 15px;
-  text-align: left;
-
+.molding-table thead th {
+  height: 42px;
+  padding: 6px 5px;
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
-
-  border-bottom: 1px solid #e5e7eb;
-  white-space: nowrap;
+  color: #475569;
+  white-space: normal;
+  line-height: 1.2;
+  word-break: normal;
 }
 
-.molding-table td {
-  padding: 14px 15px;
-
+/* BODY */
+.molding-table tbody td {
+  height: 40px;
+  padding: 0px 3px;
   font-size: 13px;
   color: #374151;
-
-  border-bottom: 1px solid #f1f5f9;
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
-
 .molding-table tbody tr:hover {
   background: #f8fafc;
 }
 
-/* =========================
-   TRANSACTION ID
-========================= */
-
-.transaction-id {
-  font-weight: 600 !important;
-  color: #2563eb !important;
+/* PERCENTAGE COLUMN WIDTHS */
+.molding-table {
+  width: 100%;
+  min-width: 1350px;
+  table-layout: fixed;
 }
 
-/* =========================
-   PROFIT / LOSS
-========================= */
+/* 1 - TR ID */
+.molding-table th:nth-child(1),
+.molding-table td:nth-child(1) {
+  width: 4%;
+}
 
-.profit {
-  color: #16a34a;
+/* 2 - Customer Name */
+.molding-table th:nth-child(2),
+.molding-table td:nth-child(2) {
+  width: 11%;
+}
+
+/* 3 - Production Unit */
+.molding-table th:nth-child(3),
+.molding-table td:nth-child(3) {
+  width: 5%;
+}
+
+/* 4 - Billing Unit */
+.molding-table th:nth-child(4),
+.molding-table td:nth-child(4) {
+  width: 5%;
+}
+
+/* 5 - Subcategory */
+.molding-table th:nth-child(5),
+.molding-table td:nth-child(5) {
+  width: 7%;
+}
+
+/* 6 - Part No */
+.molding-table th:nth-child(6),
+.molding-table td:nth-child(6) {
+  width: 9%;
+}
+
+/* 7 - Mfg W/O Margin */
+.molding-table th:nth-child(7),
+.molding-table td:nth-child(7) {
+  width: 7%;
+}
+
+/* 8 - Mfg With Margin */
+.molding-table th:nth-child(8),
+.molding-table td:nth-child(8) {
+  width: 7%;
+}
+
+/* 9 - Sell Cost */
+.molding-table th:nth-child(9),
+.molding-table td:nth-child(9) {
+  width: 6%;
+}
+
+/* 10 - Profit vs Mfg Cost */
+.molding-table th:nth-child(10),
+.molding-table td:nth-child(10) {
+  width: 6%;
+}
+
+/* 11 - Extra Profit/Loss */
+.molding-table th:nth-child(11),
+.molding-table td:nth-child(11) {
+  width: 7%;
+}
+
+/* 12 - Monthly Qty */
+.molding-table th:nth-child(12),
+.molding-table td:nth-child(12) {
+  width: 6%;
+}
+
+/* 13 - Total Mfg Profit/Loss */
+.molding-table th:nth-child(13),
+.molding-table td:nth-child(13) {
+  width: 8%;
+}
+
+/* 14 - Extra Profit/Loss Total */
+.molding-table th:nth-child(14),
+.molding-table td:nth-child(14) {
+  width: 8%;
+}
+
+/* 15 - Status */
+.molding-table th:nth-child(15),
+.molding-table td:nth-child(15) {
+  width: 5%;
+}
+
+/* 16 - Action */
+.molding-table th:nth-child(16),
+.molding-table td:nth-child(16) {
+  width: 4%;
+}
+
+/* TEXT CELLS */
+.molding-table .transaction-id {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+}
+.molding-table .customer-name,
+.molding-table .production-unit,
+.molding-table .billing-unit,
+.molding-table .sub-category,
+.molding-table .part-no {
   font-weight: 600;
 }
 
-.loss {
+/* Allow customer and part number to remain readable */
+.molding-table .customer-name,
+.molding-table .part-no {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: left;
+}
+
+/* MONEY / NUMBER CELLS */
+.molding-table .part-cost,
+.molding-table .sell-cost,
+.molding-table .profit-loss,
+.molding-table .monthly-profit-loss {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* PROFIT / LOSS */
+.molding-table .profit {
+  color: #16a34a;
+  font-weight: 600;
+}
+.molding-table .loss {
   color: #dc2626;
   font-weight: 600;
 }
 
-/* =========================
-   STATUS
-========================= */
-
-.status {
-  display: inline-block;
-  padding: 5px 10px;
+/* STATUS */
+.molding-table .stat50-cell {
+  text-align: center;
+}
+.molding-table .status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  padding: 5px 0px;
   border-radius: 20px;
-
   font-size: 11px;
   font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
 }
-
-.status.completed {
+.molding-table .status.completed {
   background: #dcfce7;
   color: #15803d;
 }
-
-.status.draft {
+.molding-table .status.draft {
   background: #fef3c7;
   color: #b45309;
 }
-
-.status.submitted {
+.molding-table .status.submitted {
   background: #dbeafe;
   color: #1d4ed8;
 }
 
-/* =========================
-   OPEN BUTTON
-========================= */
-
-.open-btn {
+/* OPEN BUTTON */
+.molding-table .action-cell {
+  text-align: center;
+}
+.molding-table .open-btn {
+  width: 40px;
+  height: 28px;
+  padding: 0;
   border: 1px solid #2563eb;
-  background: white;
-
-  color: #2563eb;
-
-  padding: 6px 13px;
   border-radius: 5px;
-
+  background: #fff;
+  color: #2563eb;
   font-size: 12px;
   font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.molding-table .open-btn:hover {
+  background: #2563eb;
+  color: #fff;
+}
 
+/* NO DATA */
+.molding-table .no-data {
+  width: 100%;
+  height: 80px;
+  padding: 30px !important;
+  text-align: center !important;
+  color: #9ca3af !important;
+  font-size: 13px;
+  white-space: normal;
+}
+
+/* PAGINATION */
+.molding-page .sales-pagination {
+  width: 100%;
+  min-height: 30px;
+  padding: 0px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  box-sizing: border-box;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+}
+.molding-page .records-per-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.molding-page .records-per-page label {
+  margin: 0;
+  font-size: 13px;
+  color: #374151;
+  white-space: nowrap;
+}
+.molding-page .records-per-page select {
+  width: 50px;
+  height: 20px;
+  padding: 0px 0px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  background: #fff;
+  font-size: 13px;
   cursor: pointer;
 }
-
-.open-btn:hover {
-  background: #2563eb;
-  color: white;
+.molding-page .pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.molding-page .page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.molding-page .pagination-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  min-width: 30px;
+  padding: 0 8px;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  background: #fff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.molding-page .pagination-controls button:hover:not(:disabled) {
+  background: #f1f3f5;
+}
+.molding-page .pagination-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.molding-page .pagination-controls .pagination-page.active {
+  background: #0d6efd;
+  border-color: #0d6efd;
+  color: #fff;
+  font-weight: 600;
 }
 
-/* =========================
-   NO DATA
-========================= */
-
-.no-data {
-  text-align: center !important;
-  padding: 40px !important;
-  color: #9ca3af !important;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-
+/* RESPONSIVE */
 @media (max-width: 768px) {
-
   .molding-page {
-    padding: 15px;
+    padding: 10px;
   }
-
   .molding-header {
     align-items: flex-start;
-    gap: 15px;
     flex-direction: column;
   }
-
-  .add-transaction-btn {
+  .molding-actions {
     width: 100%;
-    justify-content: center;
+    flex-direction: column;
   }
-
+  .molding-actions .export-excel-btn,
+  .molding-actions .add-transaction-btn {
+    width: 100%;
+  }
+  .molding-page .sales-pagination {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
 }
+
+/* SALES MONTHLY FILTERS */
+
+.sales-monthly-report-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-right: 2px;
+}
+
+.sales-monthly-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sales-monthly-filter-group label {
+  margin: 0;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.sales-monthly-filter-group select {
+  width: 105px;
+  height: 34px;
+  padding: 4px 24px 4px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  color: #374151;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.sales-monthly-filter-group select:hover {
+  border-color: #9ca3af;
+}
+
+.sales-monthly-filter-group select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.08);
+}
+
+/* Loading text shown while Sales Monthly is loading */
+
+.sales-monthly-filter-loading {
+  align-self: center;
+  margin: 0 2px 9px 0;
+  color: #6b7280;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* HEADER LAYOUT */
+.molding-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* LARGE SCREEN */
+@media (max-width: 1400px) {
+  .sales-monthly-report-filters {
+    gap: 6px;
+  }
+  .sales-monthly-filter-group select {
+    width: 95px;
+  }
+  .molding-actions {
+    gap: 7px;
+  }
+  .export-excel-btn {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .add-transaction-btn {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+
+/* MEDIUM SCREEN */
+@media (max-width: 1150px) {
+  .molding-header {
+    align-items: flex-start;
+  }
+  .molding-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .sales-monthly-report-filters {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .sales-monthly-report-filters {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .sales-monthly-filter-group select {
+    width: 120px;
+  }
+  .sales-monthly-filter-loading {
+    margin-bottom: 9px;
+  }
+}
+

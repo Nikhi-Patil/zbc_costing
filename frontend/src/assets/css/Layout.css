@@ -1,41 +1,33 @@
 .layout {
-    min-height: 100vh;
-    display: flex;
-    background: #f4f6f9;
+  min-height: 100vh;
+  display: flex;
+  background: #f4f6f9;
 }
-
 .main-content {
-    margin-top: 50px;
-    margin-left: 210px;
-
-    width: calc(100% - 210px);
-    min-width: 0;
-
-    min-height: calc(100vh - 50px);
-
-    display: flex;
-    flex-direction: column;
-
-    transition:
-        margin-left 0.3s ease,
-        width 0.3s ease;
+  margin-top: 50px;
+  margin-left: 210px;
+  width: calc(100% - 210px);
+  min-width: 0;
+  min-height: calc(100vh - 50px);
+  display: flex;
+  flex-direction: column;
+  transition:
+    margin-left 0.3s ease,
+    width 0.3s ease;
 }
-
 .main-content.sidebar-open {
-    margin-left: 210px;
-    width: calc(100% - 210px);
+  margin-left: 210px;
+  width: calc(100% - 210px);
 }
-
 .main-content.sidebar-close {
-    margin-left: 70px;
-    width: calc(100% - 70px);
+  margin-left: 70px;
+  width: calc(100% - 70px);
 }
-
 .page-content {
-    flex: 1;
-    width: 100%;
-    min-width: 0;
-    padding: 20px;
-    overflow-x: hidden;
-    overflow-y: auto;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  padding: 20px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }

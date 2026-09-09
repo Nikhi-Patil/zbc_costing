@@ -5,33 +5,28 @@ import adminDB from "../config/adminDB.js";
 export const getCompoundMonthlyReport = async (req, res) => {
   try {
     const { financial_year } = req.query;
-
-    const [rows] = await zbcDB.query(
-      `
-  SELECT
-    compound_id,
-    compound_code,
-    polymer_name,
-    im_code,
-    unit_id,
-    financial_year,
-    month,
-    qty,
-    rate
-  FROM compound_monthly_report
-  WHERE financial_year = ?
-  ORDER BY compound_code, month
-  `,
+    const [rows] = await zbcDB.query(`
+      SELECT
+        compound_id,
+        compound_code,
+        polymer_name,
+        im_code,
+        unit_id,
+        financial_year,
+        month,
+        qty,
+        rate
+      FROM compound_monthly_report
+      WHERE financial_year = ?
+      ORDER BY compound_code, month`,
       [financial_year]
     );
-
     res.json({
       success: true,
       data: rows,
     });
   } catch (error) {
     console.error("Error fetching compound monthly report:", error);
-
     res.status(500).json({
       success: false,
       message: "Failed to fetch compound monthly report",
@@ -39,6 +34,7 @@ export const getCompoundMonthlyReport = async (req, res) => {
     });
   }
 };
+
 //Create Compound Monthly Rate
 export const createCompoundMonthlyRate = async (req, res) => {
   try {
@@ -53,7 +49,6 @@ export const createCompoundMonthlyRate = async (req, res) => {
       qty,
       rate,
     } = req.body;
-
     if (!compoundId || !unitId || !financial_year || !month) {
       return res.status(400).json({
         success: false,
@@ -61,9 +56,7 @@ export const createCompoundMonthlyRate = async (req, res) => {
           "Compound, unit, financial_year and month are required",
       });
     }
-
-    await zbcDB.query(
-      `
+    await zbcDB.query(`
       INSERT INTO compound_monthly_report (
         compound_id,
         compound_code,
@@ -78,8 +71,7 @@ export const createCompoundMonthlyRate = async (req, res) => {
       ON DUPLICATE KEY UPDATE
         qty = VALUES(qty),
         rate = VALUES(rate),
-        updated_at = CURRENT_TIMESTAMP
-      `,
+        updated_at = CURRENT_TIMESTAMP `,
       [
         compoundId,
         compoundCode,
@@ -92,18 +84,15 @@ export const createCompoundMonthlyRate = async (req, res) => {
         rate || 0,
       ]
     );
-
     res.status(201).json({
       success: true,
       message: "Compound monthly rate saved successfully",
     });
-
   } catch (error) {
     console.error(
       "Error saving compound monthly rate:",
       error
     );
-
     res.status(500).json({
       success: false,
       message: "Failed to save compound monthly rate",
@@ -111,6 +100,7 @@ export const createCompoundMonthlyRate = async (req, res) => {
     });
   }
 };
+
 //Get Bop Monthly Report
 export const getBopMonthlyReport = async (req, res) => {
   try {
@@ -122,8 +112,7 @@ export const getBopMonthlyReport = async (req, res) => {
       });
     }
     // Get monthly BOP data
-    const [rows] = await zbcDB.query(
-      `
+    const [rows] = await zbcDB.query(`
       SELECT
         bop_id,
         part_no,
@@ -155,14 +144,10 @@ export const getBopMonthlyReport = async (req, res) => {
       const placeholders = supplierIds
         .map(() => "?")
         .join(",");
-      const [supplierRows] = await adminDB.query(
-        `
-        SELECT
-          id,
-          supplier_name
+      const [supplierRows] = await adminDB.query(`
+        SELECT id,  supplier_name
         FROM supplier_master
-        WHERE id IN (${placeholders})
-        `,
+        WHERE id IN (${placeholders})`,
         supplierIds
       );
       supplierMap = new Map(
@@ -194,6 +179,7 @@ export const getBopMonthlyReport = async (req, res) => {
     });
   }
 };
+
 //Create Bop Monthly Rate
 export const createBopMonthlyRate = async (req, res) => {
   try {
@@ -210,37 +196,31 @@ export const createBopMonthlyRate = async (req, res) => {
       qty,
       rate,
     } = req.body;
-
     if (!bopId) {
       return res.status(400).json({
         success: false,
         message: "BOP is required",
       });
     }
-
     if (!supplierId || Number(supplierId) <= 0) {
       return res.status(400).json({
         success: false,
         message: "Supplier is required",
       });
     }
-
     if (!financial_year) {
       return res.status(400).json({
         success: false,
         message: "Year is required",
       });
     }
-
     if (!month) {
       return res.status(400).json({
         success: false,
         message: "Month is required",
       });
     }
-
-    await zbcDB.query(
-      `
+    await zbcDB.query(`
       INSERT INTO bop_monthly_report (
         bop_id,
         part_no,
@@ -253,11 +233,8 @@ export const createBopMonthlyRate = async (req, res) => {
         month,
         qty,
         rate
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  ?)
-
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  ?)
       ON DUPLICATE KEY UPDATE
-
         part_no = VALUES(part_no),
         fg_code = VALUES(fg_code),
         bop_part_name = VALUES(bop_part_name),
@@ -265,8 +242,7 @@ export const createBopMonthlyRate = async (req, res) => {
         bop_erp_code = VALUES(bop_erp_code),
         qty = VALUES(qty),
         rate = VALUES(rate),
-        updated_at = CURRENT_TIMESTAMP
-      `,
+        updated_at = CURRENT_TIMESTAMP`,
       [
         bopId,
         partNo || null,
@@ -281,7 +257,6 @@ export const createBopMonthlyRate = async (req, res) => {
         rate || 0,
       ]
     );
-
     res.status(201).json({
       success: true,
       message: "BOP monthly rate saved successfully",
@@ -291,7 +266,6 @@ export const createBopMonthlyRate = async (req, res) => {
       "Error saving BOP monthly rate:",
       error
     );
-
     res.status(500).json({
       success: false,
       message: "Failed to save BOP monthly rate",
@@ -299,6 +273,7 @@ export const createBopMonthlyRate = async (req, res) => {
     });
   }
 };
+
 //Get Compound Rate For Costing
 export const getCompoundRateForCosting = async (req, res) => {
   try {
@@ -310,7 +285,6 @@ export const getCompoundRateForCosting = async (req, res) => {
       financial_year,
       month,
     } = req.query;
-
     if (
       !compoundCode ||
       !polymerName ||
@@ -325,29 +299,26 @@ export const getCompoundRateForCosting = async (req, res) => {
           "Compound Code, Polymer, IM Code, Production Unit, Year and Month are required",
       });
     }
-
-    const [rows] = await zbcDB.query(
-      `
+    const [rows] = await zbcDB.query(`
       SELECT
-    id,
-    compound_id,
-    compound_code,
-    polymer_name,
-    im_code,
-    unit_id,
-    financial_year,
-    month,
-    qty,
-    rate
-  FROM compound_monthly_report
-  WHERE compound_code = ?
-    AND polymer_name = ?
-    AND im_code = ?
-    AND unit_id = ?
-    AND financial_year = ?
-    AND month = ?
-  LIMIT 1
-  `,
+        id,
+        compound_id,
+        compound_code,
+        polymer_name,
+        im_code,
+        unit_id,
+        financial_year,
+        month,
+        qty,
+        rate
+      FROM compound_monthly_report
+      WHERE compound_code = ?
+        AND polymer_name = ?
+        AND im_code = ?
+        AND unit_id = ?
+        AND financial_year = ?
+        AND month = ?
+      LIMIT 1`,
       [
         compoundCode,
         polymerName,
@@ -357,7 +328,6 @@ export const getCompoundRateForCosting = async (req, res) => {
         Number(month),
       ]
     );
-
     if (rows.length === 0) {
       return res.json({
         success: true,
@@ -366,7 +336,6 @@ export const getCompoundRateForCosting = async (req, res) => {
         data: null,
       });
     }
-
     res.json({
       success: true,
       found: true,
@@ -378,7 +347,6 @@ export const getCompoundRateForCosting = async (req, res) => {
       "Error fetching compound costing rate:",
       error
     );
-
     res.status(500).json({
       success: false,
       message: "Failed to fetch compound rate",
@@ -386,46 +354,71 @@ export const getCompoundRateForCosting = async (req, res) => {
     });
   }
 };
+
 //Get Bop Rate For Costing
 export const getBopRateForCosting = async (req, res) => {
   try {
     const {
       bopId,
+      bopErpCode,
       supplierId,
       financial_year,
       month,
     } = req.query;
 
-    console.log("BOP RATE REQUEST:", {
-      bopId,
-      supplierId,
-      financial_year,
-      month,
-    });
+    console.log("========================================");
+    console.log("BOP RATE REQUEST");
+    console.log("bopId       :", bopId);
+    console.log("bopErpCode  :", bopErpCode);
+    console.log("supplierId  :", supplierId);
+    console.log("financialYr :", financial_year);
+    console.log("month       :", month);
+    console.log("========================================");
+
+    if (
+      !supplierId ||
+      !financial_year ||
+      !month ||
+      (!bopId && !bopErpCode)
+    ) {
+      return res.status(400).json({
+        success: false,
+        found: false,
+        message:
+          "BOP, Supplier, Financial Year and Month are required",
+      });
+    }
 
     const [rows] = await zbcDB.query(
       `
       SELECT
         id,
         bop_id,
+        bop_erp_code,
         supplier_id,
         financial_year,
         month,
         qty,
         rate
       FROM bop_monthly_report
-      WHERE bop_id = ?
+      WHERE
+        (
+          bop_id = ?
+          OR LOWER(TRIM(bop_erp_code)) =
+             LOWER(TRIM(?))
+        )
         AND supplier_id = ?
-        AND financial_year = ?
+        AND TRIM(financial_year) = TRIM(?)
         AND month = ?
       LIMIT 1
       `,
       [
-        Number(bopId),
+        Number(bopId) || 0,
+        String(bopErpCode || "").trim(),
         Number(supplierId),
-        String(financial_year),
+        String(financial_year || "").trim(),
         Number(month),
-      ]
+      ],
     );
 
     console.log("BOP RATE DB RESULT:", rows);
@@ -442,7 +435,7 @@ export const getBopRateForCosting = async (req, res) => {
     return res.json({
       success: true,
       found: true,
-      rate: Number(rows[0].rate),
+      rate: Number(rows[0].rate) || 0,
       data: rows[0],
     });
 
@@ -451,22 +444,14 @@ export const getBopRateForCosting = async (req, res) => {
 
     return res.status(500).json({
       success: false,
+      found: false,
       message: "Failed to fetch BOP rate",
       error: error.message,
     });
   }
 };
-// Create Bulk Bop Monthly Rate
-// =====================================================
-// Create Bulk BOP Monthly Rate
-//
-// IMPORTANT:
-// 1. Check ALL Excel rows
-// 2. Collect ALL errors
-// 3. Upload ONLY valid rows
-// 4. Return complete error list
-// =====================================================
 
+// Create Bulk Bop Monthly Rate
 export const createBulkBopMonthlyRate = async (
   req,
   res
@@ -1084,12 +1069,8 @@ export const createBulkBopMonthlyRate = async (
     });
   }
 };
+
 //Create Bulk Compound Monthly Rate
-// =====================================================
-// Create Bulk Compound Monthly Rate
-// Valid rows will be uploaded.
-// Invalid rows will be collected and returned.
-// =====================================================
 export const createBulkCompoundMonthlyRate = async (req, res) => {
   try {
     const { rows } = req.body;
@@ -1104,28 +1085,20 @@ export const createBulkCompoundMonthlyRate = async (req, res) => {
     const errors = [];
     const validRows = [];
 
-    // =====================================================
     // STEP 1: Validate basic Excel data for ALL rows
-    // =====================================================
-
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
 
       // Frontend sends rowNumber, so use it if available
       const excelRow = row.rowNumber || i + 2;
-
       const rowErrors = [];
 
-      // -----------------------------
       // IM Code
-      // -----------------------------
       if (!row.imCode || !String(row.imCode).trim()) {
         rowErrors.push("IM Code is required");
       }
 
-      // -----------------------------
       // Production Unit
-      // -----------------------------
       if (
         !row.productionUnit ||
         !String(row.productionUnit).trim()
@@ -1133,9 +1106,7 @@ export const createBulkCompoundMonthlyRate = async (req, res) => {
         rowErrors.push("Production Unit is required");
       }
 
-      // -----------------------------
       // Financial Year
-      // -----------------------------
       if (
         !row.financial_year ||
         !String(row.financial_year).trim()
@@ -1143,42 +1114,23 @@ export const createBulkCompoundMonthlyRate = async (req, res) => {
         rowErrors.push("Financial Year is required");
       }
 
-      // -----------------------------
       // Month
-      // -----------------------------
       const month = Number(row.month);
-
       if (!row.month || month < 1 || month > 12) {
         rowErrors.push("Month must be between 1 and 12");
       }
 
-      // -----------------------------
       // Qty
-      // -----------------------------
-      if (
-        row.qty === undefined ||
-        row.qty === null ||
-        row.qty === "" ||
-        isNaN(Number(row.qty))
-      ) {
+      if (row.qty === undefined || row.qty === null || row.qty === "" || isNaN(Number(row.qty))) {
         rowErrors.push("Invalid Qty");
       }
 
-      // -----------------------------
       // Rate
-      // -----------------------------
-      if (
-        row.rate === undefined ||
-        row.rate === null ||
-        row.rate === "" ||
-        isNaN(Number(row.rate))
-      ) {
+      if ( row.rate === undefined || row.rate === null || row.rate === "" || isNaN(Number(row.rate))) {
         rowErrors.push("Invalid Rate");
       }
 
-      // -----------------------------
       // Store basic validation errors
-      // -----------------------------
       if (rowErrors.length > 0) {
         errors.push({
           rowNumber: excelRow,
@@ -1419,6 +1371,7 @@ export const createBulkCompoundMonthlyRate = async (req, res) => {
     });
   }
 };
+
 // GET COMPOUND POLYMER-WISE MONTHLY REPORT
 export const getCompoundPolymerMonthlyReport = async (req, res) => {
   try {

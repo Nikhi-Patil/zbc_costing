@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Select from "react-select";
 import BopTable from "./BopTable";
-import {months} from "../../utils/costingUtils";
+import { months } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 
 function RMDetailsForm({
@@ -14,6 +14,8 @@ function RMDetailsForm({
   updateBop,
 }) {
   const [compounds, setCompounds] = useState([]);
+  const [bopRowsWithRates, setBopRowsWithRates] = useState([]);
+  const [bopRateLoading, setBopRateLoading] = useState(false);
 
   useEffect(() => {
     const fetchCompounds = async () => {
@@ -45,11 +47,186 @@ function RMDetailsForm({
   const selectedCompound =
     compoundOptions.find((option) => option.value === formData.compoundCode) ||
     null;
-  const totalBopCost = bopList.reduce(
+  // BOP rows are now fetched by CostingWizard when the Part No. changes.
+  // Here we only attach the applicable monthly BOP rate and calculate cost.
+  // The BOP master/configuration itself is not edited from this form.
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadBopRates = async () => {
+      if (!Array.isArray(bopList) || bopList.length === 0) {
+        setBopRowsWithRates([]);
+        return;
+      }
+
+      const financialYear = formData.financialYear;
+      const defaultMonth = formData.compMonth;
+
+      // Keep the fetched rows visible even when the monthly inputs are not
+      // ready yet. Rate/cost will remain blank/zero until they are available.
+      if (!financialYear) {
+        setBopRowsWithRates(
+          bopList.map((bop) => ({
+            ...bop,
+            bopmonth: bop.bopmonth || "",
+            bopRate: "",
+            bopCost: "0.00",
+          })),
+        );
+        return;
+      }
+
+      setBopRateLoading(true);
+
+      try {
+        const rows = await Promise.all(
+          bopList.map(async (bop) => {
+            const bopId = bop.bopId ?? bop.bop_id ?? "";
+            const bopErpCode =
+              bop.bopFgCode ?? bop.bop_erp_code ?? bop.bopErpCode ?? "";
+            const supplierId = bop.supplierId ?? bop.supplier_id;
+            const month = bop.bopmonth || "";
+            const qty =
+              Number(
+                bop.bopAssemblyQty ?? bop.assembly_qty ?? bop.assemblyQty,
+              ) || 0;
+
+            if (!bopErpCode || !supplierId || !month) {
+              return {
+                ...bop,
+                bopmonth: month || "",
+                bopRate: "",
+                bopCost: "0.00",
+              };
+            }
+
+            try {
+              const params = new URLSearchParams({
+                bopErpCode: String(bopErpCode).trim(),
+                supplierId: String(supplierId),
+                financial_year: String(financialYear),
+                month: String(month),
+              });
+
+              const response = await fetch(
+                `${API_BASE_URL}/bop-rate-for-costing?${params.toString()}`,
+              );
+              const result = await response.json();
+
+              if (!response.ok || !result.success || !result.found) {
+                return {
+                  ...bop,
+                  bopmonth: month,
+                  bopRate: "",
+                  bopCost: "0.00",
+                };
+              }
+
+              const rate = Number(result.rate) || 0;
+
+              return {
+                ...bop,
+                bopmonth: month,
+                bopRate: rate,
+                bopCost: (qty * rate).toFixed(2),
+              };
+            } catch (error) {
+              console.error("BOP RATE ERROR:", error);
+              return {
+                ...bop,
+                bopmonth: month,
+                bopRate: "",
+                bopCost: "0.00",
+              };
+            }
+          }),
+        );
+
+        if (!cancelled) {
+          setBopRowsWithRates(rows);
+        }
+      } finally {
+        if (!cancelled) {
+          setBopRateLoading(false);
+        }
+      }
+    };
+
+    loadBopRates();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bopList, formData.financialYear, formData.compMonth]);
+
+  const totalBopCost = bopRowsWithRates.reduce(
     (total, bop) => total + (Number(bop.bopCost) || 0),
     0,
   );
   const finalRmCost = (Number(formData.totalRmCost) || 0) + totalBopCost;
+
+  const handleRmBopUpdate = async (id, field, value) => {
+    if (typeof updateBop === "function") {
+      await updateBop(id, field, value);
+    }
+
+    if (field !== "bopmonth") return;
+
+    const currentRow = bopRowsWithRates.find((bop) => bop.id === id);
+    if (!currentRow) return;
+
+    const bopErpCode =
+      currentRow.bopFgCode ??
+      currentRow.bop_erp_code ??
+      currentRow.bopErpCode ??
+      "";
+    const supplierId = currentRow.supplierId ?? currentRow.supplier_id ?? "";
+    const qty =
+      Number(
+        currentRow.bopAssemblyQty ??
+          currentRow.assembly_qty ??
+          currentRow.assemblyQty,
+      ) || 0;
+
+    let newRate = "";
+    let newCost = "0.00";
+
+    if (bopErpCode && supplierId && formData.financialYear && value) {
+      try {
+        const params = new URLSearchParams({
+          bopErpCode: String(bopErpCode).trim(),
+          supplierId: String(supplierId),
+          financial_year: String(formData.financialYear),
+          month: String(value),
+        });
+
+        const response = await fetch(
+          `${API_BASE_URL}/bop-rate-for-costing?${params.toString()}`,
+        );
+        const result = await response.json();
+
+        if (response.ok && result.success && result.found) {
+          newRate = Number(result.rate) || 0;
+          newCost = (qty * newRate).toFixed(2);
+        }
+      } catch (error) {
+        console.error("RM BOP RATE ERROR:", error);
+      }
+    }
+
+    setBopRowsWithRates((prev) =>
+      prev.map((bop) =>
+        bop.id === id
+          ? {
+              ...bop,
+              bopmonth: value,
+              bopRate: newRate,
+              bopCost: newCost,
+            }
+          : bop,
+      ),
+    );
+  };
 
   const fetchCompoundRate = async () => {
     const {
@@ -339,7 +516,17 @@ function RMDetailsForm({
       </div>
       {/* BOP Table */}
       {formData.hasBop === "Yes" && (
-        <BopTable mode="rm" bopList={bopList} updateBop={updateBop} />
+        <BopTable
+          mode="rm"
+          bopList={bopRowsWithRates}
+          updateBop={handleRmBopUpdate}
+        />
+      )}
+
+      {formData.hasBop === "Yes" && bopRateLoading && (
+        <div style={{ marginTop: "6px", fontSize: "12px" }}>
+          Loading monthly BOP rates...
+        </div>
       )}
     </>
   );

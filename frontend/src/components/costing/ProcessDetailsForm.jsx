@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import API_BASE_URL from "../../config/api";
 
-
 function ProcessDetailsForm({
   formData,
   transactionId,
@@ -55,7 +54,7 @@ function ProcessDetailsForm({
         <div className="card-body">
           {/* Row 1 */}
 
-          <div className="row g-2 mt-1 process-row " >
+          <div className="row g-2 mt-1 process-row ">
             <div className="col-md-2">
               <label className="form-label">
                 <b>Process Type</b>
@@ -157,7 +156,11 @@ function ProcessDetailsForm({
                 placeholder="Running Cavity"
               />
             </div>
+          </div>
 
+          {/* Row 2 */}
+
+          <div className="row g-2 mt-1 process-row">
             <div className="col-md-2">
               <label className="form-label">
                 <b> Cycle Time(min) </b>
@@ -173,11 +176,6 @@ function ProcessDetailsForm({
                 placeholder="Cycle Time"
               />
             </div>
-          </div>
-
-          {/* Row 2 */}
-
-          <div className="row g-2 mt-1 process-row" >
             <div className="col-md-2">
               <label className="form-label">
                 <b>Shift Time Efficiency</b>
@@ -244,7 +242,232 @@ function ProcessDetailsForm({
                 placeholder="Tool Size"
               />
             </div>
+          </div>
 
+          {/* Row 3 - Post Processing */}
+          <div className="row g-2 mt-1 process-row">
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Post Curing</b>
+              </label>
+              <input
+                type="number"
+                className={`form-control ${
+                  formData.postCuring ? "field-filled" : ""
+                }`}
+                name="postCuring"
+                value={formData.postCuring ?? ""}
+                onChange={handleInputChange}
+              />
+            </div>
+
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Finishing</b>
+              </label>
+              <input
+                type="number"
+                className={`form-control ${
+                  formData.finishing ? "field-filled" : ""
+                }`}
+                name="finishing"
+                value={formData.finishing ?? ""}
+                onChange={handleInputChange}
+              />
+            </div>
+
+            <div className="col-md-2">
+              <label className="form-label">
+                <b>Inspection</b>
+              </label>
+              <input
+                type="number"
+                className={`form-control ${
+                  formData.inspection ? "field-filled" : ""
+                }`}
+                name="inspection"
+                value={formData.inspection ?? ""}
+                onChange={handleInputChange}
+              />
+            </div>
+
+            {String(formData.subCategoryName || "")
+              .trim()
+              .toUpperCase() === "MTRB" && (
+              <>
+                <div className="col-md-2">
+                  <label className="form-label">
+                    <b>Shot Blasting</b>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className={`form-control ${
+                      formData.shotBlasting ? "field-filled" : ""
+                    }`}
+                    name="shotBlasting"
+                    value={formData.shotBlasting || ""}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+                <div className="col-md-2">
+                  <label className="form-label">
+                    <b>Vapour Degreasing</b>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className={`form-control ${
+                      formData.vapourDegreasing ? "field-filled" : ""
+                    }`}
+                    name="vapourDegreasing"
+                    value={formData.vapourDegreasing || ""}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Row 4 - MTRB Additional Processes */}
+          {String(formData.subCategoryName || "")
+            .trim()
+            .toUpperCase() === "MTRB" && (
+            <div className="row g-2 mt-1 process-row">
+              <div className="col-md-2">
+                <label className="form-label">
+                  <b>Chromating</b>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className={`form-control ${
+                    formData.chromating ? "field-filled" : ""
+                  }`}
+                  name="chromating"
+                  value={formData.chromating || ""}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="col-md-2">
+                <label className="form-label">
+                  <b>Phospating</b>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className={`form-control ${
+                    formData.phospating ? "field-filled" : ""
+                  }`}
+                  name="phospating"
+                  value={formData.phospating || ""}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="col-md-2">
+                <label className="form-label">
+                  <b>Adhesive</b>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className={`form-control ${
+                    formData.adhesive ? "field-filled" : ""
+                  }`}
+                  name="adhesive"
+                  value={formData.adhesive || ""}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="col-md-2">
+                <label className="form-label">
+                  <b>Painting</b>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className={`form-control ${
+                    formData.painting ? "field-filled" : ""
+                  }`}
+                  name="painting"
+                  value={formData.painting || ""}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="col-md-2">
+                <label className="form-label">
+                  <b>Cylindrical Grinding</b>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className={`form-control ${
+                    formData.cylindricalGrinding ? "field-filled" : ""
+                  }`}
+                  name="cylindricalGrinding"
+                  value={formData.cylindricalGrinding || ""}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+          )}
+          {/* Row 5 - Assembly */}
+          {formData.hasBop === "Yes" && (
+            <div className="row g-2 mt-1 process-row">
+              <div className="col-md-2">
+                <label className="form-label">
+                  <b>Assembly Qty</b>
+                </label>
+                <input
+                  type="text"
+                  className={`form-control ${
+                    totalAssemblyQty ? "field-filled" : ""
+                  }`}
+                  name="totalAssemblyQty"
+                  value={totalAssemblyQty}
+                  readOnly
+                />
+              </div>
+
+              <div className="col-md-2">
+                <label className="form-label">
+                  <b>Assembly Per Cost</b>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className={`form-control ${
+                    formData.assemblyPerCost ? "field-filled" : ""
+                  }`}
+                  name="assemblyPerCost"
+                  value={formData.assemblyPerCost ?? ""}
+                  onChange={handleInputChange}
+                  placeholder="Assembly Per Cost"
+                />
+              </div>
+
+              <div className="col-md-2">
+                <label className="form-label">
+                  <b>Total Assembly Cost</b>
+                </label>
+                <input
+                  type="text"
+                  className="form-control cost-highlight"
+                  name="totalAssemblyCost"
+                  value={formData.totalAssemblyCost ?? ""}
+                  readOnly
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Row 6 - Conversion Cost */}
+          <div className="row g-2 mt-1 process-row">
             <div className="col-md-2">
               <label className="form-label ">
                 <b>Process Cost/Part - A </b>
@@ -258,134 +481,28 @@ function ProcessDetailsForm({
                 readOnly
               />
             </div>
-          </div>
-
-          {/* Row 3 */}
-          <div className="row g-2 mt-1 process-row" >
-            <div className="col-md-1">
+            <div className="col-md-2">
               <label className="form-label">
-                <b> Post Curing </b>
+                <b>Process Cost/Part - B</b>
               </label>
-              <input
-                type="number"
-                className={`form-control ${
-                  formData.postCuring ? "field-filled" : ""
-                }`}
-                name="postCuring"
-                value={formData.postCuring}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="col-md-1">
-              <label className="form-label">
-                <b> Finishing </b>
-              </label>
-              <input
-                type="number"
-                className={`form-control ${
-                  formData.finishing ? "field-filled" : ""
-                }`}
-                name="finishing"
-                value={formData.finishing}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="col-md-1">
-              <label className="form-label">
-                <b> Inspection </b>
-              </label>
-              <input
-                type="number"
-                className={`form-control ${
-                  formData.inspection ? "field-filled" : ""
-                }`}
-                name="inspection"
-                value={formData.inspection}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            {formData.hasBop === "Yes" && (
-              <>
-                {/* Assembly Qty */}
-                <div className="col-md-1">
-                  <label className="form-label">
-                    <b>Assembly Qty</b>
-                  </label>
-
-                  <input
-                    type="text"
-                    className={`form-control ${
-                     totalAssemblyQty ? "field-filled" : ""
-                    }`}
-                    name="totalAssemblyQty"
-                    value={totalAssemblyQty}
-                    readOnly
-                  />
-                </div>
-
-                {/* Assembly Per Cost */}
-                <div className="col-md-1">
-                  <label className="form-label">
-                    <b>Assembly Per Cost</b>
-                  </label>
-
-                  <input
-                    type="number"
-                    className={`form-control ${
-                      formData.assemblyPerCost ? "field-filled" : ""
-                    }`}
-                    name="assemblyPerCost"
-                    value={formData.assemblyPerCost}
-                    onChange={handleInputChange}
-                    placeholder="Assembly Per Cost"
-                  />
-                </div>
-
-                {/* Total Assembly Cost */}
-                <div className="col-md-1">
-                  <label className="form-label">
-                    <b>Total Assembly Cost</b>
-                  </label>
-
-                  <input
-                    type="text"
-                    className={`form-control ${
-                      formData.totalAssemblyCost ? "field-filled" : ""
-                    }`}
-                    name="totalAssemblyCost"
-                    value={formData.totalAssemblyCost}
-                    readOnly
-                  />
-                </div>
-              </>
-            )}
-
-            <div className="col-md-1">
-              <label className="form-label">
-                <b> Process Cost/Part - B </b>
-              </label>
-
               <input
                 type="text"
                 className="form-control cost-highlight"
                 name="processCostB"
-                value={formData.processCostB}
+                value={formData.processCostB ?? ""}
                 readOnly
               />
             </div>
 
-            <div className="col-md-1">
+            <div className="col-md-2">
               <label className="form-label">
-                <b> Total Conversion Cost </b>
+                <b>Total Conversion Cost</b>
               </label>
               <input
                 type="text"
                 className="form-control conversion-highlight"
                 name="conversionCost"
-                value={formData.conversionCost}
+                value={formData.conversionCost ?? ""}
                 readOnly
               />
             </div>

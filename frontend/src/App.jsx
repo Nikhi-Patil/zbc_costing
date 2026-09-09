@@ -22,6 +22,11 @@ import BopBulkUpload from "./pages/monthly_masters/BopBulkUpload";
 import CompoundMonthlyMaster from "./pages/monthly_masters/CompoundMonthlyMaster";
 import CompoundMonthlyRateForm from "./pages/monthly_masters/CompoundMonthlyRateForm";
 import CompoundBulkUpload from "./pages/monthly_masters/CompoundBulkUpload";
+import CostingEntryForm from "./pages/costing/CostingEntryForm";
+import BopManagement from "./pages/costing/BopManagement";
+import SalesMonthly from "./pages/monthly_masters/SalesMonthly";
+import SalesMonthlyEntry from "./pages/monthly_masters/SalesMonthlyEntry";
+import SalesMonthlyBulk from "./pages/monthly_masters/SalesMonthlyBulk";
 
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -30,16 +35,30 @@ function App() {
     <Layout>
       <Routes>
         {/* Existing Monthly Masters */}
-        <Route path="/monthly-bop-master" element={<Navigate to="/monthly-master/bop" replace />}/>
-        <Route path="/monthly-compound-master" element={<Navigate to="/monthly-master/compound" replace />}/>
-        <Route path="/compound-polymer-monthly-report" element={<CompoundPolymerMonthlyReport />}/>
+        <Route path="/bop-management" element={<BopManagement />} />
+        <Route path="/costing-entry-form" element={<CostingEntryForm />} />
+        <Route
+          path="/monthly-bop-master"
+          element={<Navigate to="/monthly-master/bop" replace />}
+        />
+        <Route
+          path="/monthly-compound-master"
+          element={<Navigate to="/monthly-master/compound" replace />}
+        />
+        <Route
+          path="/compound-polymer-monthly-report"
+          element={<CompoundPolymerMonthlyReport />}
+        />
 
         {/* Dashboard */}
         <Route path="/dashboard" element={<Dashboard />} />
 
         {/* Costing */}
         <Route path="/molding/costing-wizard" element={<CostingWizard />} />
-        <Route path="/molding/costing-wizard/:transactionId" element={<CostingWizard />}/>
+        <Route
+          path="/molding/costing-wizard/:transactionId"
+          element={<CostingWizard />}
+        />
 
         {/* Masters */}
         <Route path="/unit-master" element={<UnitMaster />} />
@@ -57,13 +76,33 @@ function App() {
 
         {/* BOP MONTHLY MASTER */}
         <Route path="/monthly-master/bop" element={<BopMonthlyMaster />} />
-        <Route path="/monthly-master/bop/add-rate" element={<BopMonthlyRateForm />}/>
-        <Route path="/monthly-master/bop/bulk-upload" element={<BopBulkUpload />}/>
+        <Route
+          path="/monthly-master/bop/add-rate"
+          element={<BopMonthlyRateForm />}
+        />
+        <Route
+          path="/monthly-master/bop/bulk-upload"
+          element={<BopBulkUpload />}
+        />
 
         {/* COMPOUND MONTHLY MASTER */}
-        <Route path="/monthly-master/compound" element={<CompoundMonthlyMaster />}/>
-        <Route path="/monthly-master/compound/add-rate" element={<CompoundMonthlyRateForm />}/>
-        <Route path="/monthly-master/compound/bulk-upload" element={<CompoundBulkUpload />}/>
+        <Route
+          path="/monthly-master/compound"
+          element={<CompoundMonthlyMaster />}
+        />
+        <Route
+          path="/monthly-master/compound/add-rate"
+          element={<CompoundMonthlyRateForm />}
+        />
+        <Route
+          path="/monthly-master/compound/bulk-upload"
+          element={<CompoundBulkUpload />}
+        />
+
+        <Route path="/sales-monthly" element={<SalesMonthly />} />
+
+        <Route path="/sales-monthly/add" element={<SalesMonthlyEntry />} />
+        <Route path="/sales-monthly/bulk" element={<SalesMonthlyBulk />} />
       </Routes>
     </Layout>
   );

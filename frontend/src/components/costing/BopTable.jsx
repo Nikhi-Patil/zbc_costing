@@ -1,41 +1,105 @@
-import React, { useState, useRef, useEffect } from "react";
-import { months } from "../../utils/costingUtils";
-import API_BASE_URL from "../../config/api";
+import React, { useEffect, useRef, useState } from "react";
 import TomSelect from "tom-select";
+import { months, generateFinancialYears } from "../../utils/costingUtils";
 
-const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
+import API_BASE_URL from "../../config/api";
+
+/* BOP MANAGEMENT TABLE */
+
+const BopTable = ({
+  bopList = [],
+  updateBop,
+  deleteBop,
+  addBop,
+  mode = "management",
+  financialYear = "",
+}) => {
+  const isRM = mode === "rm";
+  const financialYears = generateFinancialYears();
+  const selectedFinancialYear =
+    financialYears.find(
+      (fy) => String(fy.value) === String(financialYear || ""),
+    )?.label ||
+    financialYear ||
+    "";
+  /* BOP MASTER */
   const [bops, setBops] = useState([]);
   const bopFgRefs = useRef({});
+  const tomSelectInstances = useRef({});
 
+  /* LOAD BOP MASTER */
   useEffect(() => {
     const fetchBops = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/bops`);
-
         if (!response.ok) {
-          throw new Error("Failed to fetch bops");
+          throw new Error("Failed to fetch BOP master");
         }
-
-        const data = await response.json();
+        const result = await response.json();
+        const data = Array.isArray(result)
+          ? result
+          : Array.isArray(result?.data)
+            ? result.data
+            : Array.isArray(result?.bops)
+              ? result.bops
+              : [];
 
         setBops(data);
       } catch (error) {
-        console.error("Error fetching bops:", error);
+        console.error("Error fetching BOP master:", error);
       }
     };
-
     fetchBops();
   }, []);
 
-  const isRM = mode === "rm";
+  /* GET SUPPLIER OPTIONS */
+  const getSupplierOptions = (selectedBop) => {
+    if (!selectedBop) {
+      return [];
+    }
+    const supplierIds = String(selectedBop.supplier_id || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    const supplierNames = String(selectedBop.supplier_name || "")
+      .split(",")
+      .map((name) => name.trim())
+      .filter(Boolean);
+    return supplierIds.map((id, index) => ({
+      id,
+      supplier_name: supplierNames[index] || `Supplier ${id}`,
+    }));
+  };
 
-  // BOP FG CODE CHANGE
+  /* FIND BOP MASTER */
+  const findBopMaster = (row) => {
+    /* FIRST TRY BOP ID */
+    let selectedBop = bops.find(
+      (item) => String(item.id) === String(row.bopId || ""),
+    );
+
+    /* FALLBACK TO FG CODE */
+    if (!selectedBop && row.bopFgCode) {
+      selectedBop = bops.find(
+        (item) =>
+          String(item.bop_erp_code || "")
+            .trim()
+            .toLowerCase() ===
+          String(row.bopFgCode || "")
+            .trim()
+            .toLowerCase(),
+      );
+    }
+    return selectedBop;
+  };
+
+  /* BOP FG CODE CHANGE */
   const handleBopFgCodeChange = (bop, selectedId) => {
-    // FIND SELECTED BOP MASTER
     const selectedBop = bops.find(
       (item) => String(item.id) === String(selectedId),
     );
-    // NOTHING SELECTED
+
+    /* NOTHING SELECTED */
     if (!selectedBop) {
       updateBop(bop.id, "bopId", "");
       updateBop(bop.id, "bopFgCode", "");
@@ -46,94 +110,56 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
       updateBop(bop.id, "supplierId", "");
       return;
     }
-    // SUPPLIER IDS
-    const supplierIds = String(selectedBop.supplier_id || "")
-      .split(",")
-      .map((id) => id.trim())
-      .filter(Boolean);
-    // SUPPLIER NAMES
-    const supplierNames = String(selectedBop.supplier_name || "")
-      .split(",")
-      .map((name) => name.trim())
-      .filter(Boolean);
-    // CREATE SUPPLIER OPTIONS
-    const suppliers = supplierIds.map((id, index) => ({
-      id,
-      supplier_name: supplierNames[index] || `Supplier ${id}`,
-    }));
-    // UPDATE BOP
+    /* SUPPLIERS */
+    const suppliers = getSupplierOptions(selectedBop);
+
+    /* UPDATE ROW */
     updateBop(bop.id, "bopId", selectedBop.id);
     updateBop(bop.id, "bopFgCode", selectedBop.bop_erp_code || "");
     updateBop(bop.id, "bopPartNo", selectedBop.bop_part_no || "");
     updateBop(bop.id, "bopPartName", selectedBop.bop_part_name || "");
-    // IMPORTANT
     updateBop(bop.id, "commodity", selectedBop.commodity || "");
     updateBop(bop.id, "suppliers", suppliers);
-    // Clear previous supplier
+
+    /* CLEAR PREVIOUS SUPPLIER */
     updateBop(bop.id, "supplierId", "");
   };
 
-  // INITIALIZE TOM SELECT FOR BOP FG CODE
+  /* INITIALIZE TOM SELECT */
   useEffect(() => {
-    if (!bops.length || !bopList?.length) {
+    if (isRM || !bops.length || !bopList?.length) {
       return;
     }
 
     const timer = setTimeout(() => {
       bopList.forEach((bop) => {
-        // Get the actual select element
         const element = bopFgRefs.current[bop.id];
 
         if (!element) {
-          console.log("BOP FG select not found:", bop.id);
           return;
         }
 
-        // Already initialized
         if (element.tomselect) {
           return;
         }
 
-        console.log("Initializing Tom Select:", bop.id);
-
-        // =================================================
-        // CREATE TOM SELECT
-        // =================================================
-
         const tom = new TomSelect(element, {
           create: false,
-
           searchField: ["text"],
-
           openOnFocus: true,
-
           maxOptions: 1000,
-
           sortField: {
             field: "text",
             direction: "asc",
           },
-
           placeholder: "Search BOP FG Code...",
-
           allowEmptyOption: true,
-
-          // IMPORTANT
           dropdownParent: "body",
         });
-
-        // =================================================
-        // WHEN USER SELECTS BOP FG CODE
-        // =================================================
-
+        tomSelectInstances.current[bop.id] = tom;
         tom.on("change", (selectedId) => {
           handleBopFgCodeChange(bop, selectedId);
         });
-
-        // =================================================
-        // RESTORE EXISTING BOP FG CODE
-        // =================================================
-
         if (bop.bopFgCode) {
           const selectedBop = bops.find(
             (item) =>
@@ -144,112 +170,42 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                 .trim()
                 .toLowerCase(),
           );
-
           if (selectedBop) {
             tom.setValue(String(selectedBop.id), true);
-
-            tom.wrapper.classList.add("field-filled");
+            if (tom.wrapper) {
+              tom.wrapper.classList.add("field-filled");
+            }
           }
         }
       });
     }, 100);
-
     return () => {
       clearTimeout(timer);
     };
-  }, [bops, bopList]);
+  }, [bops, bopList, isRM]);
 
-  // =====================================================
-  // RESTORE BOP MASTER DATA IN RM DETAILS
-  // =====================================================
-
+  /* CLEANUP TOM SELECT */
   useEffect(() => {
-    if (!isRM || !bopList?.length || !bops?.length) {
-      return;
-    }
+    return () => {
+      Object.values(tomSelectInstances.current).forEach((instance) => {
+        try {
+          instance.destroy();
+        } catch {
+          // Ignore cleanup errors
+        }
+      });
+      tomSelectInstances.current = {};
+    };
+  }, []);
 
-    bopList.forEach((bop) => {
-      // First try BOP master ID
-      let bopMaster = bops.find(
-        (item) => String(item.id) === String(bop.bopId),
-      );
-
-      // Fallback for old transactions
-      // which don't have bopId saved
-      if (!bopMaster && bop.bopFgCode) {
-        bopMaster = bops.find(
-          (item) =>
-            String(item.bop_erp_code || "")
-              .trim()
-              .toLowerCase() ===
-            String(bop.bopFgCode || "")
-              .trim()
-              .toLowerCase(),
-        );
-      }
-
-      if (!bopMaster) {
-        console.warn("BOP master not found:", bop.bopFgCode, bop.bopId);
-        return;
-      }
-
-      // =================================================
-      // RESTORE BOP MASTER ID
-      // =================================================
-
-      if (String(bop.bopId || "") !== String(bopMaster.id)) {
-        updateBop(bop.id, "bopId", bopMaster.id);
-      }
-
-      // =================================================
-      // RESTORE COMMODITY
-      // =================================================
-
-      if (bop.commodity !== bopMaster.commodity) {
-        updateBop(bop.id, "commodity", bopMaster.commodity || "");
-      }
-
-      // =================================================
-      // SUPPLIER IDS
-      // =================================================
-
-      const supplierIds = String(bopMaster.supplier_id || "")
-        .split(",")
-        .map((id) => id.trim())
-        .filter(Boolean);
-
-      // =================================================
-      // SUPPLIER NAMES
-      // =================================================
-
-      const supplierNames = String(bopMaster.supplier_name || "")
-        .split(",")
-        .map((name) => name.trim())
-        .filter(Boolean);
-
-      // =================================================
-      // CREATE SUPPLIER OPTIONS
-      // =================================================
-
-      const suppliers = supplierIds.map((id, index) => ({
-        id,
-        supplier_name: supplierNames[index] || `Supplier ${id}`,
-      }));
-
-      // =================================================
-      // RESTORE SUPPLIERS
-      // =================================================
-
-      if (JSON.stringify(bop.suppliers || []) !== JSON.stringify(suppliers)) {
-        updateBop(bop.id, "suppliers", suppliers);
-      }
-    });
-  }, [isRM, bopList, bops]);
-
+  /* RENDER*/
   return (
-    <div className="card mt-4">
+    <div className={`card mt-4 ${isRM ? "bop-rm-card" : ""}`}>
+      {/* HEADER */}
       <div className="bop-header">
-        <h4 className="bop-title">BOP Details</h4>
+        <div>
+          <h4 className="bop-title">BOP Details</h4>
+        </div>
 
         {!isRM && (
           <button
@@ -257,19 +213,16 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
             className="btn btn-success add-bop-btn"
             onClick={addBop}
           >
-            {" "}
-            <i className="fas fa-plus me-2"></i> Add{" "}
+            <i className="fas fa-plus me-2"></i>
+            Add
           </button>
         )}
       </div>
 
+      {/* TABLE */}
       <div className="card-body">
         <div className="table-responsive">
-          <table
-            className={`table bop-table ${
-              isRM ? "rm-bop-table" : "part-bop-table"
-            }`}
-          >
+          <table className="table bop-table part-bop-table">
             <thead>
               <tr>
                 <th>Sr. No</th>
@@ -279,8 +232,6 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                 <th>Supplier Name</th>
                 <th>Commodity</th>
                 <th>Assembly Qty</th>
-
-                {/* Only RM Details */}
                 {isRM && (
                   <>
                     <th>Month</th>
@@ -288,224 +239,260 @@ const BopTable = ({ bopList, updateBop, deleteBop, addBop, mode = "part" }) => {
                     <th>BOP Cost</th>
                   </>
                 )}
-
-                {/* Only Part Details */}
                 {!isRM && <th>Action</th>}
               </tr>
             </thead>
+
             <tbody>
               {bopList.length === 0 ? (
                 <tr>
-                  <td colSpan={isRM ? 9 : 8} className="text-center text-muted">
+                  <td
+                    colSpan={isRM ? 10 : 8}
+                    className="text-center text-muted"
+                  >
                     No BOP added
                   </td>
                 </tr>
               ) : (
-                bopList.map((bop, index) => (
-                  <tr key={bop.id}>
-                    <td className="text-center">{index + 1}</td>
+                bopList.map((bop, index) => {
+                  const selectedBop = findBopMaster(bop);
+                  const supplierOptions = bop.suppliers?.length
+                    ? bop.suppliers
+                    : getSupplierOptions(selectedBop);
+                  const bopFgCode =
+                    bop.bopFgCode ?? bop.bop_erp_code ?? bop.bopErpCode ?? "";
+                  const bopPartNo = bop.bopPartNo ?? bop.bop_part_no ?? "";
+                  const bopPartName =
+                    bop.bopPartName ?? bop.bop_part_name ?? "";
+                  const selectedSupplierId =
+                    bop.supplierId ?? bop.supplier_id ?? "";
+                  const selectedSupplier = supplierOptions.find(
+                    (supplier) =>
+                      String(supplier.id) === String(selectedSupplierId),
+                  );
+                  const supplierName =
+                    bop.supplierName ??
+                    bop.supplier_name ??
+                    selectedSupplier?.supplier_name ??
+                    "";
+                  const commodity = bop.commodity ?? "";
+                  const assemblyQty =
+                    bop.bopAssemblyQty ??
+                    bop.assembly_qty ??
+                    bop.assemblyQty ??
+                    "";
+                  const bopMonth =
+                    bop.bopmonth ?? bop.bopMonth ?? bop.month ?? "";
+                  const bopRate = bop.bopRate ?? bop.bop_rate ?? "";
+                  const bopCost = bop.bopCost ?? bop.bop_cost ?? "0.00";
 
-                    {/* BOP FG Code */}
-                    <td>
-                      <select
-                        ref={(element) => {
-                          if (element) {
-                            bopFgRefs.current[bop.id] = element;
-                          }
-                        }}
-                        defaultValue=""
-                        disabled={isRM}
-                      >
-                        <option value="">Select BOP FG Code</option>
+                  return (
+                    <tr key={bop.id ?? index}>
+                      <td className="text-center">{index + 1}</td>
 
-                        {bops.map((fgCode) => (
-                          <option key={fgCode.id} value={fgCode.id}>
-                            {fgCode.bop_erp_code}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
+                      <td>
+                        {isRM ? (
+                          <input
+                            type="text"
+                            className={`form-control ${
+                              bopFgCode ? "field-filled" : ""
+                            }`}
+                            value={bopFgCode}
+                            readOnly
+                          />
+                        ) : (
+                          <select
+                            ref={(element) => {
+                              if (element) {
+                                bopFgRefs.current[bop.id] = element;
+                              }
+                            }}
+                            defaultValue=""
+                            className={`form-control ${
+                              bopFgCode ? "field-filled" : ""
+                            }`}
+                          >
+                            <option value="">Select BOP FG Code</option>
+                            {bops.map((fgCode) => (
+                              <option key={fgCode.id} value={fgCode.id}>
+                                {fgCode.bop_erp_code}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </td>
 
-                    {/* BOP Part No */}
-                    <td>
-                      <input
-                        type="text"
-                        className={`form-control ${
-                          bop.bopPartNo ? "field-filled" : ""
-                        }`}
-                        value={bop.bopPartNo || ""}
-                        readOnly
-                      />
-                    </td>
+                      <td>
+                        <input
+                          type="text"
+                          className={`form-control ${
+                            bopPartNo ? "field-filled" : ""
+                          }`}
+                          value={bopPartNo}
+                          readOnly
+                        />
+                      </td>
 
-                    {/* Part Name */}
-                    <td>
-                      <input
-                        type="text"
-                        className={`form-control ${
-                          bop.bopPartName ? "field-filled" : ""
-                        }`}
-                        value={bop.bopPartName || ""}
-                        readOnly
-                      />
-                    </td>
+                      <td>
+                        <input
+                          type="text"
+                          className={`form-control ${
+                            bopPartName ? "field-filled" : ""
+                          }`}
+                          value={bopPartName}
+                          readOnly
+                        />
+                      </td>
 
-                    {/* Supplier */}
-                    <td>
-                      {(() => {
-                        const selectedBop =
-                          bops.find(
-                            (item) => String(item.id) === String(bop.bopId),
-                          ) ||
-                          bops.find(
-                            (item) =>
-                              String(item.bop_erp_code || "")
-                                .trim()
-                                .toLowerCase() ===
-                              String(bop.bopFgCode || "")
-                                .trim()
-                                .toLowerCase(),
-                          );
-                        const supplierIds = String(
-                          selectedBop?.supplier_id || "",
-                        )
-                          .split(",")
-                          .map((id) => id.trim())
-                          .filter(Boolean);
-
-                        const supplierNames = String(
-                          selectedBop?.supplier_name || "",
-                        )
-                          .split(",")
-                          .map((name) => name.trim())
-                          .filter(Boolean);
-
-                        const supplierOptions = supplierIds.map(
-                          (id, index) => ({
-                            id,
-                            supplier_name:
-                              supplierNames[index] || `Supplier ${id}`,
-                          }),
-                        );
-
-                        return (
+                      <td>
+                        {isRM ? (
+                          <input
+                            type="text"
+                            className={`form-control ${
+                              supplierName ? "field-filled" : ""
+                            }`}
+                            value={supplierName}
+                            readOnly
+                          />
+                        ) : (
                           <select
                             className={`form-control ${
                               bop.supplierId ? "field-filled" : ""
                             }`}
                             value={bop.supplierId || ""}
-                            disabled={isRM}
-                            onChange={(e) =>
-                              updateBop(bop.id, "supplierId", e.target.value)
+                            disabled={!bop.bopId}
+                            onChange={(event) =>
+                              updateBop(
+                                bop.id,
+                                "supplierId",
+                                event.target.value,
+                              )
                             }
                           >
                             <option value="">Select Supplier</option>
-
                             {supplierOptions.map((supplier) => (
                               <option key={supplier.id} value={supplier.id}>
                                 {supplier.supplier_name}
                               </option>
                             ))}
                           </select>
-                        );
-                      })()}
-                    </td>
-
-                    {/* Commodity */}
-                    <td>
-                      <input
-                        type="text"
-                        className={`form-control ${
-                          bop.commodity ? "field-filled" : ""
-                        }`}
-                        value={bop.commodity || ""}
-                        readOnly
-                        tabIndex={-1}
-                        placeholder="Commodity"
-                      />
-                    </td>
-
-                    {/* Assembly Quantity */}
-                    <td>
-                      <input
-                        type="number"
-                        step="0.01"
-                        className={`form-control ${
-                          bop.bopAssemblyQty ? "field-filled" : ""
-                        }`}
-                        value={bop.bopAssemblyQty || ""}
-                        readOnly={isRM}
-                        onChange={(e) =>
-                          updateBop(bop.id, "bopAssemblyQty", e.target.value)
-                        }
-                      />
-                    </td>
-
-                    {/* RM ONLY */}
-                    {isRM && (
-                      <>
-                        {/* Month */}
-                        <td>
-                          <select
-                            className={`form-control ${
-                              bop.bopmonth ? "field-filled" : ""
-                            }`}
-                            value={bop.bopmonth || ""}
-                            onChange={(e) =>
-                              updateBop(bop.id, "bopmonth", e.target.value)
-                            }
-                          >
-                            <option value="">Select Month</option>
-
-                            {months.map((month) => (
-                              <option key={month.value} value={month.value}>
-                                {month.label}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-
-                        {/* Rate */}
-                        <td>
-                          <input
-                            type="text"
-                            className={`form-control ${
-                              bop.bopRate ? "field-filled" : ""
-                            }`}
-                            value={bop.bopRate || "Auto"}
-                            readOnly
-                          />
-                        </td>
-
-                        {/* Cost */}
-                        <td>
-                          <input
-                            type="text"
-                            className={`form-control ${
-                              bop.bopCost ? "field-filled" : ""
-                            }`}
-                            value={bop.bopCost || "0.00"}
-                            readOnly
-                          />
-                        </td>
-                      </>
-                    )}
-
-                    {/* PART DETAILS ONLY */}
-                    {!isRM && (
-                      <td className="text-center">
-                        <button
-                          type="button"
-                          className="btn btn-danger btn-sm"
-                          onClick={() => deleteBop(bop.id)}
-                          title="Delete BOP"
-                        >
-                          <i className="fas fa-trash"></i>
-                        </button>
+                        )}
                       </td>
-                    )}
-                  </tr>
-                ))
+
+                      <td>
+                        <input
+                          type="text"
+                          className={`form-control ${
+                            commodity ? "field-filled" : ""
+                          }`}
+                          value={commodity}
+                          readOnly
+                          tabIndex={-1}
+                        />
+                      </td>
+
+                      <td>
+                        <input
+                          type="number"
+                          className={`form-control ${
+                            assemblyQty !== "" &&
+                            assemblyQty !== null &&
+                            Number(assemblyQty) !== 0
+                              ? "field-filled"
+                              : ""
+                          }`}
+                          value={assemblyQty}
+                          readOnly={isRM}
+                          min="0"
+                          step="0.01"
+                          onChange={
+                            isRM
+                              ? undefined
+                              : (event) =>
+                                  updateBop(
+                                    bop.id,
+                                    "bopAssemblyQty",
+                                    event.target.value,
+                                  )
+                          }
+                        />
+                      </td>
+
+                      {isRM && (
+                        <>
+                          <td>
+                            <select
+                              className={`form-control ${
+                                bopMonth ? "field-filled" : ""
+                              }`}
+                              value={bopMonth || ""}
+                              onChange={(event) =>
+                                updateBop(
+                                  bop.id,
+                                  "bopmonth",
+                                  event.target.value,
+                                )
+                              }
+                            >
+                              <option value="">Select Month</option>
+                              {months.map((month) => (
+                                <option key={month.value} value={month.value}>
+                                  {month.label}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+
+                          <td>
+                            <input
+                              type="text"
+                              className={`form-control ${
+                                bopRate !== "" && bopRate !== null
+                                  ? "field-filled"
+                                  : ""
+                              }`}
+                              value={
+                                bopRate === "" || bopRate === null
+                                  ? ""
+                                  : Number(bopRate).toFixed(2)
+                              }
+                              readOnly
+                              placeholder="Not Found"
+                            />
+                          </td>
+
+                          <td>
+                            <input
+                              type="text"
+                              className={`form-control ${
+                                bopCost !== "" &&
+                                bopCost !== null &&
+                                Number(bopCost) !== 0
+                                  ? "field-filled"
+                                  : ""
+                              }`}
+                              value={Number(bopCost || 0).toFixed(2)}
+                              readOnly
+                            />
+                          </td>
+                        </>
+                      )}
+
+                      {!isRM && (
+                        <td className="text-center">
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-sm"
+                            onClick={() => deleteBop(bop.id)}
+                            title="Delete BOP"
+                          >
+                            <i className="fas fa-trash"></i>
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

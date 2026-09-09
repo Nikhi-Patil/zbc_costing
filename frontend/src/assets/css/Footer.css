@@ -1,28 +1,21 @@
 .footer {
-    width: 100%;
-    flex-shrink: 0;
-
-    background: #15243a;
-    color: #fff;
-
-    text-align: center;
-
-    padding: 8px 15px;
-
-    font-size: 14px;
+  width: 100%;
+  flex-shrink: 0;
+  background: #15243a;
+  color: #fff;
+  text-align: center;
+  padding: 8px 15px;
+  font-size: 14px;
 }
-
 .footer p {
   margin: 4px 0;
   line-height: 20px;
 }
-
 .footer a {
   color: #4dabff;
   text-decoration: none;
   font-weight: 600;
 }
-
 .footer a:hover {
   text-decoration: underline;
 }

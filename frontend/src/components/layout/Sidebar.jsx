@@ -41,6 +41,16 @@ function Sidebar({ isOpen }) {
               <span>Molding</span>
             </NavLink>
           </li>
+          {/* Costing
+          <li>
+            <NavLink
+              to="/costing-entry-form"
+              className={({ isActive }) => (isActive ? "menu active" : "menu")}
+            >
+              <i className="fas fa-solid fa-gears"></i>
+              <span>Costing</span>
+            </NavLink>
+          </li> */}
           {/*  Extrusion */}
           <li>
             <NavLink
@@ -49,6 +59,17 @@ function Sidebar({ isOpen }) {
             >
               <i className="fas fa-solid fa-arrows-rotate"></i>
               <span>Extrusion</span>
+            </NavLink>
+          </li>
+
+          {/*  BOM DETAILS */}
+          <li>
+            <NavLink
+              to="/bop-management"
+              className={({ isActive }) => (isActive ? "menu active" : "menu")}
+            >
+              <i className="fas fa-solid fa-gears"></i>
+              <span>BOM Details</span>
             </NavLink>
           </li>
           {/*  MASTERS */}
@@ -230,6 +251,18 @@ function Sidebar({ isOpen }) {
                   >
                     <i className="fa-solid fa-flask"></i>
                     <span>Montly Polymer Report</span>
+                  </NavLink>
+                </li>
+                {/* Montly sales Report */}
+                <li>
+                  <NavLink
+                    to="/sales-monthly"
+                    className={({ isActive }) =>
+                      isActive ? "menu active" : "menu"
+                    }
+                  >
+                    <i className="fa-solid fa-flask"></i>
+                    <span>Montly sales Report</span>
                   </NavLink>
                 </li>
               </ul>
