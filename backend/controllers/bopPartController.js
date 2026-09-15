@@ -5,9 +5,13 @@ import BopPart from "../models/bopPartModel.js";
 GET ALL BOP PART CONFIGURATIONS
 ============================================================
 */
-export const getAllBopPartConfigurations = async (req, res) => {
+export const getAllBopPartConfigurations = async (
+    req,
+    res,
+) => {
     try {
-        const rows = await BopPart.getAll();
+        const rows =
+            await BopPart.getAll();
 
         return res.json({
             success: true,
@@ -33,6 +37,7 @@ export const getAllBopPartConfigurations = async (req, res) => {
 ============================================================
 GET BOP CONFIGURATION FOR ONE PART
 ============================================================
+
 GET /api/part-bops/:partNo
 ============================================================
 */
@@ -41,7 +46,8 @@ export const getBopPartConfiguration = async (
     res,
 ) => {
     try {
-        const { partNo } = req.params;
+        const { partNo } =
+            req.params;
 
         /*
         ----------------------------------------------------
@@ -75,6 +81,7 @@ export const getBopPartConfiguration = async (
                 String(partNo).trim(),
             data: rows,
         });
+
     } catch (error) {
         console.error(
             "GET PART BOPS ERROR:",
@@ -167,9 +174,10 @@ export const saveBopPartConfiguration = async (
                 partNo:
                     String(partNo).trim(),
 
-                bops: Array.isArray(bops)
-                    ? bops
-                    : [],
+                bops:
+                    Array.isArray(bops)
+                        ? bops
+                        : [],
 
                 createdBy,
                 updatedBy,
@@ -190,6 +198,7 @@ export const saveBopPartConfiguration = async (
 
             data: result,
         });
+
     } catch (error) {
         console.error(
             "SAVE PART BOPS ERROR:",
@@ -229,6 +238,16 @@ PUT /api/part-bops/:partNo
 This performs a complete replacement of the BOP
 configuration for the selected Part No.
 
+IMPORTANT:
+The model preserves existing:
+
+    financial_year
+    bop_month
+    bop_rate
+    bop_cost
+
+for matching BOP + Supplier mappings.
+
 ============================================================
 */
 export const updateBopPartConfiguration = async (
@@ -236,6 +255,7 @@ export const updateBopPartConfiguration = async (
     res,
 ) => {
     try {
+
         /*
         ----------------------------------------------------
         PART NO FROM URL
@@ -245,6 +265,7 @@ export const updateBopPartConfiguration = async (
             String(
                 req.params.partNo || "",
             ).trim();
+
 
         /*
         ----------------------------------------------------
@@ -256,6 +277,7 @@ export const updateBopPartConfiguration = async (
                 req.body?.partNo ||
                 routePartNo,
             ).trim();
+
 
         /*
         ----------------------------------------------------
@@ -269,6 +291,7 @@ export const updateBopPartConfiguration = async (
                     "Part No. is required",
             });
         }
+
 
         /*
         ----------------------------------------------------
@@ -287,6 +310,7 @@ export const updateBopPartConfiguration = async (
             });
         }
 
+
         /*
         ----------------------------------------------------
         BOPS MUST BE ARRAY
@@ -302,6 +326,7 @@ export const updateBopPartConfiguration = async (
                     "BOP details must be an array",
             });
         }
+
 
         /*
         ----------------------------------------------------
@@ -324,6 +349,7 @@ export const updateBopPartConfiguration = async (
                     null,
             });
 
+
         /*
         ----------------------------------------------------
         SUCCESS RESPONSE
@@ -339,6 +365,7 @@ export const updateBopPartConfiguration = async (
 
             data: result,
         });
+
     } catch (error) {
         console.error(
             "UPDATE PART BOPS ERROR:",
@@ -376,6 +403,7 @@ DELETE BOP CONFIGURATION
 DELETE /api/part-bops/:partNo
 
 Deletes all BOP rows for the selected Part No.
+
 ============================================================
 */
 export const deleteBopPartConfiguration = async (
@@ -383,8 +411,10 @@ export const deleteBopPartConfiguration = async (
     res,
 ) => {
     try {
+
         const { partNo } =
             req.params;
+
 
         /*
         ----------------------------------------------------
@@ -402,6 +432,7 @@ export const deleteBopPartConfiguration = async (
             });
         }
 
+
         /*
         ----------------------------------------------------
         DELETE CONFIGURATION
@@ -411,6 +442,7 @@ export const deleteBopPartConfiguration = async (
             await BopPart.deleteForPart(
                 String(partNo).trim(),
             );
+
 
         /*
         ----------------------------------------------------
@@ -429,6 +461,7 @@ export const deleteBopPartConfiguration = async (
 
             affectedRows,
         });
+
     } catch (error) {
         console.error(
             "DELETE PART BOPS ERROR:",

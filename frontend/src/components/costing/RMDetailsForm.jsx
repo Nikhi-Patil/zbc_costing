@@ -35,7 +35,6 @@ function RMDetailsForm({
 
     fetchCompounds();
   }, []);
-  const polymers = [...new Set(compounds.map((compound) => compound.polymer))];
   const filteredCompounds = compounds.filter(
     (compound) => compound.polymer === formData.polymerName,
   );
@@ -44,9 +43,6 @@ function RMDetailsForm({
     label: compound.compound_code,
     data: compound,
   }));
-  const selectedCompound =
-    compoundOptions.find((option) => option.value === formData.compoundCode) ||
-    null;
   // BOP rows are now fetched by CostingWizard when the Part No. changes.
   // Here we only attach the applicable monthly BOP rate and calculate cost.
   // The BOP master/configuration itself is not edited from this form.
@@ -60,7 +56,6 @@ function RMDetailsForm({
       }
 
       const financialYear = formData.financialYear;
-      const defaultMonth = formData.compMonth;
 
       // Keep the fetched rows visible even when the monthly inputs are not
       // ready yet. Rate/cost will remain blank/zero until they are available.

@@ -1,15 +1,26 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  LayoutDashboard,
-  Users,
-  Factory,
-  Globe,
-  Building2,
-  FileText,
-  Calculator,
-} from "lucide-react";
+  faGaugeHigh,
+  faGears,
+  faArrowsRotate,
+  faDatabase,
+  faChevronDown,
+  faChevronRight,
+  faUserTie,
+  faBuilding,
+  faUsers,
+  faPuzzlePiece,
+  faFlask,
+  faBoxesStacked,
+  faTags,
+  faChartSimple,
+  faHandshake,
+  faChartColumn,
+} from "@fortawesome/free-solid-svg-icons";
 
 import "../../assets/css/Sidebar.css";
 
@@ -27,8 +38,8 @@ function Sidebar({ isOpen }) {
               to="/dashboard"
               className={({ isActive }) => (isActive ? "menu active" : "menu")}
             >
-              <i className="fa-solid fa-gauge-high"></i>
-              <span>Dashboard</span>
+              <FontAwesomeIcon icon={faGaugeHigh} />
+              <span className="sidebar-manue">Dashboard</span>
             </NavLink>
           </li>
           {/*  Molding */}
@@ -37,8 +48,19 @@ function Sidebar({ isOpen }) {
               to="/molding"
               className={({ isActive }) => (isActive ? "menu active" : "menu")}
             >
-              <i className="fas fa-solid fa-gears"></i>
-              <span>Molding</span>
+              <FontAwesomeIcon icon={faGears} />
+              <span className="sidebar-manue">Molding</span>
+            </NavLink>
+          </li>
+
+          {/*  Molding */}
+          <li>
+            <NavLink
+              to="/molding-data"
+              className={({ isActive }) => (isActive ? "menu active" : "menu")}
+            >
+              <FontAwesomeIcon icon={faGears} />
+              <span className="sidebar-manue">Molding Report</span>
             </NavLink>
           </li>
           {/* Costing
@@ -47,7 +69,7 @@ function Sidebar({ isOpen }) {
               to="/costing-entry-form"
               className={({ isActive }) => (isActive ? "menu active" : "menu")}
             >
-              <i className="fas fa-solid fa-gears"></i>
+              <FontAwesomeIcon icon={faGears} />
               <span>Costing</span>
             </NavLink>
           </li> */}
@@ -57,8 +79,8 @@ function Sidebar({ isOpen }) {
               to="/extrusion"
               className={({ isActive }) => (isActive ? "menu active" : "menu")}
             >
-              <i className="fas fa-solid fa-arrows-rotate"></i>
-              <span>Extrusion</span>
+              <FontAwesomeIcon icon={faArrowsRotate} />
+              <span className="sidebar-manue">Extrusion</span>
             </NavLink>
           </li>
 
@@ -68,8 +90,8 @@ function Sidebar({ isOpen }) {
               to="/bop-management"
               className={({ isActive }) => (isActive ? "menu active" : "menu")}
             >
-              <i className="fas fa-solid fa-gears"></i>
-              <span>BOM Details</span>
+              <FontAwesomeIcon icon={faGears} />
+              <span className="sidebar-manue">BOM Details</span>
             </NavLink>
           </li>
           {/*  MASTERS */}
@@ -78,13 +100,12 @@ function Sidebar({ isOpen }) {
               className={`menu master-menu ${masterOpen ? "active" : ""}`}
               onClick={() => setMasterOpen(!masterOpen)}
             >
-              <i className="fas fa-solid fa-database"></i>
-              <span>Masters</span>
-              <i
-                className={`fas ${
-                  masterOpen ? "fa-chevron-down" : "fa-chevron-right"
-                } master-arrow`}
-              ></i>
+              <FontAwesomeIcon icon={faDatabase} />
+              <span className="sidebar-manue">Masters</span>
+              <FontAwesomeIcon
+                icon={masterOpen ? faChevronDown : faChevronRight}
+                className="master-arrow"
+              />
             </div>
             {/* MASTER SUB MENU */}
             {masterOpen && (
@@ -97,8 +118,8 @@ function Sidebar({ isOpen }) {
                       isActive ? "menu active" : "menu"
                     }
                   >
-                    <i className="fa-solid fa-user-tie"></i>
-                    <span>Employee Master</span>
+                    <FontAwesomeIcon icon={faUserTie} />
+                    <span className="sidebar-manue">Employee Master</span>
                   </NavLink>
                 </li>
                 {/* Unit Master*/}
@@ -109,8 +130,8 @@ function Sidebar({ isOpen }) {
                       isActive ? "menu active" : "menu"
                     }
                   >
-                    <i className="fa-solid fa-building"></i>
-                    <span>Unit Master</span>
+                    <FontAwesomeIcon icon={faBuilding} />
+                    <span className="sidebar-manue">Unit Master</span>
                   </NavLink>
                 </li>
                 {/* Customer Master*/}
@@ -121,8 +142,8 @@ function Sidebar({ isOpen }) {
                       isActive ? "menu active" : "menu"
                     }
                   >
-                    <i className="fa-solid fa-users"></i>
-                    <span>Customer Master</span>
+                    <FontAwesomeIcon icon={faUsers} />
+                    <span className="sidebar-manue">Customer Master</span>
                   </NavLink>
                 </li>
                 {/* Part Master*/}
@@ -133,8 +154,8 @@ function Sidebar({ isOpen }) {
                       isActive ? "menu active" : "menu"
                     }
                   >
-                    <i className="fa-solid fa-puzzle-piece"></i>
-                    <span>Part Master</span>
+                    <FontAwesomeIcon icon={faPuzzlePiece} />
+                    <span className="sidebar-manue">Part Master</span>
                   </NavLink>
                 </li>
                 {/* Compound Master*/}
@@ -145,8 +166,8 @@ function Sidebar({ isOpen }) {
                       isActive ? "menu active" : "menu"
                     }
                   >
-                    <i className="fa-solid fa-flask"></i>
-                    <span>Compound Master</span>
+                    <FontAwesomeIcon icon={faFlask} />
+                    <span className="sidebar-manue">Compound Master</span>
                   </NavLink>
                 </li>
                 {/* Bop Master*/}
@@ -157,8 +178,8 @@ function Sidebar({ isOpen }) {
                       isActive ? "menu active" : "menu"
                     }
                   >
-                    <i className="fa-solid fa-boxes-stacked"></i>
-                    <span>Bop Master</span>
+                    <FontAwesomeIcon icon={faBoxesStacked} />
+                    <span className="sidebar-manue">Bop Master</span>
                   </NavLink>
                 </li>
                 {/* Sales Rate Master*/}
@@ -169,8 +190,8 @@ function Sidebar({ isOpen }) {
                       isActive ? "menu active" : "menu"
                     }
                   >
-                    <i className="fa-solid fa-tags"></i>
-                    <span>Sales Rate Master</span>
+                    <FontAwesomeIcon icon={faTags} />
+                    <span className="sidebar-manue">Sales Rate Master</span>
                   </NavLink>
                 </li>
                 {/* Sales Qty  Master*/}
@@ -181,8 +202,8 @@ function Sidebar({ isOpen }) {
                       isActive ? "menu active" : "menu"
                     }
                   >
-                    <i className="fa-solid fa-chart-simple"></i>
-                    <span>Sales Qty Master</span>
+                    <FontAwesomeIcon icon={faChartSimple} />
+                    <span className="sidebar-manue">Sales Qty Master</span>
                   </NavLink>
                 </li>
                 {/* Vendor Master*/}
@@ -193,8 +214,8 @@ function Sidebar({ isOpen }) {
                       isActive ? "menu active" : "menu"
                     }
                   >
-                    <i className="fa-solid fa-handshake"></i>
-                    <span>Vendor Master</span>
+                    <FontAwesomeIcon icon={faHandshake} />
+                    <span className="sidebar-manue">Vendor Master</span>
                   </NavLink>
                 </li>
               </ul>
@@ -206,13 +227,12 @@ function Sidebar({ isOpen }) {
               className={`menu repot-menu ${reportOpen ? "active" : ""}`}
               onClick={() => setreportOpen(!reportOpen)}
             >
-              <i className="fa-solid fa-chart-column"></i>
-              <span>Monthly Master</span>
-              <i
-                className={`fas ${
-                  reportOpen ? "fa-chevron-down" : "fa-chevron-right"
-                } master-arrow`}
-              ></i>
+              <FontAwesomeIcon icon={faChartColumn} />
+              <span className="sidebar-manue">Monthly Master</span>
+              <FontAwesomeIcon
+                icon={reportOpen ? faChevronDown : faChevronRight}
+                className="master-arrow"
+              />
             </div>
             {/* Report SUB MENU */}
             {reportOpen && (
@@ -225,8 +245,8 @@ function Sidebar({ isOpen }) {
                       isActive ? "menu active" : "menu"
                     }
                   >
-                    <i className="fa-solid fa-flask"></i>
-                    <span>Montly Compound Master</span>
+                    <FontAwesomeIcon icon={faFlask} />
+                    <span className="sidebar-manue">Montly Compound Master</span>
                   </NavLink>
                 </li>
                 {/* Montly Bop Report */}
@@ -237,8 +257,8 @@ function Sidebar({ isOpen }) {
                       isActive ? "menu active" : "menu"
                     }
                   >
-                    <i className="fa-solid fa-flask"></i>
-                    <span>Montly Bop Master</span>
+                    <FontAwesomeIcon icon={faFlask} />
+                    <span className="sidebar-manue">Montly Bop Master</span>
                   </NavLink>
                 </li>
                 {/* Montly Polymer Report */}
@@ -249,8 +269,8 @@ function Sidebar({ isOpen }) {
                       isActive ? "menu active" : "menu"
                     }
                   >
-                    <i className="fa-solid fa-flask"></i>
-                    <span>Montly Polymer Report</span>
+                    <FontAwesomeIcon icon={faFlask} />
+                    <span className="sidebar-manue">Montly Polymer Report</span>
                   </NavLink>
                 </li>
                 {/* Montly sales Report */}
@@ -261,8 +281,8 @@ function Sidebar({ isOpen }) {
                       isActive ? "menu active" : "menu"
                     }
                   >
-                    <i className="fa-solid fa-flask"></i>
-                    <span>Montly sales Report</span>
+                    <FontAwesomeIcon icon={faFlask} className="sidebar-manue" />
+                    <span className="sidebar-manue">Montly sales Report</span>
                   </NavLink>
                 </li>
               </ul>

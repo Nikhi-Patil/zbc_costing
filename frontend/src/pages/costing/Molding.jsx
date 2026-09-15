@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { months, generateFinancialYears } from "../../utils/costingUtils";
+import { generateFinancialYears } from "../../utils/costingUtils";
 import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../../config/api";
 import "../../assets/css/Molding.css";
@@ -15,6 +15,24 @@ const defaultFinancialYear =
   "";
 
 const getMonthValue = (month) => Number(month?.value ?? month);
+
+const fiscalMonths = [
+  { value: 4, label: "Apr" },
+  { value: 5, label: "May" },
+  { value: 6, label: "Jun" },
+  { value: 7, label: "Jul" },
+  { value: 8, label: "Aug" },
+  { value: 9, label: "Sep" },
+  { value: 10, label: "Oct" },
+  { value: 11, label: "Nov" },
+  { value: 12, label: "Dec" },
+  { value: 1, label: "Jan" },
+  { value: 2, label: "Feb" },
+  { value: 3, label: "Mar" },
+];
+
+const getCurrentFiscalMonth = () => new Date().getMonth() + 1;
+
 const getSelectedMonthLabel = (financialYearValue, fromMonth, toMonth) => {
   const fyMatch = String(financialYearValue || "").match(/^(\d{4})-(\d{2})$/);
 
@@ -117,9 +135,9 @@ const Molding = () => {
   const [salesFinancialYear, setSalesFinancialYear] =
     useState(defaultFinancialYear);
 
-  const [salesFromMonth, setSalesFromMonth] = useState(1);
+  const [salesFromMonth, setSalesFromMonth] = useState(getCurrentFiscalMonth());
 
-  const [salesToMonth, setSalesToMonth] = useState(12);
+  const [salesToMonth, setSalesToMonth] = useState(getCurrentFiscalMonth());
 
   const [salesMonthlyEntries, setSalesMonthlyEntries] = useState([]);
 
@@ -386,10 +404,9 @@ const Molding = () => {
   return (
     <div className="molding-page">
       {/* HEADER */}
-      <div className="molding-header">
+      <div className="molding-header-1">
         <div>
           <h2>Molding</h2>
-          <p>Manage molding costing transactions</p>
         </div>
 
         <div className="molding-actions">
@@ -421,7 +438,7 @@ const Molding = () => {
                   setSalesFromMonth(Number(event.target.value))
                 }
               >
-                {months.map((month) => (
+                {fiscalMonths.map((month) => (
                   <option key={month.value} value={month.value}>
                     {month.label}
                   </option>
@@ -439,7 +456,7 @@ const Molding = () => {
                   setSalesToMonth(Number(event.target.value))
                 }
               >
-                {months.map((month) => (
+                {fiscalMonths.map((month) => (
                   <option
                     key={month.value}
                     value={month.value}
@@ -466,7 +483,7 @@ const Molding = () => {
             className="export-excel-btn"
             onClick={handleExportExcel}
           >
-            <span>📊</span>
+            <i className="fa-solid fa-file-excel" aria-hidden="true"></i>
             Export Excel
           </button>
 
@@ -476,8 +493,8 @@ const Molding = () => {
             className="add-transaction-btn"
             onClick={handleAddTransaction}
           >
-            <span>+</span>
-            Add New Transaction
+            <i className="fa-solid fa-plus" aria-hidden="true"></i>
+            Add New
           </button>
         </div>
       </div>
@@ -488,14 +505,16 @@ const Molding = () => {
         <div className="table-header">
           <h3>Transactions</h3>
           <span className="transaction-count-range">
-            {transactions.length} Transactions
             <span className="selected-month-range">
-              |{" "}
+              <span>Period - </span>
               {getSelectedMonthLabel(
                 salesFinancialYear,
                 salesFromMonth,
                 salesToMonth,
               )}
+            </span>
+            <span className="transaction-count-range">
+              {transactions.length} Transactions
             </span>
           </span>
         </div>
@@ -514,7 +533,7 @@ const Molding = () => {
                 <th>Part No</th>
                 <th>Mfg W/O Margin</th>
                 <th>Mfg With Margin</th>
-                <th>Sell Cost</th>
+                <th>Sale Cost</th>
                 <th>Extra P/L</th>
                 <th>P/L VS Mfg Cost</th>
                 <th>Monthly Qty</th>

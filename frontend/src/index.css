@@ -1,9 +1,11 @@
+@import "tailwindcss";
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Segoe UI", sans-serif;
-  font-size: 14px;
+  font-family: "Segoe UI", sans-serif !important  ;
+  font-size: 10px;
 }
 
 html,
@@ -1222,7 +1224,7 @@ h5 {
 
 .export-excel-btn {
   height: 38px;
-  padding: 0 16px;
+  padding: 0 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1230,7 +1232,7 @@ h5 {
   background: #fff;
   color: #198754;
   border: 1px solid #198754;
-  border-radius: 6px;
+  border-radius: 4px;
   font-family: "Segoe UI", sans-serif;
   font-size: 14px;
   font-weight: 500;
@@ -1242,7 +1244,7 @@ h5 {
 }
 .add-transaction-btn {
   height: 38px;
-  padding: 0 16px;
+  padding: 0 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1455,4 +1457,8 @@ h5 {
     min-width: 85px;
     font-size: 13px;
   }
+}
+.sidebar-manue{
+  font-size: 14px !important;
+  font-family: "Segoe UI", sans-serif !important;
 }

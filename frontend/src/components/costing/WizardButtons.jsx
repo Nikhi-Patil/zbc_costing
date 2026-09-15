@@ -5,13 +5,11 @@ function WizardButtons({
   onNext,
   onSaveDraft,
   onSubmit,
-  
 }) {
   return (
     <div className="wizard-buttons-wrapper">
       <div className="wizard-buttons-card">
         <div className="wizard-buttons-body">
-
           {/* Previous */}
           <div>
             {currentStep > 1 && (
@@ -32,7 +30,6 @@ function WizardButtons({
 
           {/* Next / Submit */}
           <div className="d-flex gap-2">
-
             {currentStep < totalSteps && (
               <button
                 type="button"
@@ -59,9 +56,7 @@ function WizardButtons({
                 Submit
               </button>
             )}
-
           </div>
-
         </div>
       </div>
     </div>

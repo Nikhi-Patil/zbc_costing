@@ -45,6 +45,11 @@ const BopPart = {
                 commodity,
                 assembly_qty,
 
+                financial_year,
+                bop_month,
+                bop_rate,
+                bop_cost,
+
                 created_by,
                 created_at,
                 updated_by,
@@ -88,6 +93,11 @@ const BopPart = {
                 commodity,
                 assembly_qty,
 
+                financial_year,
+                bop_month,
+                bop_rate,
+                bop_cost,
+
                 created_by,
                 created_at,
                 updated_by,
@@ -107,18 +117,6 @@ const BopPart = {
     SAVE / REPLACE COMPLETE BOP CONFIGURATION
     FOR ONE PART
     ========================================================
-
-    Example:
-
-    Part No: ABC123
-
-    BOP 1
-    BOP 2
-    BOP 3
-
-    Saving again for ABC123 replaces the previous
-    configuration with the new configuration.
-    ========================================================
     */
     saveForPart: async ({
         partNo,
@@ -129,11 +127,6 @@ const BopPart = {
         const connection = await zbcDB.getConnection();
 
         try {
-            /*
-            ------------------------------------------------
-            START TRANSACTION
-            ------------------------------------------------
-            */
             await connection.beginTransaction();
 
             /*
@@ -168,13 +161,47 @@ const BopPart = {
 
             /*
             ------------------------------------------------
-            DELETE EXISTING CONFIGURATION
+            PRESERVE EXISTING COSTING
             ------------------------------------------------
 
-            This is inside the transaction.
+            BOP Management replaces the configuration.
 
-            If anything fails later, rollback will restore
-            the previous configuration.
+            Before deleting the old rows, preserve the
+            latest costing values for the same:
+
+                BOP + Supplier
+            */
+            const [existingCostingRows] =
+                await connection.query(
+                    `
+                    SELECT
+                        bop_id,
+                        supplier_id,
+                        financial_year,
+                        bop_month,
+                        bop_rate,
+                        bop_cost
+
+                    FROM bop_part_details
+
+                    WHERE part_no = ?
+                    `,
+                    [String(part.part_no).trim()],
+                );
+
+            const existingCostingMap =
+                new Map(
+                    existingCostingRows.map(
+                        (row) => [
+                            `${row.bop_id}-${row.supplier_id}`,
+                            row,
+                        ],
+                    ),
+                );
+
+            /*
+            ------------------------------------------------
+            DELETE OLD CONFIGURATION
             ------------------------------------------------
             */
             await connection.query(
@@ -189,11 +216,11 @@ const BopPart = {
             ------------------------------------------------
             NO BOP CONFIGURATION
             ------------------------------------------------
-
-            Empty array means this part has no BOP.
-            ------------------------------------------------
             */
-            if (!Array.isArray(bops) || bops.length === 0) {
+            if (
+                !Array.isArray(bops) ||
+                bops.length === 0
+            ) {
                 await connection.commit();
 
                 return {
@@ -205,7 +232,7 @@ const BopPart = {
 
             /*
             ------------------------------------------------
-            VALIDATE DUPLICATE BOP + SUPPLIER COMBINATIONS
+            VALIDATE DUPLICATE BOP + SUPPLIER
             ------------------------------------------------
             */
             const duplicateKeys = new Set();
@@ -236,11 +263,6 @@ const BopPart = {
                     0,
                 );
 
-                /*
-                ------------------------------------------------
-                BOP REQUIRED
-                ------------------------------------------------
-                */
                 if (!bopId || bopId <= 0) {
                     throw new Error(
                         `BOP FG Code is required in row ${index + 1
@@ -248,23 +270,16 @@ const BopPart = {
                     );
                 }
 
-                /*
-                ------------------------------------------------
-                SUPPLIER REQUIRED
-                ------------------------------------------------
-                */
-                if (!supplierId || supplierId <= 0) {
+                if (
+                    !supplierId ||
+                    supplierId <= 0
+                ) {
                     throw new Error(
                         `Supplier is required in row ${index + 1
                         }.`,
                     );
                 }
 
-                /*
-                ------------------------------------------------
-                ASSEMBLY QTY VALIDATION
-                ------------------------------------------------
-                */
                 if (
                     Number.isNaN(assemblyQty) ||
                     !Number.isFinite(assemblyQty) ||
@@ -276,11 +291,6 @@ const BopPart = {
                     );
                 }
 
-                /*
-                ------------------------------------------------
-                DUPLICATE CHECK
-                ------------------------------------------------
-                */
                 const duplicateKey =
                     `${bopId}-${supplierId}`;
 
@@ -356,7 +366,9 @@ const BopPart = {
                         [bopId],
                     );
 
-                if (bopRows.length === 0) {
+                if (
+                    bopRows.length === 0
+                ) {
                     throw new Error(
                         `BOP master ID '${bopId}' was not found in row ${index + 1
                         }.`,
@@ -429,6 +441,16 @@ const BopPart = {
 
                 /*
                 =================================================
+                GET PREVIOUS COSTING
+                =================================================
+                */
+                const previousCosting =
+                    existingCostingMap.get(
+                        `${bopId}-${supplierId}`,
+                    );
+
+                /*
+                =================================================
                 INSERT BOP CONFIGURATION
                 =================================================
                 */
@@ -452,6 +474,11 @@ const BopPart = {
                         commodity,
                         assembly_qty,
 
+                        financial_year,
+                        bop_month,
+                        bop_rate,
+                        bop_cost,
+
                         created_by,
                         updated_by
 
@@ -474,69 +501,54 @@ const BopPart = {
                         ?,
 
                         ?,
+                        ?,
+                        ?,
+                        ?,
+
+                        ?,
                         ?
                     )
                     `,
                     [
-                        /*
-                        -----------------------------
-                        PART DATA
-                        -----------------------------
-                        */
                         part.part_no,
                         part.id,
-                        part.part_name ||
-                        null,
-                        part.fg_code ||
-                        null,
+                        part.part_name || null,
+                        part.fg_code || null,
 
-                        /*
-                        -----------------------------
-                        BOP MASTER DATA
-                        -----------------------------
-                        */
                         bopMaster.id,
-                        bopMaster.bop_erp_code ||
-                        null,
-                        bopMaster.bop_part_no ||
-                        null,
-                        bopMaster.bop_part_name ||
-                        null,
+                        bopMaster.bop_erp_code || null,
+                        bopMaster.bop_part_no || null,
+                        bopMaster.bop_part_name || null,
 
-                        /*
-                        -----------------------------
-                        SUPPLIER
-                        -----------------------------
-                        */
                         supplierId,
                         supplierName,
 
-                        /*
-                        -----------------------------
-                        OTHER
-                        -----------------------------
-                        */
-                        bopMaster.commodity ||
-                        null,
-
+                        bopMaster.commodity || null,
                         assemblyQty,
 
                         /*
-                        -----------------------------
-                        AUDIT
-                        -----------------------------
+                        ----------------------------------------
+                        PRESERVE LATEST COSTING
+                        ----------------------------------------
                         */
+                        previousCosting?.financial_year ??
+                        null,
+
+                        previousCosting?.bop_month ??
+                        null,
+
+                        previousCosting?.bop_rate ??
+                        null,
+
+                        previousCosting?.bop_cost ??
+                        null,
+
                         createdBy,
                         updatedBy,
                     ],
                 );
             }
 
-            /*
-            ====================================================
-            COMMIT
-            ====================================================
-            */
             await connection.commit();
 
             return {
@@ -545,22 +557,62 @@ const BopPart = {
                 count: bops.length,
             };
         } catch (error) {
-            /*
-            ====================================================
-            ROLLBACK
-            ====================================================
-            */
             await connection.rollback();
-
             throw error;
         } finally {
-            /*
-            ====================================================
-            RELEASE CONNECTION
-            ====================================================
-            */
             connection.release();
         }
+    },
+
+    /*
+    ========================================================
+    UPDATE LATEST COSTING FOR ONE BOP DETAIL
+    ========================================================
+    */
+    updateCosting: async ({
+        id,
+        financialYear = null,
+        bopMonth = null,
+        bopRate = null,
+        bopCost = null,
+    }) => {
+        if (!id) {
+            throw new Error(
+                "BOP detail ID is required.",
+            );
+        }
+
+        const [result] = await zbcDB.query(
+            `
+            UPDATE bop_part_details
+            SET
+                financial_year = ?,
+                bop_month = ?,
+                bop_rate = ?,
+                bop_cost = ?,
+                updated_at = CURRENT_TIMESTAMP
+
+            WHERE id = ?
+            `,
+            [
+                financialYear || null,
+                bopMonth || null,
+
+                bopRate === "" ||
+                    bopRate === undefined
+                    ? null
+                    : Number(bopRate),
+
+                bopCost === "" ||
+                    bopCost === undefined
+                    ? null
+                    : Number(bopCost),
+
+                id,
+            ],
+        );
+
+        return result.affectedRows > 0;
     },
 
     /*

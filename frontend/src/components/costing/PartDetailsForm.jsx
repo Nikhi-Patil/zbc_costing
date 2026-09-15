@@ -283,7 +283,7 @@ function PartDetailsForm({
     formData.subCategoryName,
     handleInputChange,
   ]);
-  
+
   // PART SELECT
   const handlePartNoChange = (event) => {
     const selectedPart = parts.find(
@@ -627,202 +627,188 @@ function PartDetailsForm({
       </div>
 
       {/* BOP CONFIGURATION */}
-      {formData.partNo && (
+      {formData.partNo && bopList?.length > 0 && (
         <div className="card mt-4">
           <div className="card-header d-flex align-items-center justify-content-between">
             <h5 className="mb-0">
               <b style={{ fontSize: "14px" }}>BOP Details</b>
             </h5>
 
-            {bopList?.length > 0 && (
-              <span className="text-success">BOP configuration loaded</span>
-            )}
+            <span className="text-success">BOP configuration loaded</span>
           </div>
 
           <div className="card-body">
-            {!bopList || bopList.length === 0 ? (
-              <div className="text-center text-muted py-3">
-                No BOP configuration found for this Part No.
-              </div>
-            ) : (
-              <div className="table-responsive">
-                <table className="table bop-table part-bop-table">
-                  <thead>
-                    <tr>
-                      <th>Sr. No.</th>
-                      <th>BOP FG Code</th>
-                      <th>BOP Part No.</th>
-                      <th>Part Name</th>
-                      <th>Supplier Name</th>
-                      <th>Commodity</th>
-                      <th>Assembly Qty</th>
-                    </tr>
-                  </thead>
+            <div className="table-responsive">
+              <table className="table bop-table part-bop-table">
+                <thead>
+                  <tr>
+                    <th>Sr. No.</th>
+                    <th>BOP FG Code</th>
+                    <th>BOP Part No.</th>
+                    <th>Part Name</th>
+                    <th>Supplier Name</th>
+                    <th>Commodity</th>
+                    <th>Assembly Qty</th>
+                  </tr>
+                </thead>
 
-                  <tbody>
-                    {bopList.map((bop, index) => {
-                      const bopMaster = bopMasters.find(
-                        (master) =>
-                          String(master.id) ===
-                            String(bop.bopId ?? bop.bop_id) ||
-                          String(master.bop_erp_code || "")
+                <tbody>
+                  {bopList.map((bop, index) => {
+                    const bopMaster = bopMasters.find(
+                      (master) =>
+                        String(master.id) === String(bop.bopId ?? bop.bop_id) ||
+                        String(master.bop_erp_code || "")
+                          .trim()
+                          .toLowerCase() ===
+                          String(
+                            bop.bopFgCode ??
+                              bop.bop_fg_code ??
+                              bop.bopErpCode ??
+                              "",
+                          )
                             .trim()
-                            .toLowerCase() ===
-                            String(
+                            .toLowerCase(),
+                    );
+
+                    const supplierId = bop.supplierId ?? bop.supplier_id ?? "";
+
+                    const supplierIds = String(bopMaster?.supplier_id ?? "")
+                      .split(",")
+                      .map((id) => id.trim())
+                      .filter(Boolean);
+
+                    const supplierNames = String(bopMaster?.supplier_name ?? "")
+                      .split(",")
+                      .map((name) => name.trim())
+                      .filter(Boolean);
+
+                    const supplierIndex = supplierIds.findIndex(
+                      (id) => String(id) === String(supplierId),
+                    );
+
+                    const restoredSupplierName =
+                      bop.supplierName ??
+                      bop.supplier_name ??
+                      (supplierIndex >= 0 ? supplierNames[supplierIndex] : "");
+
+                    return (
+                      <tr key={bop.id ?? `bop-${index}`}>
+                        <td className="text-center">{index + 1}</td>
+
+                        <td>
+                          <input
+                            type="text"
+                            className={`form-control ${
+                              bop.bopFgCode ? "field-filled" : ""
+                            }`}
+                            value={
                               bop.bopFgCode ??
-                                bop.bop_fg_code ??
-                                bop.bopErpCode ??
-                                "",
-                            )
-                              .trim()
-                              .toLowerCase(),
-                      );
+                              bop.bop_fg_code ??
+                              bop.bopErpCode ??
+                              ""
+                            }
+                            readOnly
+                            tabIndex={-1}
+                          />
+                        </td>
 
-                      const supplierId =
-                        bop.supplierId ?? bop.supplier_id ?? "";
+                        <td>
+                          <input
+                            type="text"
+                            className={`form-control ${
+                              bop.bopPartNo ? "field-filled" : ""
+                            }`}
+                            value={bop.bopPartNo ?? bop.bop_part_no ?? ""}
+                            readOnly
+                            tabIndex={-1}
+                          />
+                        </td>
 
-                      const supplierIds = String(bopMaster?.supplier_id ?? "")
-                        .split(",")
-                        .map((id) => id.trim())
-                        .filter(Boolean);
+                        <td>
+                          <input
+                            type="text"
+                            className={`form-control ${
+                              bop.bopPartName ? "field-filled" : ""
+                            }`}
+                            value={bop.bopPartName ?? bop.bop_part_name ?? ""}
+                            readOnly
+                            tabIndex={-1}
+                          />
+                        </td>
 
-                      const supplierNames = String(
-                        bopMaster?.supplier_name ?? "",
-                      )
-                        .split(",")
-                        .map((name) => name.trim())
-                        .filter(Boolean);
+                        <td>
+                          <input
+                            type="text"
+                            className={`form-control ${
+                              restoredSupplierName ? "field-filled" : ""
+                            }`}
+                            value={restoredSupplierName}
+                            readOnly
+                            tabIndex={-1}
+                          />
+                        </td>
 
-                      const supplierIndex = supplierIds.findIndex(
-                        (id) => String(id) === String(supplierId),
-                      );
+                        <td>
+                          <input
+                            type="text"
+                            className={`form-control ${
+                              bop.commodity ? "field-filled" : ""
+                            }`}
+                            value={bop.commodity ?? ""}
+                            readOnly
+                            tabIndex={-1}
+                          />
+                        </td>
 
-                      const restoredSupplierName =
-                        bop.supplierName ??
-                        bop.supplier_name ??
-                        (supplierIndex >= 0
-                          ? supplierNames[supplierIndex]
-                          : "");
+                        <td>
+                          <input
+                            type="text"
+                            className={`form-control ${
+                              (bop.bopAssemblyQty ??
+                              bop.assemblyQty ??
+                              bop.assembly_qty)
+                                ? "field-filled"
+                                : ""
+                            }`}
+                            value={
+                              bop.bopAssemblyQty ??
+                              bop.assemblyQty ??
+                              bop.assembly_qty ??
+                              ""
+                            }
+                            readOnly
+                            tabIndex={-1}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
 
-                      return (
-                        <tr key={bop.id ?? `bop-${index}`}>
-                          <td className="text-center">{index + 1}</td>
-
-                          <td>
-                            <input
-                              type="text"
-                              className={`form-control ${
-                                bop.bopFgCode ? "field-filled" : ""
-                              }`}
-                              value={
-                                bop.bopFgCode ??
-                                bop.bop_fg_code ??
-                                bop.bopErpCode ??
-                                ""
-                              }
-                              readOnly
-                              tabIndex={-1}
-                            />
-                          </td>
-
-                          <td>
-                            <input
-                              type="text"
-                              className={`form-control ${
-                                bop.bopPartNo ? "field-filled" : ""
-                              }`}
-                              value={bop.bopPartNo ?? bop.bop_part_no ?? ""}
-                              readOnly
-                              tabIndex={-1}
-                            />
-                          </td>
-
-                          <td>
-                            <input
-                              type="text"
-                              className={`form-control ${
-                                bop.bopPartName ? "field-filled" : ""
-                              }`}
-                              value={bop.bopPartName ?? bop.bop_part_name ?? ""}
-                              readOnly
-                              tabIndex={-1}
-                            />
-                          </td>
-
-                          <td>
-                            <input
-                              type="text"
-                              className={`form-control ${
-                                restoredSupplierName ? "field-filled" : ""
-                              }`}
-                              value={restoredSupplierName}
-                              readOnly
-                              tabIndex={-1}
-                            />
-                          </td>
-
-                          <td>
-                            <input
-                              type="text"
-                              className={`form-control ${
-                                bop.commodity ? "field-filled" : ""
-                              }`}
-                              value={bop.commodity ?? ""}
-                              readOnly
-                              tabIndex={-1}
-                            />
-                          </td>
-
-                          <td>
-                            <input
-                              type="text"
-                              className={`form-control ${
-                                (bop.bopAssemblyQty ??
-                                bop.assemblyQty ??
-                                bop.assembly_qty)
-                                  ? "field-filled"
-                                  : ""
-                              }`}
-                              value={
-                                bop.bopAssemblyQty ??
+                <tfoot>
+                  <tr>
+                    <td colSpan="6" className="text-end fw-bold">
+                      Total Assembly Qty
+                    </td>
+                    <td className="fw-bold">
+                      {bopList
+                        .reduce(
+                          (total, bop) =>
+                            total +
+                            (Number(
+                              bop.bopAssemblyQty ??
                                 bop.assemblyQty ??
                                 bop.assembly_qty ??
-                                ""
-                              }
-                              readOnly
-                              tabIndex={-1}
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-
-                  <tfoot>
-                    <tr>
-                      <td colSpan="6" className="text-end fw-bold">
-                        Total Assembly Qty
-                      </td>
-                      <td className="fw-bold">
-                        {bopList
-                          .reduce(
-                            (total, bop) =>
-                              total +
-                              (Number(
-                                bop.bopAssemblyQty ??
-                                  bop.assemblyQty ??
-                                  bop.assembly_qty ??
-                                  0,
-                              ) || 0),
-                            0,
-                          )
-                          .toFixed(1)}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            )}
+                                0,
+                            ) || 0),
+                          0,
+                        )
+                        .toFixed(1)}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
           </div>
         </div>
       )}

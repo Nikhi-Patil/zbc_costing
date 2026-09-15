@@ -29,7 +29,6 @@ function CostingWizard() {
   const [transactionId, setTransactionId] = useState(urlTransactionId || "");
 
   const totalSteps = 5;
-  const [loading, setLoading] = useState(false);
 
   // FORM DATA
   const [formData, setFormData] = useState({
@@ -126,18 +125,8 @@ function CostingWizard() {
     fetchTransaction(urlTransactionId);
   }, [urlTransactionId]);
 
-  useEffect(() => {
-    if (!formData.subCategory) return;
-    if (formData.subCategoryName) return;
-
-    // If the API already returned the name it will be used above.
-    // Otherwise PartDetailsForm will populate it when its subcategory
-    // master is available.
-  }, [formData.subCategory, formData.subCategoryName]);
-
   const fetchTransaction = async (id) => {
     try {
-      setLoading(true);
       const response = await fetch(`${API_BASE_URL}/molding/${id}`);
       const result = await response.json();
       if (!response.ok || !result.success) {
@@ -260,26 +249,59 @@ function CostingWizard() {
       }));
 
       setBops(
-        (data.bops || []).map((bop) => ({
-          id: bop.id,
-          bopId: bop.bop_id ?? "",
-          bopFgCode: bop.bop_fg_code || "",
-          bopPartNo: bop.bop_part_no || "",
-          bopPartName: bop.bop_part_name || "",
-          supplierId: bop.supplier_id ?? "",
-          suppliers: bop.suppliers || [],
-          commodity: bop.commodity || "",
-          bopAssemblyQty: bop.bop_assembly_qty ?? "",
-          bopmonth: bop.bop_month || "",
-          bopRate: bop.bop_rate ?? "",
-          bopCost: bop.bop_cost ?? "",
+        (data.bops || []).map((bop, index) => ({
+          // Permanent bop_part_details row ID
+          id: bop.id ?? `saved-bop-${data.part_no || "part"}-${index}`,
+
+          // BOP master ID
+          bopId: bop.bop_id ?? bop.bopId ?? "",
+
+          // BOP ERP Code
+          bopFgCode: bop.bop_fg_code ?? bop.bop_erp_code ?? bop.bopFgCode ?? "",
+
+          // BOP Part
+          bopPartNo: bop.bop_part_no ?? bop.bopPartNo ?? "",
+
+          bopPartName: bop.bop_part_name ?? bop.bopPartName ?? "",
+
+          // Supplier
+          supplierId: bop.supplier_id ?? bop.supplierId ?? "",
+
+          supplierName: bop.supplier_name ?? bop.supplierName ?? "",
+
+          suppliers: Array.isArray(bop.suppliers)
+            ? bop.suppliers
+            : bop.supplier_id
+              ? [
+                  {
+                    id: bop.supplier_id,
+                    supplier_name: bop.supplier_name || "",
+                  },
+                ]
+              : [],
+
+          // Commodity
+          commodity: bop.commodity ?? "",
+
+          // Assembly Qty comes from bop_part_details
+          bopAssemblyQty:
+            bop.bop_assembly_qty ??
+            bop.assembly_qty ??
+            bop.bopAssemblyQty ??
+            "",
+
+          // Saved costing values
+          bopmonth: bop.bop_month ?? bop.bopmonth ?? "",
+
+          bopRate: bop.bop_rate ?? bop.bopRate ?? "",
+
+          bopCost: bop.bop_cost ?? bop.bopCost ?? "",
         })),
       );
     } catch (error) {
       console.error("Failed to load transaction:", error);
       alert(`Unable to load transaction: ${error.message}`);
     } finally {
-      setLoading(false);
     }
   };
 
@@ -626,14 +648,17 @@ function CostingWizard() {
   const loadBopConfiguration = async (partNo) => {
     const selectedPartNo = String(partNo || "").trim();
 
-    // Always clear the previous part's BOP configuration first.
+    // Clear previous part's BOP data
     setBops([]);
 
     if (!selectedPartNo) {
       setFormData((prev) => ({
         ...prev,
         hasBop: "",
+        assemblyQty: "",
+        totalAssemblyCost: "0.00",
       }));
+
       return;
     }
 
@@ -642,26 +667,12 @@ function CostingWizard() {
         `${API_BASE_URL}/part-bops/${encodeURIComponent(selectedPartNo)}`,
       );
 
-      if (response.status === 404) {
-        setFormData((prev) => ({
-          ...prev,
-          hasBop: "No",
-          assemblyQty: "",
-          totalAssemblyCost: "0.00",
-        }));
-        return;
-      }
-
       const result = await response.json();
 
       if (!response.ok) {
         throw new Error(result.message || "Failed to load BOP configuration");
       }
 
-      // Support all common response formats:
-      // [...]
-      // { data: [...] }
-      // { bops: [...] }
       const savedBops = Array.isArray(result)
         ? result
         : Array.isArray(result?.data)
@@ -670,23 +681,49 @@ function CostingWizard() {
             ? result.bops
             : [];
 
+      /*
+    ========================================================
+    NO BOP CONFIGURATION
+    ========================================================
+    */
+
       if (savedBops.length === 0) {
+        setBops([]);
+
         setFormData((prev) => ({
           ...prev,
           hasBop: "No",
           assemblyQty: "",
           totalAssemblyCost: "0.00",
         }));
+
         return;
       }
 
-      // Convert saved BOP Management rows into the structure
-      // already used by the Costing Wizard.
+      /*
+    ========================================================
+    LOAD BOP CONFIGURATION
+
+    Source:
+        bop_part_details
+
+    Includes:
+        BOP
+        Supplier
+        Assembly Qty
+        Financial Year
+        Month
+        Rate
+        Cost
+    ========================================================
+    */
+
       const loadedBops = savedBops.map((bop, index) => ({
-        id: bop.id ?? `saved-bop-${selectedPartNo}-${index}-${Date.now()}`,
+        id: bop.id ?? `saved-bop-${selectedPartNo}-${index}`,
 
         bopId: bop.bop_id ?? bop.bopId ?? "",
-        bopFgCode: bop.bop_fg_code ?? bop.bopFgCode ?? bop.bop_erp_code ?? "",
+
+        bopFgCode: bop.bop_fg_code ?? bop.bop_erp_code ?? bop.bopFgCode ?? "",
 
         bopPartNo: bop.bop_part_no ?? bop.bopPartNo ?? "",
 
@@ -696,13 +733,13 @@ function CostingWizard() {
 
         supplierName: bop.supplier_name ?? bop.supplierName ?? "",
 
-        // BopTable uses this list to display the supplier dropdown.
         suppliers: Array.isArray(bop.suppliers)
           ? bop.suppliers
           : bop.supplier_id
             ? [
                 {
                   id: bop.supplier_id,
+
                   supplier_name: bop.supplier_name || "",
                 },
               ]
@@ -713,9 +750,16 @@ function CostingWizard() {
         bopAssemblyQty:
           bop.assembly_qty ?? bop.bop_assembly_qty ?? bop.bopAssemblyQty ?? "",
 
-        // These are filled by the monthly BOP rate lookup later.
+        /*
+          ------------------------------------------------
+          SAVED COSTING
+          ------------------------------------------------
+          */
+
         bopmonth: bop.bop_month ?? bop.bopmonth ?? "",
+
         bopRate: bop.bop_rate ?? bop.bopRate ?? "",
+
         bopCost: bop.bop_cost ?? bop.bopCost ?? "0.00",
       }));
 
@@ -723,22 +767,29 @@ function CostingWizard() {
 
       setFormData((prev) => ({
         ...prev,
+
         hasBop: "Yes",
+
+        /*
+      BOP assembly quantity is calculated
+      from the BOP mapping rows.
+      */
+        assemblyQty: loadedBops
+          .reduce((total, bop) => total + (Number(bop.bopAssemblyQty) || 0), 0)
+          .toString(),
       }));
     } catch (error) {
-      console.error(
-        "Error loading BOP configuration for Part No:",
-        selectedPartNo,
-        error,
-      );
+      console.error("Error loading BOP configuration:", error);
 
-      // Do not leave the previous part's BOP data on screen.
       setBops([]);
 
       setFormData((prev) => ({
         ...prev,
+
         hasBop: "No",
+
         assemblyQty: "",
+
         totalAssemblyCost: "0.00",
       }));
 

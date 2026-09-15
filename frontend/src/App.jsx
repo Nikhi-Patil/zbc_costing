@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Layout from "./components/layout/Layout";
 import Molding from "./pages/costing/Molding";
+
 import Dashboard from "./pages/Dashboard";
 import CostingWizard from "./pages/costing/CostingWizard";
 import UnitMaster from "./pages/masters/UnitMaster";
@@ -27,6 +28,7 @@ import BopManagement from "./pages/costing/BopManagement";
 import SalesMonthly from "./pages/monthly_masters/SalesMonthly";
 import SalesMonthlyEntry from "./pages/monthly_masters/SalesMonthlyEntry";
 import SalesMonthlyBulk from "./pages/monthly_masters/SalesMonthlyBulk";
+import MoldingData from "./pages/costing/MoldingData";
 
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -51,6 +53,7 @@ function App() {
         />
 
         {/* Dashboard */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
 
         {/* Costing */}
@@ -103,6 +106,7 @@ function App() {
 
         <Route path="/sales-monthly/add" element={<SalesMonthlyEntry />} />
         <Route path="/sales-monthly/bulk" element={<SalesMonthlyBulk />} />
+        <Route path="/molding-data" element={<MoldingData />} />
       </Routes>
     </Layout>
   );
