@@ -62,12 +62,11 @@ tmp/
 coverage/
 
 # =========================
-# Local files
+# Local configuration
 # =========================
-api.js
+*.local
+
+# =========================
+# API configuration
+# =========================
 **/api.js
-<<<<<<< HEAD
-*.local
-=======
-*.local
->>>>>>> 4be8306a3341707a79241c93fa2fbd0ad4f7cdcd
