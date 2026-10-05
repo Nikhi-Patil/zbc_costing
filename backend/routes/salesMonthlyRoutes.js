@@ -3,6 +3,7 @@ import express from "express";
 
 import {
   getSalesMonthlyReport,
+  getPreviousMonthSales,
   getSalesMonthlyById,
   checkSalesMonthly,
   createSalesMonthly,
@@ -11,77 +12,29 @@ import {
   deleteSalesMonthly,
 } from "../controllers/salesMonthlyController.js";
 
-
 const router = express.Router();
 
-
-/* ============================================================
-   GET MONTHLY REPORT
-============================================================ */
-
-router.get(
-  "/",
-  getSalesMonthlyReport
-);
+/* GET MONTHLY REPORT */
+router.get("/", getSalesMonthlyReport);
 
 
-/* ============================================================
-   CHECK EXISTING RECORD
+/* CHECK EXISTING RECORD */
+router.get("/check", checkSalesMonthly);
 
-   IMPORTANT:
-   Must come BEFORE /:id
-============================================================ */
+router.get("/previous", getPreviousMonthSales);
 
-router.get(
-  "/check",
-  checkSalesMonthly
-);
+/* GET ONE RECORD */
+router.get("/:id", getSalesMonthlyById);
 
+/* CREATE */
+router.post("/", createSalesMonthly);
 
-/* ============================================================
-   GET ONE RECORD
-============================================================ */
+router.post("/bulk", bulkCreateSalesMonthly);
 
-router.get(
-  "/:id",
-  getSalesMonthlyById
-);
+/* UPDATE */
+router.put("/:id", updateSalesMonthly);
 
-
-/* ============================================================
-   CREATE
-============================================================ */
-
-router.post(
-  "/",
-  createSalesMonthly
-);
-
-router.post(
-  "/bulk",
-  bulkCreateSalesMonthly
-);
-
-
-/* ============================================================
-   UPDATE
-============================================================ */
-
-router.put(
-  "/:id",
-  updateSalesMonthly
-);
-
-
-/* ============================================================
-   DELETE
-============================================================ */
-
-router.delete(
-  "/:id",
-  deleteSalesMonthly
-);
-
+/* DELETE */
+router.delete("/:id", deleteSalesMonthly);
 
 export default router;
-

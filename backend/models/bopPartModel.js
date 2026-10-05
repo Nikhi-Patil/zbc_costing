@@ -1,123 +1,71 @@
 import zbcDB from "../config/zbcDB.js";
 import adminDB from "../config/adminDB.js";
-
-/*
-============================================================
-BOP PART MODEL
-------------------------------------------------------------
-Stores the permanent BOP configuration against a Part No.
-
-Relationship:
-
-    Part No.
-       ↓
-    BOP Component(s)
-
-BOP master data remains in ADMIN database.
-Part-BOP mapping is stored in zbc_costing database.
-============================================================
-*/
-
 const BopPart = {
-    /*
-    ========================================================
-    GET BOP CONFIGURATION FOR ONE PART
-    ========================================================
-    */
+    /* GET BOP CONFIGURATION FOR ONE PART */
     getByPartNo: async (partNo) => {
-        const [rows] = await zbcDB.query(
-            `
+        const [rows] = await zbcDB.query(`
             SELECT
                 id,
                 part_no,
                 part_id,
                 part_name,
                 fg_code,
-
                 bop_id,
                 bop_fg_code,
                 bop_part_no,
                 bop_part_name,
-
                 supplier_id,
                 supplier_name,
-
                 commodity,
                 assembly_qty,
-
                 financial_year,
                 bop_month,
                 bop_rate,
                 bop_cost,
-
                 created_by,
                 created_at,
                 updated_by,
                 updated_at
-
             FROM bop_part_details
-
             WHERE part_no = ?
-
-            ORDER BY id ASC
-            `,
+            ORDER BY id ASC`,
             [partNo],
         );
-
         return rows;
     },
 
-    /*
-    ========================================================
-    GET ALL PART-BOP CONFIGURATIONS
-    ========================================================
-    */
+    /* GET ALL PART-BOP CONFIGURATIONS */
     getAll: async () => {
-        const [rows] = await zbcDB.query(
-            `
+        const [rows] = await zbcDB.query(`
             SELECT
                 id,
                 part_no,
                 part_id,
                 part_name,
                 fg_code,
-
                 bop_id,
                 bop_fg_code,
                 bop_part_no,
                 bop_part_name,
-
                 supplier_id,
                 supplier_name,
-
                 commodity,
                 assembly_qty,
-
                 financial_year,
                 bop_month,
                 bop_rate,
                 bop_cost,
-
                 created_by,
                 created_at,
                 updated_by,
                 updated_at
-
             FROM bop_part_details
-
-            ORDER BY part_no ASC, id ASC
-            `,
+            ORDER BY part_no ASC, id ASC`,
         );
-
         return rows;
     },
 
-    /*
-    ========================================================
-    SAVE / REPLACE COMPLETE BOP CONFIGURATION
-    FOR ONE PART
-    ========================================================
-    */
+    /* SAVE / REPLACE */
     saveForPart: async ({
         partNo,
         bops = [],
@@ -125,55 +73,29 @@ const BopPart = {
         updatedBy = null,
     }) => {
         const connection = await zbcDB.getConnection();
-
         try {
             await connection.beginTransaction();
 
-            /*
-            ------------------------------------------------
-            VALIDATE PART FROM ADMIN DATABASE
-            ------------------------------------------------
-            */
-            const [partRows] = await adminDB.query(
-                `
+            /* VALIDATE PART FROM ADMIN DATABASE */
+            const [partRows] = await adminDB.query(`
                 SELECT
                     id,
                     part_no,
                     part_name,
                     fg_code
-
                 FROM part_master
-
                 WHERE TRIM(part_no) = TRIM(?)
-
-                LIMIT 1
-                `,
+                LIMIT 1`,
                 [String(partNo).trim()],
             );
-
             if (partRows.length === 0) {
-                throw new Error(
-                    `Part No. '${partNo}' was not found in Part Master.`,
-                );
+                throw new Error(`Part No. '${partNo}' was not found in Part Master.`,);
             }
-
             const part = partRows[0];
 
-            /*
-            ------------------------------------------------
-            PRESERVE EXISTING COSTING
-            ------------------------------------------------
-
-            BOP Management replaces the configuration.
-
-            Before deleting the old rows, preserve the
-            latest costing values for the same:
-
-                BOP + Supplier
-            */
+            /* PRESERVE EXISTING COSTING */
             const [existingCostingRows] =
-                await connection.query(
-                    `
+                await connection.query(`
                     SELECT
                         bop_id,
                         supplier_id,
@@ -181,48 +103,30 @@ const BopPart = {
                         bop_month,
                         bop_rate,
                         bop_cost
-
                     FROM bop_part_details
-
-                    WHERE part_no = ?
-                    `,
+                    WHERE part_no = ?`,
                     [String(part.part_no).trim()],
                 );
 
             const existingCostingMap =
-                new Map(
-                    existingCostingRows.map(
-                        (row) => [
-                            `${row.bop_id}-${row.supplier_id}`,
-                            row,
-                        ],
-                    ),
+                new Map(existingCostingRows.map(
+                    (row) => [
+                        `${row.bop_id}-${row.supplier_id}`,
+                        row,
+                    ],
+                ),
                 );
 
-            /*
-            ------------------------------------------------
-            DELETE OLD CONFIGURATION
-            ------------------------------------------------
-            */
-            await connection.query(
-                `
+            /* DELETE OLD CONFIGURATION */
+            await connection.query(`
                 DELETE FROM bop_part_details
-                WHERE part_no = ?
-                `,
+                WHERE part_no = ?`,
                 [String(part.part_no).trim()],
             );
 
-            /*
-            ------------------------------------------------
-            NO BOP CONFIGURATION
-            ------------------------------------------------
-            */
-            if (
-                !Array.isArray(bops) ||
-                bops.length === 0
-            ) {
+            /* NO BOP CONFIGURATION */
+            if (!Array.isArray(bops) || bops.length === 0) {
                 await connection.commit();
-
                 return {
                     partNo: part.part_no,
                     partId: part.id,
@@ -230,110 +134,69 @@ const BopPart = {
                 };
             }
 
-            /*
-            ------------------------------------------------
-            VALIDATE DUPLICATE BOP + SUPPLIER
-            ------------------------------------------------
-            */
+            /* VALIDATE DUPLICATE BOP + SUPPLIER */
             const duplicateKeys = new Set();
-
             for (
                 let index = 0;
                 index < bops.length;
                 index += 1
             ) {
                 const bop = bops[index];
-
                 const bopId = Number(
                     bop.bopId ??
                     bop.bop_id ??
                     0,
                 );
-
                 const supplierId = Number(
                     bop.supplierId ??
                     bop.supplier_id ??
                     0,
                 );
-
                 const assemblyQty = Number(
                     bop.assemblyQty ??
                     bop.bopAssemblyQty ??
                     bop.bop_assembly_qty ??
                     0,
                 );
-
                 if (!bopId || bopId <= 0) {
                     throw new Error(
                         `BOP FG Code is required in row ${index + 1
                         }.`,
                     );
                 }
-
-                if (
-                    !supplierId ||
-                    supplierId <= 0
-                ) {
-                    throw new Error(
-                        `Supplier is required in row ${index + 1
-                        }.`,
-                    );
+                if (!supplierId || supplierId <= 0) {
+                    throw new Error(`Supplier is required in row ${index + 1}.`,);
                 }
-
                 if (
                     Number.isNaN(assemblyQty) ||
                     !Number.isFinite(assemblyQty) ||
                     assemblyQty < 0
-                ) {
-                    throw new Error(
-                        `Assembly Qty must be a valid non-negative number in row ${index + 1
-                        }.`,
-                    );
+                ) { throw new Error(`Assembly Qty must be a valid non-negative number in row ${index + 1}.`,); }
+
+                const duplicateKey = `${bopId}-${supplierId}`;
+                if (duplicateKeys.has(duplicateKey)) {
+                    throw new Error(`Duplicate BOP/Supplier combination found in row ${index + 1}.`,);
                 }
-
-                const duplicateKey =
-                    `${bopId}-${supplierId}`;
-
-                if (
-                    duplicateKeys.has(
-                        duplicateKey,
-                    )
-                ) {
-                    throw new Error(
-                        `Duplicate BOP/Supplier combination found in row ${index + 1
-                        }.`,
-                    );
-                }
-
-                duplicateKeys.add(
-                    duplicateKey,
-                );
+                duplicateKeys.add(duplicateKey);
             }
 
-            /*
-            ====================================================
-            PROCESS EACH BOP
-            ====================================================
-            */
+            /* PROCESS EACH BOP */
             for (
                 let index = 0;
                 index < bops.length;
                 index += 1
             ) {
                 const bop = bops[index];
-
                 const bopId = Number(
                     bop.bopId ??
                     bop.bop_id ??
                     0,
                 );
-
                 const supplierId = Number(
                     bop.supplierId ??
                     bop.supplier_id ??
                     0,
                 );
-
                 const assemblyQty = Number(
                     bop.assemblyQty ??
                     bop.bopAssemblyQty ??
@@ -341,14 +204,9 @@ const BopPart = {
                     0,
                 );
 
-                /*
-                =================================================
-                GET BOP MASTER DATA
-                =================================================
-                */
+                /* GET BOP MASTER DATA */
                 const [bopRows] =
-                    await adminDB.query(
-                        `
+                    await adminDB.query(`
                         SELECT
                             id,
                             bop_part_name,
@@ -356,104 +214,54 @@ const BopPart = {
                             bop_erp_code,
                             commodity,
                             supplier_id
-
                         FROM bop_master
-
                         WHERE id = ?
-
-                        LIMIT 1
-                        `,
+                        LIMIT 1`,
                         [bopId],
                     );
-
-                if (
-                    bopRows.length === 0
-                ) {
+                if (bopRows.length === 0) {
                     throw new Error(
-                        `BOP master ID '${bopId}' was not found in row ${index + 1
-                        }.`,
+                        `BOP master ID '${bopId}' was not found in row ${index + 1}.`,
                     );
                 }
+                const bopMaster =bopRows[0];
 
-                const bopMaster =
-                    bopRows[0];
-
-                /*
-                =================================================
-                VALIDATE SUPPLIER BELONGS TO BOP
-                =================================================
-                */
-
+                /* VALIDATE SUPPLIER BELONGS TO BOP */
                 const allowedSupplierIds =
-                    String(
-                        bopMaster.supplier_id ||
-                        "",
-                    )
+                    String(bopMaster.supplier_id ||"")
                         .split(",")
-                        .map((id) =>
-                            id.trim(),
-                        )
+                        .map((id) =>id.trim())
                         .filter(Boolean);
-
-                if (
-                    !allowedSupplierIds.includes(
-                        String(supplierId),
-                    )
+                if (!allowedSupplierIds.includes(String(supplierId))
                 ) {
-                    throw new Error(
-                        `Supplier '${supplierId}' is not assigned to BOP '${bopMaster.bop_erp_code}'.`,
-                    );
+                    throw new Error(`Supplier '${supplierId}' is not assigned to BOP '${bopMaster.bop_erp_code}'.`,);
                 }
-
-                /*
-                =================================================
-                GET SUPPLIER NAME
-                =================================================
-                */
+                /* GET SUPPLIER NAME */
                 const [supplierRows] =
-                    await adminDB.query(
-                        `
+                    await adminDB.query(`
                         SELECT
                             id,
                             supplier_name
-
                         FROM supplier_master
-
                         WHERE id = ?
-
-                        LIMIT 1
-                        `,
+                        LIMIT 1`,
                         [supplierId],
                     );
-
-                if (
-                    supplierRows.length === 0
-                ) {
+                if (supplierRows.length === 0) {
                     throw new Error(
-                        `Supplier ID '${supplierId}' was not found in row ${index + 1
-                        }.`,
+                        `Supplier ID '${supplierId}' was not found in row ${index + 1}.`,
                     );
                 }
 
-                const supplierName =
-                    supplierRows[0]
-                        .supplier_name || "";
+                const supplierName =supplierRows[0].supplier_name || "";
 
-                /*
-                =================================================
-                GET PREVIOUS COSTING
-                =================================================
-                */
+                /* GET PREVIOUS COSTING */
                 const previousCosting =
                     existingCostingMap.get(
                         `${bopId}-${supplierId}`,
                     );
 
-                /*
-                =================================================
-                INSERT BOP CONFIGURATION
-                =================================================
-                */
+                /* INSERT BOP CONFIGURATION */
                 await connection.query(
                     `
                     INSERT INTO bop_part_details (
@@ -526,11 +334,7 @@ const BopPart = {
                         bopMaster.commodity || null,
                         assemblyQty,
 
-                        /*
-                        ----------------------------------------
-                        PRESERVE LATEST COSTING
-                        ----------------------------------------
-                        */
+                        /* PRESERVE LATEST COSTING */
                         previousCosting?.financial_year ??
                         null,
 
@@ -564,11 +368,7 @@ const BopPart = {
         }
     },
 
-    /*
-    ========================================================
-    UPDATE LATEST COSTING FOR ONE BOP DETAIL
-    ========================================================
-    */
+    /* UPDATE LATEST COSTING FOR ONE BOP DETAIL */
     updateCosting: async ({
         id,
         financialYear = null,
@@ -615,11 +415,7 @@ const BopPart = {
         return result.affectedRows > 0;
     },
 
-    /*
-    ========================================================
-    DELETE ALL BOP CONFIGURATION FOR ONE PART
-    ========================================================
-    */
+    /* DELETE ALL BOP CONFIGURATION FOR ONE PART */
     deleteForPart: async (partNo) => {
         const [result] = await zbcDB.query(
             `

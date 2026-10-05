@@ -8,8 +8,16 @@ import PartDetailsForm from "../../components/costing/PartDetailsForm";
 import RMDetailsForm from "../../components/costing/RMDetailsForm";
 import ProcessDetailsForm from "../../components/costing/ProcessDetailsForm";
 import BottomLineForm from "../../components/costing/BottomLineForm";
-import OutsourcingForm from "../../components/costing/OutsourcingForm";
 import API_BASE_URL from "../../config/api";
+import { getUser } from "../../auth/auth";
+
+const getTodayDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 function CostingWizard() {
   const { transactionId: urlTransactionId } = useParams();
@@ -20,21 +28,24 @@ function CostingWizard() {
     financialYears[0]?.value ||
     "";
 
-  const defaultMonth =
+  const currentMonth =
     months.find((month) => month.value === new Date().getMonth() + 1)?.value ||
     "";
+
+  const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1;
 
   const [currentStep, setCurrentStep] = useState(1);
   const [bops, setBops] = useState([]);
   const [transactionId, setTransactionId] = useState(urlTransactionId || "");
+  const [transactionStatus, setTransactionStatus] = useState("");
+  const totalSteps = 4;
 
-  const totalSteps = 5;
-
+  const isViewMode = Boolean(urlTransactionId) && transactionStatus === "FINAL";
   // FORM DATA
   const [formData, setFormData] = useState({
     financialYear: defaultFinancialYear,
-    month: defaultMonth,
-    effectiveDate: "",
+    month: currentMonth,
+    effectiveDate: getTodayDate(),
     customerName: "",
     productionUnit: "",
     billingUnit: "",
@@ -48,16 +59,13 @@ function CostingWizard() {
     grossWeight: "",
     netWeight: "",
     loadingper: "",
-
     hasBop: "",
-
     polymerName: "",
     compoundCode: "",
     imCode: "",
-    compMonth: "",
+    compMonth: previousMonth,
     compoundRate: "",
     totalRmCost: "",
-
     processType: "",
     machineTonnage: "",
     shiftRate: "",
@@ -71,7 +79,6 @@ function CostingWizard() {
     PlattenSize: "",
     toolSize: "",
     processCostA: "",
-
     postCuring: "",
     finishing: "",
     inspection: "",
@@ -87,9 +94,7 @@ function CostingWizard() {
     totalAssemblyCost: "",
     processCostB: "",
     conversionCost: "",
-
     partCost: "",
-
     iccOnRm: "1",
     rejOnSubtotal: "3",
     ohOnSubtotal: "10",
@@ -102,27 +107,110 @@ function CostingWizard() {
     profitOnSubtotalCost: "",
     packagingOnSubtotalCost: "",
     transportOnSubtotalCost: "",
-
     totalBopCost: "",
     finalRmCost: "",
     customerSalesCost: "",
     salesProfitLoss: "",
+    buyingType: "INHOUSE",
+    vendorName: "",
     buyingCost: "",
     buyingProfitLoss: "",
     monthlyQuantity: "",
     monthlyProfitLoss: "",
-
     subtotalA: "",
     subtotalB: "",
   });
+
+  // AUTO-FILL LOGIN SESSION VALUES FOR NEW COSTING
+  useEffect(() => {
+    if (urlTransactionId) {
+      return;
+    }
+    const user = getUser();
+    if (!user) {
+      console.warn("No logged-in user found in session");
+      return;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      productionUnit: user.unit ?? prev.productionUnit,
+      billingUnit: user.unit ?? prev.billingUnit,
+      subDepartment: user.sub_department ?? prev.subDepartment,
+      effectiveDate: prev.effectiveDate || getTodayDate(),
+    }));
+  }, [urlTransactionId]);
 
   useEffect(() => {
     if (!urlTransactionId) {
       return;
     }
-
     setTransactionId(urlTransactionId);
     fetchTransaction(urlTransactionId);
+  }, [urlTransactionId]);
+
+  // LOAD MARGIN MASTER DEFAULTS
+  useEffect(() => {
+    // Do not overwrite an existing costing
+    if (urlTransactionId) {
+      return;
+    }
+
+    const fetchMargins = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/margins`);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch margin defaults");
+        }
+
+        const margins = await response.json();
+
+        const marginMap = {};
+
+        margins.forEach((margin) => {
+          marginMap[String(margin.margin_type).trim().toLowerCase()] =
+            Number(margin.percentage) || 0;
+        });
+
+        setFormData((prev) => ({
+          ...prev,
+
+          iccOnRm:
+            marginMap["icc"] !== undefined
+              ? String(marginMap["icc"])
+              : prev.iccOnRm,
+
+          rejOnSubtotal:
+            marginMap["rejection"] !== undefined
+              ? String(marginMap["rejection"])
+              : prev.rejOnSubtotal,
+
+          ohOnSubtotal:
+            marginMap["over heads (o/h)"] !== undefined
+              ? String(marginMap["over heads (o/h)"])
+              : prev.ohOnSubtotal,
+
+          profitOnSubtotal:
+            marginMap["profit"] !== undefined
+              ? String(marginMap["profit"])
+              : prev.profitOnSubtotal,
+
+          packagingOnSubtotal:
+            marginMap["packaging"] !== undefined
+              ? String(marginMap["packaging"])
+              : prev.packagingOnSubtotal,
+
+          transportOnSubtotal:
+            marginMap["transport"] !== undefined
+              ? String(marginMap["transport"])
+              : prev.transportOnSubtotal,
+        }));
+      } catch (error) {
+        console.error("Failed to load margin defaults:", error);
+      }
+    };
+
+    fetchMargins();
   }, [urlTransactionId]);
 
   const fetchTransaction = async (id) => {
@@ -133,16 +221,21 @@ function CostingWizard() {
         throw new Error(result.message || "Transaction not found");
       }
       const data = result.data || {};
+      const status = String(data.status || "")
+        .trim()
+        .toUpperCase();
+
+      setTransactionStatus(status);
+
+      console.log("TRANSACTION STATUS:", status);
 
       setFormData((prev) => ({
         ...prev,
-
         // Database → Wizard
         financialYear: data.financial_year ?? prev.financialYear,
         month: data.month ?? prev.month,
         effectiveDate:
           formatDateForInput(data.effective_date) || prev.effectiveDate,
-
         customerName: data.customer_name ?? prev.customerName,
         productionUnit: data.production_unit ?? prev.productionUnit,
         billingUnit: data.billing_unit ?? prev.billingUnit,
@@ -152,26 +245,20 @@ function CostingWizard() {
           data.sub_category_name ??
           data.subCategoryName ??
           prev.subCategoryName,
-
         partNo: data.part_no ?? prev.partNo,
         partName: data.part_name ?? prev.partName,
         fgcode: data.fg_code ?? prev.fgcode,
         imcode: data.im_code ?? prev.imcode,
-
         grossWeight: data.gross_weight ?? prev.grossWeight,
         netWeight: data.net_weight ?? prev.netWeight,
         loadingper: data.loading_per ?? prev.loadingper,
-
         hasBop: data.has_bop ?? prev.hasBop,
-
         polymerName: data.polymer_name ?? prev.polymerName,
         compoundCode: data.compound_code ?? prev.compoundCode,
         imCode: data.rm_im_code ?? prev.imCode,
         compMonth: data.comp_month ?? prev.compMonth,
         compoundRate: data.compound_rate ?? prev.compoundRate,
-
         totalRmCost: data.total_rm_cost ?? prev.totalRmCost,
-
         processType: data.process_type ?? prev.processType,
         machineTonnage: data.machine_tonnage ?? prev.machineTonnage,
         shiftRate: data.shift_rate ?? prev.shiftRate,
@@ -187,7 +274,6 @@ function CostingWizard() {
         PlattenSize: data.platten_size ?? prev.PlattenSize,
         toolSize: data.tool_size ?? prev.toolSize,
         processCostA: data.process_cost_a ?? prev.processCostA,
-
         postCuring: data.post_curing ?? prev.postCuring,
         finishing: data.finishing ?? prev.finishing,
         inspection: data.inspection ?? prev.inspection,
@@ -210,20 +296,15 @@ function CostingWizard() {
         totalAssemblyCost: data.total_assembly_cost ?? prev.totalAssemblyCost,
         processCostB: data.process_cost_b ?? prev.processCostB,
         conversionCost: data.conversion_cost ?? prev.conversionCost,
-
         partCost: data.part_cost ?? prev.partCost,
-
         customerSalesCost: data.customer_sales_cost ?? prev.customerSalesCost,
-
         salesProfitLoss: data.sales_profit_loss ?? prev.salesProfitLoss,
-
+        buyingType: data.buying_type ?? prev.buyingType,
+        vendorName: data.vendor_name ?? prev.vendorName,
         buyingCost: data.buying_cost ?? prev.buyingCost,
-
         buyingProfitLoss: data.buying_profit_loss ?? prev.buyingProfitLoss,
         monthlyQuantity: data.monthly_quantity ?? prev.monthlyQuantity,
-
         monthlyProfitLoss: data.monthly_profit_loss ?? prev.monthlyProfitLoss,
-
         iccOnRm: data.icc_on_rm ?? prev.iccOnRm,
         rejOnSubtotal: data.rej_on_subtotal ?? prev.rejOnSubtotal,
         ohOnSubtotal: data.oh_on_subtotal ?? prev.ohOnSubtotal,
@@ -244,7 +325,6 @@ function CostingWizard() {
         transportOnSubtotalCost:
           data.transport_on_subtotal_cost ?? prev.transportOnSubtotalCost,
         subtotalA: data.subtotal_a ?? data.subtotalA ?? prev.subtotalA,
-
         subtotalB: data.subtotal_b ?? data.subtotalB ?? prev.subtotalB,
       }));
 
@@ -252,23 +332,12 @@ function CostingWizard() {
         (data.bops || []).map((bop, index) => ({
           // Permanent bop_part_details row ID
           id: bop.id ?? `saved-bop-${data.part_no || "part"}-${index}`,
-
-          // BOP master ID
           bopId: bop.bop_id ?? bop.bopId ?? "",
-
-          // BOP ERP Code
           bopFgCode: bop.bop_fg_code ?? bop.bop_erp_code ?? bop.bopFgCode ?? "",
-
-          // BOP Part
           bopPartNo: bop.bop_part_no ?? bop.bopPartNo ?? "",
-
           bopPartName: bop.bop_part_name ?? bop.bopPartName ?? "",
-
-          // Supplier
           supplierId: bop.supplier_id ?? bop.supplierId ?? "",
-
           supplierName: bop.supplier_name ?? bop.supplierName ?? "",
-
           suppliers: Array.isArray(bop.suppliers)
             ? bop.suppliers
             : bop.supplier_id
@@ -279,22 +348,14 @@ function CostingWizard() {
                   },
                 ]
               : [],
-
-          // Commodity
           commodity: bop.commodity ?? "",
-
-          // Assembly Qty comes from bop_part_details
           bopAssemblyQty:
             bop.bop_assembly_qty ??
             bop.assembly_qty ??
             bop.bopAssemblyQty ??
             "",
-
-          // Saved costing values
           bopmonth: bop.bop_month ?? bop.bopmonth ?? "",
-
           bopRate: bop.bop_rate ?? bop.bopRate ?? "",
-
           bopCost: bop.bop_cost ?? bop.bopCost ?? "",
         })),
       );
@@ -314,32 +375,25 @@ function CostingWizard() {
         },
         body: JSON.stringify({
           transactionId: transactionId || null,
-
           formData: {
             ...formData,
-
             totalBopCost: totalBopCost.toFixed(2),
             finalRmCost: finalRmCost.toFixed(2),
-
             iccOnRmCost: iccOnRmCost.toFixed(2),
             rejOnSubtotalCost: rejOnSubtotalCost.toFixed(2),
             ohOnSubtotalCost: ohOnSubtotalCost.toFixed(2),
             profitOnSubtotalCost: profitOnSubtotalCost.toFixed(2),
             packagingOnSubtotalCost: packagingOnSubtotalCost.toFixed(2),
             transportOnSubtotalCost: transportOnSubtotalCost.toFixed(2),
-
             subtotalA: subtotalA.toFixed(2),
             subtotalB: subtotalB.toFixed(2),
-
             partCost: totalPartCost.toFixed(2),
             monthlyQuantity: Number(formData.monthlyQuantity) || 0,
-
             monthlyProfitLoss:
               (Number(formData.customerSalesCost) || 0) *
                 Number(formData.monthlyQuantity || 0) -
               totalPartCost * Number(formData.monthlyQuantity || 0),
           },
-
           bops,
         }),
       });
@@ -351,11 +405,9 @@ function CostingWizard() {
           data.error || data.message || `HTTP Error ${response.status}`,
         );
       }
-
       if (!transactionId && data.transactionId) {
         setTransactionId(data.transactionId);
       }
-
       return data.transactionId || transactionId;
     } catch (error) {
       console.error("SAVE DRAFT ERROR:", error);
@@ -373,7 +425,6 @@ function CostingWizard() {
 
       // Save latest step first
       const saved = await saveDraft();
-
       if (!saved) {
         return;
       }
@@ -388,15 +439,11 @@ function CostingWizard() {
           transactionId: transactionId,
         }),
       });
-
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.message || "Final submit failed");
       }
-
       alert(`Costing submitted successfully: ${transactionId}`);
-
       console.log("Final:", data);
     } catch (error) {
       console.error("Final submit error:", error);
@@ -413,52 +460,39 @@ function CostingWizard() {
           name === "grossWeight"
             ? parseFloat(value)
             : parseFloat(prev.grossWeight);
-
         const netWeight =
           name === "netWeight" ? parseFloat(value) : parseFloat(prev.netWeight);
-
         let loadingper = "";
-
         if (!isNaN(grossWeight) && !isNaN(netWeight) && netWeight !== 0) {
           loadingper = (((grossWeight - netWeight) / netWeight) * 100).toFixed(
             2,
           );
         }
-
         // Calculate Total RM Cost
         let totalRmCost = "";
-
         const compoundRate = parseFloat(prev.compoundRate);
-
         if (!isNaN(grossWeight) && !isNaN(compoundRate)) {
           totalRmCost = ((grossWeight * compoundRate) / 1000).toFixed(2);
         }
-
         return {
           ...prev,
-
           [name]: value,
-
           loadingper: loadingper,
-
           totalRmCost: totalRmCost,
         };
       });
-
       return;
     }
+
     // COMPOUND COST
     if (name === "compoundRate") {
       setFormData((prev) => {
         const compoundRate = parseFloat(value);
         const loadingWeight = parseFloat(prev.grossWeight);
-
         let totalRmCost = "";
-
         if (!isNaN(compoundRate) && !isNaN(loadingWeight)) {
           totalRmCost = ((loadingWeight * compoundRate) / 1000).toFixed(2);
         }
-
         return {
           ...prev,
           compoundRate: value,
@@ -626,11 +660,8 @@ function CostingWizard() {
 
         return {
           ...prev,
-
           [name]: value,
-
           totalAssemblyCost: totalAssemblyCost.toFixed(2),
-
           processCostB: processCostB.toFixed(2),
         };
       });
@@ -681,85 +712,43 @@ function CostingWizard() {
             ? result.bops
             : [];
 
-      /*
-    ========================================================
-    NO BOP CONFIGURATION
-    ========================================================
-    */
-
+      /* NO BOP CONFIGURATION */
       if (savedBops.length === 0) {
         setBops([]);
-
         setFormData((prev) => ({
           ...prev,
           hasBop: "No",
           assemblyQty: "",
           totalAssemblyCost: "0.00",
         }));
-
         return;
       }
 
-      /*
-    ========================================================
-    LOAD BOP CONFIGURATION
-
-    Source:
-        bop_part_details
-
-    Includes:
-        BOP
-        Supplier
-        Assembly Qty
-        Financial Year
-        Month
-        Rate
-        Cost
-    ========================================================
-    */
+      /* LOAD BOP CONFIGURATION */
 
       const loadedBops = savedBops.map((bop, index) => ({
         id: bop.id ?? `saved-bop-${selectedPartNo}-${index}`,
-
         bopId: bop.bop_id ?? bop.bopId ?? "",
-
         bopFgCode: bop.bop_fg_code ?? bop.bop_erp_code ?? bop.bopFgCode ?? "",
-
         bopPartNo: bop.bop_part_no ?? bop.bopPartNo ?? "",
-
         bopPartName: bop.bop_part_name ?? bop.bopPartName ?? "",
-
         supplierId: bop.supplier_id ?? bop.supplierId ?? "",
-
         supplierName: bop.supplier_name ?? bop.supplierName ?? "",
-
         suppliers: Array.isArray(bop.suppliers)
           ? bop.suppliers
           : bop.supplier_id
             ? [
                 {
                   id: bop.supplier_id,
-
                   supplier_name: bop.supplier_name || "",
                 },
               ]
             : [],
-
         commodity: bop.commodity ?? "",
-
         bopAssemblyQty:
           bop.assembly_qty ?? bop.bop_assembly_qty ?? bop.bopAssemblyQty ?? "",
-
-        /*
-          ------------------------------------------------
-          SAVED COSTING
-          ------------------------------------------------
-          */
-
         bopmonth: bop.bop_month ?? bop.bopmonth ?? "",
-
         bopRate: bop.bop_rate ?? bop.bopRate ?? "",
-
         bopCost: bop.bop_cost ?? bop.bopCost ?? "0.00",
       }));
 
@@ -769,11 +758,6 @@ function CostingWizard() {
         ...prev,
 
         hasBop: "Yes",
-
-        /*
-      BOP assembly quantity is calculated
-      from the BOP mapping rows.
-      */
         assemblyQty: loadedBops
           .reduce((total, bop) => total + (Number(bop.bopAssemblyQty) || 0), 0)
           .toString(),
@@ -782,14 +766,10 @@ function CostingWizard() {
       console.error("Error loading BOP configuration:", error);
 
       setBops([]);
-
       setFormData((prev) => ({
         ...prev,
-
         hasBop: "No",
-
         assemblyQty: "",
-
         totalAssemblyCost: "0.00",
       }));
 
@@ -799,27 +779,89 @@ function CostingWizard() {
     }
   };
 
+  const fetchSalesSameAsCompoundMonth = async ({
+    partNo,
+    financialYear,
+    month,
+  }) => {
+    if (!partNo || !financialYear || !month) {
+      return;
+    }
+
+    try {
+      const url =
+        `${API_BASE_URL}/sales-monthly/check?` +
+        `partNo=${encodeURIComponent(partNo)}` +
+        `&financialYear=${encodeURIComponent(financialYear)}` +
+        `&month=${encodeURIComponent(month)}`;
+
+      console.log("SALES SAME AS COMPOUND MONTH:", {
+        partNo,
+        financialYear,
+        month,
+      });
+
+      console.log("SALES MONTH URL:", url);
+      const response = await fetch(url);
+      const result = await response.json();
+      console.log("SALES MONTH RESPONSE:", result);
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Failed to fetch sales monthly");
+      }
+
+      if (!result.found || !result.data) {
+        console.log("NO SALES FOUND FOR COMPOUND MONTH:", {
+          partNo,
+          financialYear,
+          month,
+        });
+
+        setFormData((prev) => ({
+          ...prev,
+          customerSalesCost: "",
+          monthlyQuantity: "",
+        }));
+
+        return;
+      }
+
+      console.log("SETTING SALES VALUES:", {
+        month: result.data.month,
+        sellRate: result.data.sell_rate,
+        qty: result.data.qty,
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        customerSalesCost: result.data.sell_rate ?? "",
+        monthlyQuantity: result.data.qty ?? "",
+      }));
+    } catch (error) {
+      console.error("Sales monthly lookup error:", error);
+
+      setFormData((prev) => ({
+        ...prev,
+        customerSalesCost: "",
+        monthlyQuantity: "",
+      }));
+    }
+  };
+
   const handlePartSelect = async (part) => {
     if (!part) {
       setBops([]);
 
       setFormData((prev) => ({
         ...prev,
-
         partNo: "",
         partName: "",
         fgcode: "",
-
-        // Keep Production IM Code separate
-        // Do NOT overwrite imcode
-
         polymerName: "",
         compoundCode: "",
         imCode: "",
-        compMonth: "",
+        compMonth: previousMonth,
         compoundRate: "",
         totalRmCost: "",
-
         hasBop: "",
         assemblyQty: "",
         totalAssemblyCost: "0.00",
@@ -838,30 +880,18 @@ function CostingWizard() {
       partNo: part.part_no || "",
       partName: part.part_name || "",
       fgcode: part.fg_code || "",
-
-      // Production IM Code remains whatever
-      // user entered manually
       imcode: prev.imcode || "",
-
-      // Clear old RM values
       polymerName: "",
       compoundCode: "",
       imCode: "",
-      compMonth: "",
+      compMonth: previousMonth,
       compoundRate: "",
       totalRmCost: "",
-
-      // BOP will be loaded from BOP Management
       hasBop: "",
       assemblyQty: "",
       totalAssemblyCost: "0.00",
     }));
 
-    // ============================================================
-    // IMPORTANT:
-    // BOP is NOT created manually in Costing Wizard anymore.
-    // Load the saved BOP configuration for this Part No.
-    // ============================================================
     await loadBopConfiguration(part.part_no);
 
     if (!partImCode) {
@@ -892,13 +922,8 @@ function CostingWizard() {
 
       setFormData((prev) => ({
         ...prev,
-
-        // RM details
         polymerName: compound.polymer || "",
-
         compoundCode: compound.compound_code || "",
-
-        // This is RM IM Code
         imCode: compound.im_code || partImCode,
       }));
     } catch (error) {
@@ -910,32 +935,25 @@ function CostingWizard() {
     (total, bop) => total + (parseFloat(bop.bopAssemblyQty) || 0),
     0,
   );
+
   const totalBopCost = bops.reduce(
     (total, bop) => total + (Number(bop.bopCost) || 0),
     0,
   );
 
   const finalRmCost = (Number(formData.totalRmCost) || 0) + totalBopCost;
-
   const subtotalA = finalRmCost + (Number(formData.conversionCost) || 0);
-
   const iccOnRmCost = (finalRmCost * (Number(formData.iccOnRm) || 0)) / 100;
-
   const rejOnSubtotalCost =
     (subtotalA * (Number(formData.rejOnSubtotal) || 0)) / 100;
-
   const ohOnSubtotalCost =
     (subtotalA * (Number(formData.ohOnSubtotal) || 0)) / 100;
-
   const profitOnSubtotalCost =
     (subtotalA * (Number(formData.profitOnSubtotal) || 0)) / 100;
-
   const packagingOnSubtotalCost =
     (subtotalA * (Number(formData.packagingOnSubtotal) || 0)) / 100;
-
   const transportOnSubtotalCost =
     (subtotalA * (Number(formData.transportOnSubtotal) || 0)) / 100;
-
   const subtotalB =
     iccOnRmCost +
     rejOnSubtotalCost +
@@ -945,22 +963,15 @@ function CostingWizard() {
     transportOnSubtotalCost;
 
   const totalPartCost = subtotalA + subtotalB;
-
   const customerSalesCost = Number(formData.customerSalesCost) || 0;
-
   const buyingCost = Number(formData.buyingCost) || 0;
-
   const salesProfitLoss = customerSalesCost - totalPartCost;
-
   const buyingProfitLoss = customerSalesCost - totalPartCost - buyingCost;
 
   useEffect(() => {
     const assemblyPerCost = parseFloat(formData.assemblyPerCost) || 0;
-
     const postCuring = parseFloat(formData.postCuring) || 0;
-
     const finishing = parseFloat(formData.finishing) || 0;
-
     const inspection = parseFloat(formData.inspection) || 0;
     const shotBlasting = parseFloat(formData.shotBlasting) || 0;
     const vapourDegreasing = parseFloat(formData.vapourDegreasing) || 0;
@@ -969,10 +980,7 @@ function CostingWizard() {
     const adhesive = parseFloat(formData.adhesive) || 0;
     const painting = parseFloat(formData.painting) || 0;
     const cylindricalGrinding = parseFloat(formData.cylindricalGrinding) || 0;
-
     const processCostA = parseFloat(formData.processCostA) || 0;
-
-    // Total Assembly Cost
     const totalAssemblyCost =
       formData.hasBop === "Yes" ? totalAssemblyQty * assemblyPerCost : 0;
 
@@ -995,11 +1003,8 @@ function CostingWizard() {
 
     setFormData((prev) => ({
       ...prev,
-
       totalAssemblyCost: totalAssemblyCost.toFixed(2),
-
       processCostB: processCostB.toFixed(2),
-
       conversionCost: conversionCost.toFixed(2),
     }));
   }, [
@@ -1026,6 +1031,18 @@ function CostingWizard() {
       buyingProfitLoss: buyingProfitLoss.toFixed(2),
     }));
   }, [customerSalesCost, buyingCost, totalPartCost]);
+
+  useEffect(() => {
+    if (!formData.partNo || !formData.financialYear || !formData.compMonth) {
+      return;
+    }
+    fetchSalesSameAsCompoundMonth({
+      partNo: formData.partNo,
+      financialYear: formData.financialYear,
+      month: formData.compMonth,
+    });
+  }, [formData.partNo, formData.financialYear, formData.compMonth]);
+
   const handleCompoundChange = (compound) => {
     setFormData((prev) => ({
       ...prev,
@@ -1081,20 +1098,15 @@ function CostingWizard() {
 
   const createEmptyBop = () => ({
     id: Date.now() + Math.random(),
-
     bopId: "",
-
     bopFgCode: "",
     bopPartNo: "",
     bopPartName: "",
-
     supplierId: "",
     suppliers: [],
-
     commodity: "",
     bopAssemblyQty: "",
-
-    bopmonth: "",
+    bopmonth: previousMonth,
     bopRate: "",
     bopCost: "",
   });
@@ -1138,15 +1150,6 @@ function CostingWizard() {
     month,
   }) => {
     try {
-      console.log("========================================");
-      console.log("BOP RATE LOOKUP");
-      console.log("bopId:", bopId);
-      console.log("bopErpCode:", bopErpCode);
-      console.log("supplierId:", supplierId);
-      console.log("financialYear:", financialYear);
-      console.log("month:", month);
-      console.log("========================================");
-
       // Use ERP code as the primary BOP identifier.
       const lookupCode = String(bopErpCode || "").trim();
 
@@ -1169,15 +1172,10 @@ function CostingWizard() {
       });
 
       const url = `${API_BASE_URL}/bop-rate-for-costing?${params.toString()}`;
-
       console.log("BOP RATE URL:", url);
-
       const response = await fetch(url);
-
       const result = await response.json();
-
       console.log("BOP RATE RESPONSE:", result);
-
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Failed to fetch BOP rate");
       }
@@ -1206,9 +1204,7 @@ function CostingWizard() {
 
     if (!currentBop) return;
 
-    // ------------------------------------------
     // BOP MONTH CHANGED
-    // ------------------------------------------
     if (field === "bopmonth") {
       const bopErpCode =
         currentBop.bopFgCode ||
@@ -1229,11 +1225,8 @@ function CostingWizard() {
       setBops((prev) =>
         prev.map((bop) => {
           if (bop.id !== id) return bop;
-
           const newRate = rate === null ? "" : rate;
-
           const qty = Number(bop.bopAssemblyQty) || 0;
-
           const cost =
             newRate === "" ? "0.00" : (qty * Number(newRate)).toFixed(2);
 
@@ -1245,21 +1238,16 @@ function CostingWizard() {
           };
         }),
       );
-
       return;
     }
 
-    // ------------------------------------------
     // ASSEMBLY QTY CHANGED
-    // ------------------------------------------
     if (field === "bopAssemblyQty") {
       setBops((prev) =>
         prev.map((bop) => {
           if (bop.id !== id) return bop;
-
           const qty = Number(value) || 0;
           const rate = Number(bop.bopRate) || 0;
-
           return {
             ...bop,
             bopAssemblyQty: value,
@@ -1267,13 +1255,10 @@ function CostingWizard() {
           };
         }),
       );
-
       return;
     }
 
-    // ------------------------------------------
     // SUPPLIER CHANGED
-    // ------------------------------------------
     if (field === "supplierId") {
       setBops((prev) =>
         prev.map((bop) =>
@@ -1287,13 +1272,10 @@ function CostingWizard() {
             : bop,
         ),
       );
-
       return;
     }
 
-    // ------------------------------------------
     // NORMAL FIELD
-    // ------------------------------------------
     setBops((prev) =>
       prev.map((bop) =>
         bop.id === id
@@ -1319,9 +1301,6 @@ function CostingWizard() {
     if (Number.isNaN(date.getTime())) {
       return "";
     }
-
-    // Use local date so 18:30 UTC becomes the correct
-    // calendar date in Asia/Kolkata.
     return [
       date.getFullYear(),
       String(date.getMonth() + 1).padStart(2, "0"),
@@ -1331,10 +1310,17 @@ function CostingWizard() {
 
   // NEXT
   const nextStep = async () => {
-    // Save current page before going to next page
+    // FINAL transaction = view only
+    if (isViewMode) {
+      if (currentStep < totalSteps) {
+        setCurrentStep((prev) => prev + 1);
+      }
+      return;
+    }
+
+    // DRAFT transaction = save before moving
     const savedTransactionId = await saveDraft();
 
-    // Don't move if saving failed
     if (!savedTransactionId) {
       return;
     }
@@ -1343,7 +1329,6 @@ function CostingWizard() {
       setCurrentStep((prev) => prev + 1);
     }
   };
-
   // PREVIOUS
   const previousStep = () => {
     if (currentStep > 1) {
@@ -1364,6 +1349,7 @@ function CostingWizard() {
           <PartDetailsForm
             formData={formData}
             transactionId={transactionId}
+            readOnly={isViewMode}
             handleInputChange={handleInputChange}
             handlePartSelect={handlePartSelect}
             handleBopChange={handleBopChange}
@@ -1378,6 +1364,7 @@ function CostingWizard() {
           <RMDetailsForm
             formData={formData}
             transactionId={transactionId}
+            readOnly={isViewMode}
             handleInputChange={handleInputChange}
             handleCompoundChange={handleCompoundChange}
             handlePolymerChange={handlePolymerChange}
@@ -1390,6 +1377,7 @@ function CostingWizard() {
           <ProcessDetailsForm
             formData={formData}
             transactionId={transactionId}
+            readOnly={isViewMode}
             handleInputChange={handleInputChange}
             handleMachineChange={handleMachineChange}
             handleTonnageChange={handleTonnageChange}
@@ -1401,19 +1389,12 @@ function CostingWizard() {
           <BottomLineForm
             formData={formData}
             transactionId={transactionId}
+            readOnly={isViewMode}
             handleInputChange={handleInputChange}
             finalRmCost={finalRmCost}
             subtotalA={subtotalA}
             subtotalB={subtotalB}
             totalPartCost={totalPartCost}
-          />
-        )}
-
-        {currentStep === 5 && (
-          <OutsourcingForm
-            formData={formData}
-            transactionId={transactionId}
-            handleInputChange={handleInputChange}
           />
         )}
       </div>
@@ -1427,6 +1408,7 @@ function CostingWizard() {
           onNext={nextStep}
           onSaveDraft={saveDraft}
           onSubmit={handleFinalSubmit}
+          readOnly={isViewMode}
         />
       </div>
     </div>

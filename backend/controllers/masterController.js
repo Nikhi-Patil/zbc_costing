@@ -8,6 +8,7 @@ import SubDepartment from "../models/subDepartmentModel.js";
 import Suppliers from "../models/supplierModel.js";
 import Unit from "../models/unitModel.js";
 import Machine from "../models/machineModel.js";
+import Margin from "../models/marginModel.js";
 
 
 // Unit Controller
@@ -114,19 +115,29 @@ export const getAllParts = async (req, res) => {
 };
 // Sub Category Controller
 export const getAllSubCategories = async (req, res) => {
-
     try {
+        const { unitId, subDepartmentId } = req.query;
 
-        const { category } = req.query;
+        if (!unitId || !subDepartmentId) {
+            return res.status(400).json({
+                message: "Unit ID and Sub Department ID are required"
+            });
+        }
 
         const subCategories =
-            await SubCategory.getSubCategories(category);
+            await SubCategory.getSubCategories(
+                unitId,
+                subDepartmentId
+            );
 
         res.json(subCategories);
 
     } catch (err) {
 
-        console.error("Error fetching subcategories:", err);
+        console.error(
+            "Error fetching subcategories:",
+            err
+        );
 
         res.status(500).json({
             message: "Failed to fetch subcategories",
@@ -179,42 +190,56 @@ export const getAllMachines = async (req, res) => {
 
 // Compound by IM Code Controller
 export const getCompoundByImCode = async (req, res) => {
-  try {
-    const { imCode } = req.query;
+    try {
+        const { imCode } = req.query;
 
-    if (!imCode) {
-      return res.status(400).json({
-        success: false,
-        message: "IM Code is required",
-      });
+        if (!imCode) {
+            return res.status(400).json({
+                success: false,
+                message: "IM Code is required",
+            });
+        }
+
+        const compound =
+            await Compound.getCompoundByImCode(imCode);
+
+        if (!compound) {
+            return res.json({
+                success: true,
+                found: false,
+                data: null,
+            });
+        }
+
+        return res.json({
+            success: true,
+            found: true,
+            data: compound,
+        });
+    } catch (error) {
+        console.error(
+            "Error fetching compound by IM Code:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch compound by IM Code",
+            error: error.message,
+        });
     }
+};
 
-    const compound =
-      await Compound.getCompoundByImCode(imCode);
-
-    if (!compound) {
-      return res.json({
-        success: true,
-        found: false,
-        data: null,
-      });
+// Margin Controller
+export const getAllMargins = async (req, res) => {
+    try {
+        const margins = await Margin.getMargins();
+        res.json(margins);
+    } catch (err) {
+        console.error("Error fetching margins:", err);
+        res.status(500).json({
+            message: "Failed to fetch margins",
+            error: err.message
+        });
     }
-
-    return res.json({
-      success: true,
-      found: true,
-      data: compound,
-    });
-  } catch (error) {
-    console.error(
-      "Error fetching compound by IM Code:",
-      error
-    );
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch compound by IM Code",
-      error: error.message,
-    });
-  }
 };

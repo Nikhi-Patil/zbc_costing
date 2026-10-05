@@ -1,9 +1,7 @@
 import adminDb from "../config/adminDB.js";
 
 const SubCategory = {
-
     getSubCategories: async (category) => {
-
         let query = `
             SELECT
                 id,
@@ -16,26 +14,19 @@ const SubCategory = {
                 updated_at
             FROM sub_category_master
         `;
-
         const params = [];
-
         if (category) {
             query += `
                 WHERE category = ?
             `;
-
             params.push(category);
         }
-
         query += `
             ORDER BY id DESC
         `;
-
         const [rows] = await adminDb.query(query, params);
-
         return rows;
     }
-
 };
 
 export default SubCategory;

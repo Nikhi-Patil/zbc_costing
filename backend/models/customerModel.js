@@ -17,7 +17,7 @@ const Customer
                 c.created_by,
                 c.created_at
             FROM customer_master c
-            ORDER BY c.id DESC;
+            ORDER BY c.id ASC;
         `);
 
         return rows;

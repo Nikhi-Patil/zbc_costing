@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import "../../assets/css/SalesMonthly.css";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
@@ -6,7 +7,7 @@ import API_BASE_URL from "../../config/api";
 
 const SALES_MONTHLY_API = `${API_BASE_URL}/sales-monthly`;
 
-const financialYearOptions = generateFinancialYears(2026);
+const financialYearOptions = generateFinancialYears();
 
 const getMonthYearLabel = (monthValue, financialYearValue) => {
   const monthNumber = Number(monthValue);
@@ -101,6 +102,149 @@ const normalizeEntry = (entry) => ({
       : Number(entry.sell_rate),
 });
 
+const salesMonthlyColumns = (
+  months,
+  financialYear,
+  view,
+  handleEditEntry,
+  currentPage,
+  pageSize,
+) => [
+  {
+    name: "Sr. No.",
+    width: "55px",
+    center: true,
+    cell: (row, index) => (currentPage - 1) * pageSize + index + 1,
+  },
+
+  {
+    name: "Part No.",
+    selector: (row) => row.partNo,
+    sortable: true,
+    width: "150px",
+    left: true,
+    cell: (row) => <span className="sales-part-no">{row.partNo}</span>,
+  },
+
+  {
+    name: "Part Name",
+    selector: (row) => row.partName,
+    sortable: true,
+    width: "150px",
+    left: true,
+    cell: (row) => (
+      <span className="sales-part-name">{row.partName || "-"}</span>
+    ),
+  },
+
+  {
+    name: "Unit",
+    selector: (row) => row.unit,
+    sortable: true,
+    width: "60px",
+    center: true,
+    cell: (row) => <span className="sales-unit">{row.unit || "-"}</span>,
+  },
+
+  ...months.map((month) => ({
+    name: getMonthYearLabel(month.value, financialYear),
+    width: "80px",
+    center: true,
+
+    selector: (row) => {
+      const entry = row.months[Number(month.value)];
+
+      if (!entry) return 0;
+
+      return view === "Qty"
+        ? Number(entry.qty || 0)
+        : Number(entry.sellRate || 0);
+    },
+
+    sortable: true,
+
+    cell: (row) => {
+      const entry = row.months[Number(month.value)];
+
+      const value = view === "Qty" ? entry?.qty : entry?.sellRate;
+
+      return (
+        <span
+          className={`sales-month-cell ${entry?.id ? "editable-cell" : ""}`}
+          title={entry?.id ? "Double click to edit" : ""}
+          onDoubleClick={() => handleEditEntry(entry)}
+        >
+          {formatNumber(value)}
+        </span>
+      );
+    },
+  })),
+];
+
+const salesMonthlyDataTableStyles = {
+  table: {
+    style: {
+      minWidth: "1000px",
+      width: "max-content", 
+    },
+  },
+
+  headRow: {
+    style: {
+      fontSize: "11px",
+      minHeight: "42px",
+      backgroundColor: "#eaf2fb",
+      borderBottom: "1px solid #cbd8e8",
+    },
+  },
+
+  headCells: {
+    style: {
+      paddingLeft: "8px",
+      paddingRight: "8px",
+      color: "#173d70",
+      fontSize: "11px",
+      fontWeight: 700,
+      whiteSpace: "nowrap",
+      borderRight: "1px solid #dce5f0",
+    },
+  },
+
+  rows: {
+    style: {
+      minHeight: "42px",
+      fontSize: "12px",
+      color: "#475569",
+      borderBottom: "1px solid #edf1f5",
+    },
+
+    highlightOnHoverStyle: {
+      backgroundColor: "#f5f9ff",
+      outline: "none",
+    },
+  },
+
+  cells: {
+    style: {
+      paddingLeft: "8px",
+      paddingRight: "8px",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      borderRight: "1px solid #edf1f5",
+    },
+  },
+
+  pagination: {
+    style: {
+      minHeight: "42px",
+      borderTop: "1px solid #e7ebf0",
+      color: "#64748b",
+      fontSize: "12px",
+    },
+  },
+};
+
 const SalesMonthly = () => {
   const navigate = useNavigate();
   const [financialYear, setFinancialYear] = useState(defaultFinancialYear);
@@ -108,8 +252,6 @@ const SalesMonthly = () => {
   const [search, setSearch] = useState("");
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [toast, setToast] = useState({
     show: false,
     message: "",
@@ -197,7 +339,19 @@ const SalesMonthly = () => {
         row.unit = entry.unit;
       }
       if (entry.month >= 1 && entry.month <= 12) {
-        row.months[entry.month] = entry;
+        const existingEntry = row.months[entry.month];
+
+        if (!existingEntry) {
+          row.months[entry.month] = entry;
+        } else {
+          const existingQty = Number(existingEntry.qty) || 0;
+          const currentQty = Number(entry.qty) || 0;
+
+          // Keep the entry having the maximum Qty
+          if (currentQty > existingQty) {
+            row.months[entry.month] = entry;
+          }
+        }
       }
     });
     return Array.from(map.values()).sort((a, b) =>
@@ -218,21 +372,6 @@ const SalesMonthly = () => {
       String(row.partNo).toLowerCase().includes(value),
     );
   }, [tableRows, search]);
-
-  /* PAGINATION */
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
-  const paginatedRows = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return filteredRows.slice(start, start + pageSize);
-  }, [filteredRows, currentPage, pageSize]);
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, financialYear, pageSize]);
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
 
   /* ADD */
   const handleAddRate = () => {
@@ -276,8 +415,8 @@ const SalesMonthly = () => {
       {/* HEADER */}
       <div className="sales-monthly-header">
         <div className="sales-monthly-title">
-          <h2>Sales Monthly Qty & Sell Rate</h2>
-          <p>Monthly quantity and sell rate records by part.</p>
+          <h2>Sales Monthly Qty & Sales Rate</h2>
+          <p>Monthly quantity and Sales rate records by part.</p>
         </div>
         <div className="sales-monthly-actions">
           <button
@@ -353,142 +492,54 @@ const SalesMonthly = () => {
             <h3>
               {view === "Qty" ? "Monthly Sales Qty" : "Monthly Sales Rate"}
             </h3>
+
             <span>{filteredRows.length} Parts</span>
           </div>
         </div>
 
-        <div className="sales-table-scroll">
-          <table className="sales-monthly-table">
-            <thead>
-              <tr>
-                <th className="sr-col">Sr. No.</th>
-                <th className="part-no-col">Part No.</th>
-                <th className="part-name-col">Part Name</th>
-                <th className="unit-col">Unit</th>
-                {months.map((month) => (
-                  <th key={month.value} className="month-col">
-                    {getMonthYearLabel(month.value, financialYear)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
+        <DataTable
+          columns={salesMonthlyColumns(
+            months,
+            financialYear,
+            view,
+            handleEditEntry,
+            1,
+            10,
+          )}
+          data={filteredRows}
+          customStyles={salesMonthlyDataTableStyles}
+          progressPending={loading}
+          progressComponent={
+            <div className="sales-loading">
+              <div className="loading-spinner" />
+              <h4>Loading data...</h4>
+            </div>
+          }
+          noDataComponent={
+            <div className="sales-no-data">
+              <div className="empty-icon">◌</div>
 
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={16} className="empty-state-cell">
-                    <div className="empty-state">
-                      <div className="loading-spinner" />
-                      <h4>Loading data...</h4>
-                    </div>
-                  </td>
-                </tr>
-              ) : paginatedRows.length > 0 ? (
-                paginatedRows.map((row, index) => (
-                  <tr key={row.partNo}>
-                    <td className="sr-cell">
-                      {(currentPage - 1) * pageSize + index + 1}
-                    </td>
-                    <td className="part-no-cell">{row.partNo}</td>
-                    <td>{row.partName || "-"}</td>
-                    <td>
-                      <span className="unit-badge">{row.unit || "-"}</span>
-                    </td>
-                    {months.map((month) => {
-                      const entry = row.months[Number(month.value)];
-                      const value =
-                        view === "Qty" ? entry?.qty : entry?.sellRate;
-                      return (
-                        <td
-                          key={month.value}
-                          className={`numeric-cell ${
-                            entry?.id ? "editable-cell" : ""
-                          }`}
-                          title={entry?.id ? "Double click to edit" : ""}
-                          onDoubleClick={() => handleEditEntry(entry)}
-                        >
-                          {formatNumber(value)}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={16} className="empty-state-cell">
-                    <div className="empty-state">
-                      <div className="empty-icon">◌</div>
-                      <h4>No Sales Monthly Records</h4>
-                      <p>
-                        No monthly sales records have been entered for this
-                        financial year.
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              <h4>No Sales Monthly Records</h4>
 
-        {/* PAGINATION */}
-        <div className="sales-pagination">
-          <div className="page-size-control">
-            <span>Show</span>
-            <select
-              value={pageSize}
-              onChange={(e) => setPageSize(Number(e.target.value))}
-            >
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </div>
-          {/* <div className="page-info">
-            Page <strong>{filteredRows.length ? currentPage : 0}</strong> of{" "}
-            <strong>{filteredRows.length ? totalPages : 0}</strong>
-          </div> */}
-          <div className="pagination-buttons">
-            <button
-              type="button"
-              disabled={currentPage === 1 || filteredRows.length === 0}
-              onClick={() => setCurrentPage(1)}
-            >
-              «
-            </button>
-
-            <button
-              type="button"
-              disabled={currentPage === 1 || filteredRows.length === 0}
-              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-            >
-              ‹
-            </button>
-
-            <button type="button" className="page-number active" disabled>
-              {filteredRows.length ? currentPage : 0}
-            </button>
-
-            <button
-              type="button"
-              disabled={currentPage === totalPages || filteredRows.length === 0}
-              onClick={() =>
-                setCurrentPage((page) => Math.min(totalPages, page + 1))
-              }
-            >
-              ›
-            </button>
-
-            <button
-              type="button"
-              disabled={currentPage === totalPages || filteredRows.length === 0}
-              onClick={() => setCurrentPage(totalPages)}
-            >
-              »
-            </button>
-          </div>
-        </div>
+              <p>
+                No monthly sales records have been entered for this financial
+                year.
+              </p>
+            </div>
+          }
+          pagination
+          paginationPerPage={10}
+          paginationRowsPerPageOptions={[10, 25, 50, 100]}
+          paginationComponentOptions={{
+            rowsPerPageText: "Show",
+            rangeSeparatorText: "of",
+            noRowsPerPage: false,
+          }}
+          highlightOnHover
+          pointerOnHover
+          responsive
+          persistTableHead
+        />
       </div>
     </div>
   );

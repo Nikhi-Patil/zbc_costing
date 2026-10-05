@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import "../../assets/css/SalesMonthly.css";
@@ -9,7 +9,7 @@ const PARTS_API = `${API_BASE_URL}/parts`;
 const UNITS_API = `${API_BASE_URL}/units`;
 const SALES_MONTHLY_API = `${API_BASE_URL}/sales-monthly`;
 
-const financialYearOptions = generateFinancialYears(2026);
+const financialYearOptions = generateFinancialYears();
 const defaultFinancialYear =
   financialYearOptions.find((item) => item.selected)?.value ||
   financialYearOptions[financialYearOptions.length - 1]?.value ||
@@ -89,6 +89,20 @@ const parseNumber = (value) => {
   return Number.isFinite(number) ? number : null;
 };
 
+const parseFinancialYear = (value) => {
+  if (value === null || value === undefined || String(value).trim() === "")
+    return "";
+  const text = String(value).trim();
+  const match = text.match(/^(\d{4})\s*-\s*(\d{2}|\d{4})$/);
+  if (!match) return text;
+  const start = Number(match[1]);
+  const end = match[2].length === 2 ? match[2] : String(start + 1);
+  return `${start}-${end}`;
+};
+
+const isValidFinancialYear = (value) =>
+  /^\d{4}-\d{2}$/.test(String(value || "").trim());
+
 const parseMonth = (value) => {
   if (value === null || value === undefined || String(value).trim() === "")
     return null;
@@ -116,7 +130,7 @@ const parseMonth = (value) => {
 
 const monthName = (month) => MONTHS[Number(month) - 1] || "-";
 
-function validateUploadedRows(rows, parts, units) {
+function validateUploadedRows(rows, parts, units, selectedFinancialYear = "") {
   const partMap = new Map();
   const unitMap = new Map();
 
@@ -131,9 +145,23 @@ function validateUploadedRows(rows, parts, units) {
   });
 
   const duplicateMap = new Map();
+
   rows.forEach((row) => {
-    if (row.partNo && row.unit && row.month) {
-      const key = `${normalize(row.partNo)}||${normalize(row.unit)}||${row.month}`;
+    if (
+      row.partNo &&
+      row.unit &&
+      row.month &&
+      row.financialYear &&
+      row.sellRate !== null &&
+      row.sellRate !== undefined
+    ) {
+      const key =
+        `${normalize(row.partNo)}||` +
+        `${normalize(row.unit)}||` +
+        `${row.financialYear}||` +
+        `${row.month}||` +
+        `${row.sellRate}`;
+
       duplicateMap.set(key, (duplicateMap.get(key) || 0) + 1);
     }
   });
@@ -143,6 +171,9 @@ function validateUploadedRows(rows, parts, units) {
     const partNo = String(row.partNo ?? "").trim();
     const partName = String(row.partName ?? "").trim();
     const unitName = String(row.unit ?? "").trim();
+    const rowFinancialYear = parseFinancialYear(
+      row.financialYear || selectedFinancialYear,
+    );
     const month = Number(row.month);
     const qty =
       row.qty === "" || row.qty === null || row.qty === undefined
@@ -155,6 +186,19 @@ function validateUploadedRows(rows, parts, units) {
 
     const matchedPart = partNo ? partMap.get(normalize(partNo)) : null;
     const matchedUnit = unitName ? unitMap.get(normalize(unitName)) : null;
+
+    if (!rowFinancialYear) {
+      errors.push("Financial Year is required.");
+    } else if (!isValidFinancialYear(rowFinancialYear)) {
+      errors.push("Financial Year must be in YYYY-YY format, e.g. 2026-27.");
+    } else if (
+      selectedFinancialYear &&
+      rowFinancialYear !== selectedFinancialYear
+    ) {
+      errors.push(
+        `Financial Year '${rowFinancialYear}' does not match selected Financial Year '${selectedFinancialYear}'.`,
+      );
+    }
 
     if (!partNo) {
       errors.push("Part No. is required.");
@@ -203,15 +247,31 @@ function validateUploadedRows(rows, parts, units) {
       errors.push("Either Qty or Sells Rate is required.");
     }
 
-    if (partNo && unitName && Number.isInteger(month)) {
-      const duplicateKey = `${normalize(partNo)}||${normalize(unitName)}||${month}`;
+    if (
+      partNo &&
+      unitName &&
+      Number.isInteger(month) &&
+      rowFinancialYear &&
+      sellRate !== null &&
+      sellRate !== undefined
+    ) {
+      const duplicateKey =
+        `${normalize(partNo)}||` +
+        `${normalize(unitName)}||` +
+        `${rowFinancialYear}||` +
+        `${month}||` +
+        `${sellRate}`;
+
       if (duplicateMap.get(duplicateKey) > 1) {
-        errors.push(`Duplicate Part + Unit + ${monthName(month)} in Excel.`);
+        errors.push(
+          `Duplicate Part + Unit + Financial Year + ${monthName(month)} + Sells Rate found in Excel.`,
+        );
       }
     }
 
     return {
       ...row,
+      financialYear: rowFinancialYear,
       errors,
       partId: getId(matchedPart),
       masterPartName: getPartName(matchedPart),
@@ -230,6 +290,9 @@ const SalesMonthlyBulk = () => {
   const [masterLoading, setMasterLoading] = useState(false);
   const [partMaster, setPartMaster] = useState([]);
   const [unitMaster, setUnitMaster] = useState([]);
+
+  const [currentInvalidIndex, setCurrentInvalidIndex] = useState(-1);
+  const invalidRowRefs = useRef({});
   const [toast, setToast] = useState({
     show: false,
     message: "",
@@ -281,6 +344,7 @@ const SalesMonthlyBulk = () => {
       "Part No.",
       "Part Name",
       "Unit",
+      "Financial Year",
       "Month",
       "Qty",
       "Sells Rate",
@@ -290,11 +354,12 @@ const SalesMonthlyBulk = () => {
       { wch: 18 },
       { wch: 30 },
       { wch: 12 },
+      { wch: 16 },
       { wch: 15 },
       { wch: 14 },
       { wch: 15 },
     ];
-    worksheet["!autofilter"] = { ref: "A1:F1" };
+    worksheet["!autofilter"] = { ref: "A1:G1" };
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sales Monthly");
     XLSX.writeFile(workbook, `Sales_Monthly_Template_${financialYear}.xlsx`);
@@ -343,6 +408,7 @@ const SalesMonthlyBulk = () => {
         "Part No.",
         "Part Name",
         "Unit",
+        "Financial Year",
         "Month",
         "Qty",
         "Sells Rate",
@@ -371,6 +437,7 @@ const SalesMonthlyBulk = () => {
           const partNo = getCell(excelRow, "Part No.");
           const partName = getCell(excelRow, "Part Name");
           const unit = getCell(excelRow, "Unit");
+          const financialYearValue = getCell(excelRow, "Financial Year");
           const monthValue = getCell(excelRow, "Month");
           const qtyValue = getCell(excelRow, "Qty");
           const sellRateValue = getCell(excelRow, "Sells Rate");
@@ -381,6 +448,7 @@ const SalesMonthlyBulk = () => {
             partNo: String(partNo ?? "").trim(),
             partName: String(partName ?? "").trim(),
             unit: String(unit ?? "").trim(),
+            financialYear: parseFinancialYear(financialYearValue),
             month: parseMonth(monthValue),
             qty: parseNumber(qtyValue),
             sellRate: parseNumber(sellRateValue),
@@ -403,6 +471,7 @@ const SalesMonthlyBulk = () => {
         convertedRows,
         masters.parts,
         masters.units,
+        financialYear,
       );
       setRows(validated);
 
@@ -441,7 +510,7 @@ const SalesMonthlyBulk = () => {
   };
 
   const validatedRows = useMemo(
-    () => validateUploadedRows(rows, partMaster, unitMaster),
+    () => validateUploadedRows(rows, partMaster, unitMaster, financialYear),
     [rows, partMaster, unitMaster],
   );
 
@@ -468,6 +537,7 @@ const SalesMonthlyBulk = () => {
 
     const entries = validRows.map((row) => ({
       excelRow: row.excelRow,
+      financialYear: row.financialYear || financialYear,
       partNo: row.partNo,
       partName: row.masterPartName || row.partName,
       unit: row.masterUnit || row.unit,
@@ -516,6 +586,26 @@ const SalesMonthlyBulk = () => {
 
   const handleRemoveRow = (index) => {
     setRows((current) => current.filter((_, rowIndex) => rowIndex !== index));
+  };
+
+  const goToNextInvalidRow = () => {
+    if (invalidRows.length === 0) return;
+
+    const nextIndex =
+      currentInvalidIndex >= invalidRows.length - 1
+        ? 0
+        : currentInvalidIndex + 1;
+
+    setCurrentInvalidIndex(nextIndex);
+
+    const row = invalidRows[nextIndex];
+
+    setTimeout(() => {
+      invalidRowRefs.current[row.id]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 50);
   };
 
   return (
@@ -591,7 +681,10 @@ const SalesMonthlyBulk = () => {
 
       <div className="sales-bulk-info">
         <strong>Excel format:</strong>
-        <span>Part No. | Part Name | Unit | Month | Qty | Sells Rate</span>
+        <span>
+          Part No. | Part Name | Unit | Financial Year | Month | Qty | Sells
+          Rate
+        </span>
       </div>
 
       {rows.length > 0 && (
@@ -604,9 +697,23 @@ const SalesMonthlyBulk = () => {
             <span>Valid Rows</span>
             <strong>{validRows.length}</strong>
           </div>
-          <div className="summary-box invalid">
+          <div
+            className="summary-box invalid"
+            onClick={goToNextInvalidRow}
+            style={{
+              cursor: invalidRows.length > 0 ? "pointer" : "default",
+            }}
+          >
             <span>Invalid Rows</span>
             <strong>{invalidRows.length}</strong>
+
+            {invalidRows.length > 0 && (
+              <small>
+                {currentInvalidIndex >= 0
+                  ? `Error ${currentInvalidIndex + 1} of ${invalidRows.length}`
+                  : "Click to find errors"}
+              </small>
+            )}
           </div>
           <div className="summary-box">
             <span>Monthly Records</span>
@@ -646,6 +753,7 @@ const SalesMonthlyBulk = () => {
                   <th>Part No.</th>
                   <th>Part Name</th>
                   <th>Unit</th>
+                  <th>Financial Year</th>
                   <th>Month</th>
                   <th>Qty</th>
                   <th>Sells Rate</th>
@@ -657,7 +765,19 @@ const SalesMonthlyBulk = () => {
                 {validatedRows.map((row, index) => (
                   <tr
                     key={row.id}
-                    className={row.errors.length ? "bulk-invalid-row" : ""}
+                    ref={(el) => {
+                      if (row.errors?.length > 0) {
+                        invalidRowRefs.current[row.id] = el;
+                      }
+                    }}
+                    className={
+                      row.errors?.length > 0 &&
+                      invalidRows[currentInvalidIndex]?.id === row.id
+                        ? "bulk-invalid-row selected-invalid-row"
+                        : row.errors?.length > 0
+                          ? "bulk-invalid-row"
+                          : ""
+                    }
                   >
                     <td className="bulk-sr">{row.excelRow}</td>
                     <td>
@@ -691,6 +811,22 @@ const SalesMonthlyBulk = () => {
                           handleRowChange(index, "unit", e.target.value)
                         }
                         disabled={loading}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        className="bulk-edit-input bulk-text-input"
+                        value={row.financialYear || ""}
+                        onChange={(e) =>
+                          handleRowChange(
+                            index,
+                            "financialYear",
+                            e.target.value,
+                          )
+                        }
+                        disabled={loading}
+                        placeholder="2026-27"
                       />
                     </td>
                     <td>

@@ -1,30 +1,163 @@
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../auth/auth";
+
+import {
+  verifyEmployee,
+  getEmployeeSubDepartments,
+  loginUser,
+} from "../auth/auth";
+
 import "./login.css";
 
 function Login() {
-  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [unitId, setUnitId] = useState("");
+  const [subDepartmentId, setSubDepartmentId] = useState("");
+  const [units, setUnits] = useState([]);
+  const [subDepartments, setSubDepartments] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingSubDepartments, setLoadingSubDepartments] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  // VERIFY EMAIL + PASSWORD
+  const handleVerify = async () => {
+    setError("");
+    setSuccess("");
+    if (!email.trim()) {
+      setError("Please enter your email");
+      return false;
+    }
+    if (!password) {
+      setError("Please enter your password");
+      return false;
+    }
+    try {
+      setLoading(true);
+      const data = await verifyEmployee(email.trim(), password);
 
-    // Your existing login validation/API call here
+      // Backend returns employee units.
+      setUnits(data.units || []);
 
-    const user = {
-      username: username,
-    };
+      // Clear old selections.
+      setUnitId("");
+      setSubDepartmentId("");
+      setSubDepartments([]);
+      setSuccess("Credentials verified. Please select your Unit.");
+      return true;
+    } catch (err) {
+      setError(err.message || "Invalid Email or Password");
+      setUnits([]);
+      setUnitId("");
+      setSubDepartmentId("");
+      setSubDepartments([]);
 
-    login(user);
-
-    navigate("/molding", { replace: true });
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // UNIT CHANGE
+  const handleUnitChange = async (e) => {
+    const selectedUnitId = e.target.value;
+    setUnitId(selectedUnitId);
+    setSubDepartmentId("");
+    setSubDepartments([]);
+    setError("");
+    setSuccess("");
+    if (!selectedUnitId) {
+      return;
+    }
+    if (!email.trim()) {
+      setError("Please enter and verify your email first.");
+      return;
+    }
+    try {
+      setLoadingSubDepartments(true);
+      const data = await getEmployeeSubDepartments(
+        email.trim(),
+        selectedUnitId,
+      );
+      setSubDepartments(data.data || []);
+      if (!data.data || data.data.length === 0) {
+        setError("No authorized Sub Department found.");
+      }
+    } catch (err) {
+      setError(err.message || "Unable to load Sub Departments");
+
+      setSubDepartments([]);
+    } finally {
+      setLoadingSubDepartments(false);
+    }
+  };
+
+  // FINAL LOGIN
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    // Basic validation
+    if (!email.trim()) {
+      setError("Please enter your email");
+      return;
+    }
+
+    if (!password) {
+      setError("Please enter your password");
+      return;
+    }
+
+    if (units.length === 0) {
+      const verified = await handleVerify();
+      if (!verified) {
+        return;
+      }
+      setError("Please select your Unit and Sub Department.");
+      return;
+    }
+
+    // Unit
+    if (!unitId) {
+      setError("Please select your Unit");
+      return;
+    }
+    // Sub Department
+    if (!subDepartmentId) {
+      setError("Please select your Sub Department");
+      return;
+    }
+    try {
+      setLoading(true);
+
+      // Final backend authorization
+       await loginUser({
+        email: email.trim(),
+        password,
+        unit: unitId,
+        sub_department: subDepartmentId,
+      });
+
+      // Login successful
+      navigate("/dashboard", {
+        replace: true,
+      });
+    } catch (err) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // RENDER
   return (
     <div className="login-container">
-      {/* Left Panel */}
+      {/* LEFT PANEL */}
       <div className="left-panel">
         <div className="overlay">
           <h1>
@@ -35,81 +168,170 @@ function Login() {
         </div>
       </div>
 
-      {/* Right Panel */}
+      {/* RIGHT PANEL */}
       <div className="right-panel">
-        <form className="login-form">
+        <form className="login-form" onSubmit={handleLogin}>
           <h2>Login</h2>
+          {/* ERROR */}
+          {error && (
+            <div
+              style={{
+                marginBottom: "20px",
+                padding: "10px 12px",
+                borderRadius: "6px",
+                background: "#ffe5e5",
+                color: "#c62828",
+                fontSize: "14px",
+              }}
+            >
+              {error}
+            </div>
+          )}
 
-          {/* Username */}
+          {/* SUCCESS */}
+          {success && (
+            <div
+              style={{
+                marginBottom: "20px",
+                padding: "10px 12px",
+                borderRadius: "6px",
+                background: "#e7f7ed",
+                color: "#218838",
+                fontSize: "14px",
+              }}
+            >
+              {success}
+            </div>
+          )}
+
+          {/* EMAIL */}
           <div className="login-input-group">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="email">Email</label>
 
-            <input id="username" type="text" placeholder="Enter Username" />
+            <input
+              id="email"
+              type="email"
+              placeholder="Enter Email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setUnits([]);
+                setUnitId("");
+                setSubDepartmentId("");
+                setSubDepartments([]);
+                setError("");
+                setSuccess("");
+              }}
+              autoComplete="username"
+              disabled={loading}
+            />
           </div>
 
-          {/* Password */}
+          {/* PASSWORD */}
           <div className="login-input-group">
             <label htmlFor="password">Password</label>
-
             <div className="password-box">
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter Password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setUnits([]);
+                  setUnitId("");
+                  setSubDepartmentId("");
+                  setSubDepartments([]);
+                  setError("");
+                  setSuccess("");
+                }}
+                autoComplete="current-password"
+                disabled={loading}
               />
-
               <button
                 type="button"
                 className="eye-btn"
                 onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
           </div>
 
-          {/* Unit */}
+          {/* UNIT */}
           <div className="login-input-group">
             <label htmlFor="unit">Unit</label>
-
-            <select id="unit" className="login-select" defaultValue="">
-              <option value="" disabled>
-                Select Unit
+            <select
+              id="unit"
+              className="login-select"
+              value={unitId}
+              onChange={handleUnitChange}
+              disabled={units.length === 0 || loading || loadingSubDepartments}
+            >
+              <option value="">
+                {units.length === 0
+                  ? "Verify credentials first"
+                  : "Select Unit"}
               </option>
-
-              <option value="unit1">Unit 1</option>
-
-              <option value="unit2">Unit 2</option>
-
-              <option value="unit3">Unit 3</option>
+              {units.map((unit) => (
+                <option key={unit.id} value={unit.id}>
+                  {unit.unit}
+                </option>
+              ))}
             </select>
           </div>
 
-          {/* Department */}
+          {/* SUB DEPARTMENT */}
           <div className="login-input-group">
-            <label htmlFor="department">Department</label>
-
-            <select id="department" className="login-select" defaultValue="">
-              <option value="" disabled>
-                Select Department
+            <label htmlFor="subDepartment">Sub Department</label>
+            <select
+              id="subDepartment"
+              className="login-select"
+              value={subDepartmentId}
+              onChange={(e) => setSubDepartmentId(e.target.value)}
+              disabled={!unitId || loadingSubDepartments || loading}
+            >
+              <option value="">
+                {loadingSubDepartments
+                  ? "Loading..."
+                  : !unitId
+                    ? "Select Unit first"
+                    : "Select Sub Department"}
               </option>
 
-              <option value="it">IT</option>
-
-              <option value="hr">HR</option>
-
-              <option value="finance">Finance</option>
+              {subDepartments.map((sub) => (
+                <option key={sub.id} value={sub.id}>
+                  {sub.name}
+                </option>
+              ))}
             </select>
           </div>
 
-          {/* Forgot Password */}
+          {/* FORGOT PASSWORD */}
           <div className="options">
-            <a href="#">Forgot Password?</a>
+            <a href="#" onClick={(e) => e.preventDefault()}>
+              Forgot Password?
+            </a>
           </div>
 
-          {/* Login Button */}
-          <button type="submit" className="login-btn">
-            Login
+          {/* LOGIN BUTTON */}
+          <button type="submit" className="login-btn" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2
+                  size={18}
+                  style={{
+                    marginRight: "8px",
+                    verticalAlign: "middle",
+                    animation: "spin 1s linear infinite",
+                  }}
+                />
+                Please wait...
+              </>
+            ) : (
+              "Login"
+            )}
           </button>
         </form>
       </div>

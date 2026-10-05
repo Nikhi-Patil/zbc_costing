@@ -319,9 +319,9 @@ const CostingEntryForm = () => {
   }, [formData.productionUnit]);
 
   // CUSTOMER TOMSELECT
-
+s
   useEffect(() => {
-    if (!customerSelectRef.current || customers.length === 0) {
+    if (!customerSelectRef.current) {
       return;
     }
 
@@ -1368,10 +1368,10 @@ const CostingEntryForm = () => {
                 <select
                   ref={customerSelectRef}
                   name="customerName"
-                  className="tomselect-customer"
+                  className="tomselect-part"
                   autoComplete="off"
                 >
-                  <option value="">Select Customer</option>
+                  <option value="">Search Customer...</option>
                 </select>
               </div>
 

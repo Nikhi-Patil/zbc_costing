@@ -7,9 +7,7 @@ import {
 } from "../models/costingEntryModel.js";
 
 
-/**
- * CREATE COSTING ENTRY
- */
+/* CREATE COSTING ENTRY */
 export const saveCostingEntry = async (req, res) => {
 
     try {
@@ -182,10 +180,7 @@ export const saveCostingEntry = async (req, res) => {
 
 };
 
-
-/**
- * GET ALL COSTING ENTRIES
- */
+/* GET ALL COSTING ENTRIES */
 export const getAllCostingEntries = async (
     req,
     res
@@ -226,10 +221,7 @@ export const getAllCostingEntries = async (
 
 };
 
-
-/**
- * GET SINGLE COSTING ENTRY
- */
+/* GET SINGLE COSTING ENTRY */
 export const getSingleCostingEntry = async (
     req,
     res
@@ -301,10 +293,7 @@ export const getSingleCostingEntry = async (
 
 };
 
-
-/**
- * UPDATE COSTING ENTRY
- */
+/* UPDATE COSTING ENTRY */
 export const editCostingEntry = async (
     req,
     res
@@ -400,10 +389,7 @@ export const editCostingEntry = async (
 
 };
 
-
-/**
- * DELETE COSTING ENTRY
- */
+/* DELETE COSTING ENTRY*/
 export const removeCostingEntry = async (
     req,
     res

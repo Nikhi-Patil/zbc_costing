@@ -1,3 +1,5 @@
+import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+
 function WizardButtons({
   currentStep,
   totalSteps,
@@ -5,6 +7,7 @@ function WizardButtons({
   onNext,
   onSaveDraft,
   onSubmit,
+  readOnly = false,
 }) {
   return (
     <div className="wizard-buttons-wrapper">
@@ -19,11 +22,11 @@ function WizardButtons({
                 onClick={onPrevious}
                 title="Previous"
                 style={{
-                  padding: "2px",
+                  padding: "2px 8px",
                   borderRadius: "18px",
                 }}
               >
-                <i className="fas fa-chevron-left"></i>
+                <ChevronLeft size={18} strokeWidth={2.5} />
               </button>
             )}
           </div>
@@ -37,23 +40,32 @@ function WizardButtons({
                 onClick={onNext}
                 title="Next"
                 style={{
-                  padding: "2px",
+                  padding: "2px 8px",
                   borderRadius: "18px",
                 }}
               >
-                <i className="fas fa-chevron-right"></i>
+                <ChevronRight size={18} strokeWidth={2.5} />{" "}
               </button>
             )}
 
-            {currentStep === totalSteps && (
+            {currentStep === totalSteps && !readOnly && (
               <button
                 type="button"
                 className="btn btn-success"
                 onClick={onSubmit}
-                style={{ padding: "1px" }}
+                style={{
+                  padding: "2px 3px",
+                  borderRadius: "6px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "5px",
+                  whiteSpace: "nowrap",
+                  minWidth: "65px",
+                }}
               >
-                <i className="fas fa-check me-2"></i>
-                Submit
+                <Check size={15} strokeWidth={2.5} />
+                <span>Submit</span>
               </button>
             )}
           </div>

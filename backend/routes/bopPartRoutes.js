@@ -1,5 +1,4 @@
 import express from "express";
-
 import {
     getAllBopPartConfigurations,
     getBopPartConfiguration,
@@ -10,74 +9,19 @@ import {
 
 const router = express.Router();
 
-/*
-============================================================
-GET ALL PART-BOP CONFIGURATIONS
-============================================================
+/* GET ALL PART-BOP CONFIGURATIONS*/
+router.get("/", getAllBopPartConfigurations,);
 
-GET /api/part-bops
-============================================================
-*/
-router.get(
-    "/",
-    getAllBopPartConfigurations,
-);
+/* GET BOP CONFIGURATION FOR ONE PART */
+router.get("/:partNo", getBopPartConfiguration,);
 
+/* CREATE / SAVE PART-BOP CONFIGURATION */
+router.post("/", saveBopPartConfiguration,);
 
-/*
-============================================================
-GET BOP CONFIGURATION FOR ONE PART
-============================================================
+/* UPDATE PART-BOP CONFIGURATION */
+router.put("/:partNo", updateBopPartConfiguration,);
 
-GET /api/part-bops/:partNo
-============================================================
-*/
-router.get(
-    "/:partNo",
-    getBopPartConfiguration,
-);
-
-
-/*
-============================================================
-CREATE / SAVE PART-BOP CONFIGURATION
-============================================================
-
-POST /api/part-bops
-============================================================
-*/
-router.post(
-    "/",
-    saveBopPartConfiguration,
-);
-
-
-/*
-============================================================
-UPDATE PART-BOP CONFIGURATION
-============================================================
-
-PUT /api/part-bops/:partNo
-============================================================
-*/
-router.put(
-    "/:partNo",
-    updateBopPartConfiguration,
-);
-
-
-/*
-============================================================
-DELETE PART-BOP CONFIGURATION
-============================================================
-
-DELETE /api/part-bops/:partNo
-============================================================
-*/
-router.delete(
-    "/:partNo",
-    deleteBopPartConfiguration,
-);
-
+/* DELETE PART-BOP CONFIGURATION */
+router.delete("/:partNo", deleteBopPartConfiguration,);
 
 export default router;

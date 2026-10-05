@@ -9,11 +9,15 @@
 
 /* PAGE HEADER */
 .molding-header-1 {
+  width: 100%;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 15px;
+  gap: 18px;
   margin-bottom: 22px;
+  box-sizing: border-box;
+}
+.molding-header-1 > div:first-child {
+  flex: 0 0 auto;
 }
 .molding-header h2 {
   margin: 0;
@@ -299,7 +303,8 @@
 
 /* TEXT CELLS */
 .molding-table .transaction-id {
-  font-size: 13px;
+  font-size: 11px;
+  padding: 2px 5px !important;
   font-weight: 600;
   color: #2563eb;
 }
@@ -375,20 +380,21 @@
 .molding-table .action-cell {
   text-align: center;
 }
-.molding-table .open-btn {
-  width: 35px;
-  height: 20px;
+.molding-edit-btn {
+  width: 30px;
+  height: 24px;
   padding: 0;
   border: 1px solid #2563eb;
   border-radius: 5px;
   background: #fff;
   color: #2563eb;
-  font-size: 12px;
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: 0.2s;
 }
-.molding-table .open-btn:hover {
+
+.molding-edit-btn:hover {
   background: #2563eb;
   color: #fff;
 }
@@ -491,6 +497,7 @@
     width: 100%;
     flex-direction: column;
   }
+  .molding-actions .bulk-upload-btn,
   .molding-actions .export-excel-btn,
   .molding-actions .add-transaction-btn {
     width: 100%;
@@ -615,4 +622,940 @@
   .sales-monthly-filter-loading {
     margin-bottom: 9px;
   }
+}
+
+/* =========================================================
+   MOLDING FILTERS - APPLY BUTTON
+   Works with the single Apply button controlling:
+   Financial Year, From Month, To Month, Customer,
+   Sub Category, Part No and Total Mfg P/L.
+   ========================================================= */
+
+.molding-apply-filter-btn {
+  height: 30px;
+  min-width: 68px;
+  padding: 0 14px;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 30px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.1s ease;
+}
+
+.molding-apply-filter-btn:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.molding-apply-filter-btn:active {
+  transform: translateY(1px);
+}
+
+.molding-apply-filter-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
+}
+
+.molding-apply-filter-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Keep all seven filter controls aligned on one row when space allows. */
+.sales-monthly-report-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  flex-wrap: nowrap;
+}
+
+.sales-monthly-filter-group {
+  flex: 0 0 auto;
+}
+
+.sales-monthly-filter-group select {
+  width: 108px;
+}
+
+/* Customer / Sub Category / Part No need a little more room. */
+.sales-monthly-filter-group.filter-wide select {
+  width: 130px;
+}
+
+/* Apply button aligns with the select controls, not the labels. */
+.sales-monthly-report-filters .molding-apply-filter-btn {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+/* Loading indicator stays compact beside the filters. */
+.sales-monthly-filter-loading {
+  align-self: flex-end;
+  margin: 0 2px 7px 0;
+}
+
+/* At smaller desktop widths, allow the filter row to wrap cleanly. */
+@media (max-width: 1400px) {
+  .sales-monthly-report-filters {
+    gap: 5px;
+  }
+
+  .sales-monthly-filter-group select {
+    width: 92px;
+  }
+
+  .sales-monthly-filter-group.filter-wide select {
+    width: 112px;
+  }
+
+  .molding-apply-filter-btn {
+    min-width: 62px;
+    padding: 0 10px;
+  }
+}
+
+@media (max-width: 1150px) {
+  .sales-monthly-report-filters {
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .sales-monthly-filter-group select,
+  .sales-monthly-filter-group.filter-wide select {
+    width: 120px;
+  }
+
+  .molding-apply-filter-btn {
+    height: 30px;
+    line-height: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sales-monthly-report-filters {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .sales-monthly-filter-group select,
+  .sales-monthly-filter-group.filter-wide select {
+    width: 120px;
+  }
+
+  .molding-apply-filter-btn {
+    min-width: 120px;
+  }
+}
+
+/* BULK UPLOAD BUTTON */
+.bulk-upload-btn {
+  border: 1px solid #2563eb;
+  background: #fff;
+  color: #2563eb;
+  padding: 0px 5px;
+  height: 38px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  white-space: nowrap;
+  transition: 0.2s ease;
+  box-sizing: border-box;
+}
+
+.bulk-upload-btn:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+.bulk-upload-btn:active {
+  transform: translateY(1px);
+}
+
+.bulk-upload-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+/* =========================================================
+   MOLDING - REACT DATA TABLE
+   ========================================================= */
+
+.molding-data-table {
+  width: 100%;
+  border: none;
+  font-size: 13px;
+}
+
+/* ---------------------------------------------------------
+   DATA TABLE WRAPPER
+   --------------------------------------------------------- */
+
+.molding-data-table > div {
+  border: none !important;
+}
+
+/* ---------------------------------------------------------
+   HEADER
+   --------------------------------------------------------- */
+
+.molding-data-table .rdt_TableHeadRow {
+  min-height: 55px !important;
+  height: auto !important;
+  border-bottom: 1px solid #cccccc !important;
+}
+
+.molding-data-table .rdt_TableCol {
+  background: #19224a !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 6px 5px !important;
+  white-space: normal !important;
+  line-height: 1.2 !important;
+}
+
+.molding-data-table .rdt_TableCol_Sortable {
+  color: #ffffff !important;
+}
+
+.molding-data-table .rdt_TableCol_Sortable:hover {
+  opacity: 0.9;
+}
+
+/* ---------------------------------------------------------
+   BODY ROW
+   --------------------------------------------------------- */
+
+.molding-data-table .rdt_TableRow {
+  min-height: 30px !important;
+  height: 30px !important;
+  border-bottom: none !important;
+  background: #ffffff;
+  color: #374151;
+  font-size: 13px;
+}
+
+.molding-data-table .rdt_TableRow:hover {
+  background: #f8fafc !important;
+  cursor: default;
+}
+
+/* ---------------------------------------------------------
+   CELLS
+   --------------------------------------------------------- */
+
+.molding-data-table .rdt_TableCell {
+  padding: 0 3px !important;
+  border-right: 1px solid #cccccc !important;
+  border-bottom: 1px solid #cccccc !important;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.molding-data-table .rdt_TableCell:last-child {
+  border-right: none;
+}
+/* ---------------------------------------------------------
+   TEXT CELLS
+   --------------------------------------------------------- */
+.transaction-id {
+  font-size: 11px !important;
+  padding: 6px 5px !important;
+  border-radius: 5px;
+  color: #0d6efd;
+  border: 1px solid transparent;
+}
+.rdt_columnText {
+  font-size: 11px !important;
+}
+
+.molding-data-table .transaction-id {
+  font-size: 11px;
+
+  font-weight: 600;
+  color: #2563eb;
+  white-space: nowrap;
+}
+
+.molding-data-table .customer-name,
+.molding-data-table .production-unit,
+.molding-data-table .billing-unit,
+.molding-data-table .sub-category,
+.molding-data-table .part-no {
+  font-weight: 600;
+}
+
+.molding-data-table .customer-name,
+.molding-data-table .sub-category,
+.molding-data-table .part-no {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: left;
+}
+
+/* ---------------------------------------------------------
+   NUMBER / MONEY
+   --------------------------------------------------------- */
+
+.molding-data-table .part-cost,
+.molding-data-table .sell-cost,
+.molding-data-table .profit-loss,
+.molding-data-table .monthly-profit-loss {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------
+   PROFIT / LOSS
+   --------------------------------------------------------- */
+
+.molding-data-table .profit {
+  color: #008000;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.molding-data-table .loss {
+  color: #ff0000;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* ---------------------------------------------------------
+   STATUS
+   --------------------------------------------------------- */
+
+.molding-data-table .status-cell {
+  text-align: center;
+}
+
+.molding-data-table .status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  padding: 5px 0;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.molding-data-table .status.completed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.molding-data-table .status.draft {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.molding-data-table .status.submitted {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* ---------------------------------------------------------
+   OPEN BUTTON
+   --------------------------------------------------------- */
+
+.molding-data-table .action-cell {
+  text-align: center;
+}
+
+.molding-data-table .open-btn {
+  width: 35px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid #2563eb;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.molding-data-table .open-btn:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* ---------------------------------------------------------
+   PAGINATION
+   --------------------------------------------------------- */
+
+.molding-data-table .rdt_Pagination {
+  min-height: 35px !important;
+  border-top: 1px solid #e5e7eb !important;
+  background: #ffffff !important;
+  font-size: 13px;
+}
+
+.molding-data-table .rdt_Pagination select {
+  height: 25px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  background: #ffffff;
+  font-size: 13px;
+}
+
+.molding-data-table .rdt_Pagination button {
+  color: #374151;
+}
+
+.molding-data-table .rdt_Pagination button:hover:not(:disabled) {
+  background: #f1f3f5;
+}
+
+/* ---------------------------------------------------------
+   NO DATA
+   --------------------------------------------------------- */
+
+.molding-data-table .rdt_TableBody .rdt_TableRow {
+  min-height: 30px;
+}
+
+.molding-data-table .rdt_TableBody .rdt_TableCell {
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------
+   HORIZONTAL SCROLL
+   --------------------------------------------------------- */
+
+.molding-table-card {
+  overflow: hidden;
+}
+
+.molding-data-table .rdt_Table {
+  min-width: 1259px;
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE
+   --------------------------------------------------------- */
+
+@media (max-width: 1200px) {
+  .molding-data-table {
+    font-size: 12px;
+  }
+
+  .molding-data-table .rdt_TableCol {
+    font-size: 11px !important;
+  }
+
+  .molding-data-table .rdt_TableCell {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .molding-data-table .rdt_Table {
+    min-width: 1259px;
+  }
+
+  .molding-data-table .rdt_TableHeadRow {
+    min-height: 40px !important;
+    height: 40px !important;
+  }
+
+  .molding-data-table .rdt_TableRow {
+    min-height: 30px !important;
+  }
+}
+
+/* PROFIT / LOSS — SAME AS EXISTING MOLDING TABLE */
+.molding-data-table .profit-loss {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* PROFIT */
+.molding-data-table .profit {
+  color: #008000 !important;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* LOSS */
+.molding-data-table .loss {
+  color: #ff0000 !important;
+  font-weight: 600;
+  font-size: 13px;
+}
+/* FILTERS ABOVE MOLDING TABLE */
+.molding-table-filters {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 8px 5px;
+  margin-bottom: 10px;
+  background: #c7d1f8;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.molding-table-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.molding-table-filter-group label {
+  margin: 0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.molding-table-filter-group select {
+  width: 120px;
+  height: 20px;
+  padding: 0px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  outline: none;
+  background: #ffffff;
+  color: #374151;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.molding-table-filter-group select:hover {
+  border-color: #9ca3af;
+}
+
+.molding-table-filter-group select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.08);
+}
+
+/* APPLY */
+.molding-table-filters .molding-apply-filter-btn {
+  height: 35px;
+  min-width: 100px;
+  padding: 0 15px;
+  margin-left: 4px;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+  gap: 5px;
+}
+
+.molding-table-filters .molding-apply-filter-btn:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.molding-table-filters .molding-apply-filter-btn:active {
+  transform: translateY(1px);
+}
+
+.molding-table-filters .molding-apply-filter-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+/* =========================================================
+   FINAL MOLDING HEADER LAYOUT
+   ========================================================= */
+
+.molding-header-1 {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 22px;
+  box-sizing: border-box;
+}
+
+.molding-header-1 h2 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+}
+
+.molding-actions {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Financial Year + From + To + Apply stay on LEFT */
+.sales-monthly-report-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex: 0 0 auto;
+  margin: 0;
+  width: auto;
+}
+
+/* Select groups */
+.sales-monthly-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.sales-monthly-filter-group label {
+  margin: 0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.sales-monthly-filter-group select {
+  width: 150px;
+  height: 35px;
+  padding: 4px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  color: #374151;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.sales-monthly-filter-group select:hover {
+  border-color: #9ca3af;
+}
+
+.sales-monthly-filter-group select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.08);
+}
+
+/* Apply button */
+.molding-apply-filter-btn {
+  height: 38px;
+  min-width: 85px;
+  padding: 0 15px;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: 0.2s ease;
+}
+
+.molding-apply-filter-btn:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.molding-apply-filter-btn:active {
+  transform: translateY(1px);
+}
+
+.molding-apply-filter-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+/* Push action buttons to the RIGHT */
+.molding-actions > .bulk-upload-btn {
+  margin-left: auto;
+}
+
+.molding-actions > .bulk-upload-btn,
+.molding-actions > .export-excel-btn,
+.molding-actions > .add-transaction-btn {
+  height: 35px;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   MOLDING APPLY BUTTON - LOADING ANIMATION
+   Unique to the Molding page
+   ========================================================= */
+
+.molding-apply-filter-btn:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.molding-apply-spin {
+  animation: molding-apply-spin 0.8s linear infinite;
+}
+
+@keyframes molding-apply-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rdt_cellBase {
+  color: black;
+}
+/* ================================
+   TABLE HEADER
+================================ */
+
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.table-header-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* ================================
+   MOLDING SEARCH
+================================ */
+
+.moldingb-search-box {
+  position: relative;
+  width: 260px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.moldingb-search-box i {
+  position: absolute;
+  left: 12px;
+  color: #64748b;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.moldingb-search-box input {
+  width: 100%;  
+  height: 30px;
+  padding: 0 34px 0 34px;
+  border: 1px solid #000000;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #000000;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+.molding-page .table-header .table-header-left {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 50px;
+}
+
+.moldingb-search-box input::placeholder {
+  color: #a4acb6;
+}
+
+.moldingb-search-box input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.molding-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 22px;
+  height: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  background: transparent;
+  color: #64748b;
+
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+  padding: 0;
+}
+
+.molding-search-clear:hover {
+  color: #ef4444;
+}
+.molding-search-box {
+  position: relative;
+  width: 260px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.molding-search-icon {
+  position: absolute;
+  left: 11px;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.molding-search-box input {
+  width: 100%;
+  height: 36px;
+  padding: 0 36px 0 34px;
+  border: 1px solid #d6dee8;
+  border-radius: 6px;
+  background: #fff;
+  color: #334155;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.molding-search-box input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.molding-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.molding-search-clear:hover {
+  color: #ef4444;
+}
+/* Profit / Loss values */
+
+.profit {
+  color: #16a34a !important; /* Green */
+  font-weight: 700;
+}
+
+.loss {
+  color: #dc2626 !important; /* Red */
+  font-weight: 700;
+}
+
+.molding-data-table .rdt_TableCol {
+  background: #19224a !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 4px 5px !important;
+
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+}
+/* =========================================================
+   FORCE REACT DATA TABLE HEADERS TO WRAP
+   ========================================================= */
+
+.molding-data-table .rdt_TableHeadRow .rdt_TableCol {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  line-height: 1.15 !important;
+}
+
+.molding-data-table .rdt_TableHeadRow .rdt_TableCol .rdt_TableCol_Sortable {
+  width: 100% !important;
+  min-width: 0 !important;
+
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.15 !important;
+
+  text-align: center !important;
+}
+
+.molding-data-table
+  .rdt_TableHeadRow
+  .rdt_TableCol
+  .rdt_TableCol_Sortable
+  > div {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.15 !important;
+  text-align: center !important;
 }

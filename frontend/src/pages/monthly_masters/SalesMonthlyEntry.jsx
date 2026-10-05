@@ -6,7 +6,7 @@ import TomSelect from "tom-select";
 import "tom-select/dist/css/tom-select.css";
 import API_BASE_URL from "../../config/api";
 
-const financialYearOptions = generateFinancialYears(2026);
+const financialYearOptions = generateFinancialYears();
 
 const defaultFinancialYear =
   financialYearOptions.find((item) => item.selected)?.value ||
@@ -128,7 +128,6 @@ const SalesMonthlyEntry = () => {
       }
 
       const result = await response.json();
-
       const data = extractArray(result)
         .map((part) => ({
           ...part,
@@ -140,9 +139,7 @@ const SalesMonthlyEntry = () => {
       setParts(data);
     } catch (error) {
       console.error("Part Master error:", error);
-
       setParts([]);
-
       showToast("Unable to load Part Master.", "error");
     } finally {
       setPartsLoading(false);
@@ -155,7 +152,6 @@ const SalesMonthlyEntry = () => {
 
     try {
       const response = await fetch(`${API_BASE_URL}/units`);
-
       if (!response.ok) {
         throw new Error(
           `Unable to load Unit Master. Status: ${response.status}`,
@@ -163,15 +159,11 @@ const SalesMonthlyEntry = () => {
       }
 
       const result = await response.json();
-
       const data = extractArray(result).filter((unit) => getUnitName(unit));
-
       setUnits(data);
     } catch (error) {
       console.error("Unit Master error:", error);
-
       setUnits([]);
-
       showToast("Unable to load Unit Master.", "error");
     } finally {
       setUnitsLoading(false);
@@ -183,24 +175,16 @@ const SalesMonthlyEntry = () => {
     if (!editId) {
       return;
     }
-
     setLoadingEntry(true);
-
     try {
       const response = await fetch(`${API_BASE_URL}/sales-monthly/${editId}`);
-
       if (!response.ok) {
         throw new Error(`Unable to load entry. Status: ${response.status}`);
       }
-
       const result = await response.json();
-
       const entry = result?.data ?? result?.entry ?? result;
-
       const entryPartNo = entry?.partNo ?? entry?.part_no ?? "";
-
       const part = findPart(entryPartNo);
-
       setEditingEntry({
         ...entry,
         id: entry?.id ?? entry?._id ?? null,
@@ -228,7 +212,6 @@ const SalesMonthlyEntry = () => {
       });
     } catch (error) {
       console.error("Existing entry error:", error);
-
       showToast(error.message || "Unable to load existing entry.", "error");
     } finally {
       setLoadingEntry(false);
@@ -262,45 +245,30 @@ const SalesMonthlyEntry = () => {
     }
 
     select.innerHTML = "";
-
     const defaultOption = document.createElement("option");
-
     defaultOption.value = "";
     defaultOption.textContent = "Select Part No.";
-
     select.appendChild(defaultOption);
-
     parts.forEach((part) => {
       const partNo = String(getPartNo(part)).trim();
-
       if (!partNo) return;
-
       const option = document.createElement("option");
-
       option.value = partNo;
       option.textContent = partNo;
-
       select.appendChild(option);
     });
 
     partTomSelectRef.current = new TomSelect(select, {
       placeholder: "Search or select Part No.",
-
       allowEmptyOption: true,
-
       create: false,
-
       maxOptions: 1000,
-
       searchField: ["text"],
-
       sortField: {
         field: "text",
         direction: "asc",
       },
-
       closeAfterSelect: true,
-
       onChange: (value) => {
         if (!value) {
           setFormData((previous) => ({
@@ -308,7 +276,6 @@ const SalesMonthlyEntry = () => {
             partNo: "",
             partName: "",
           }));
-
           return;
         }
 
@@ -317,17 +284,14 @@ const SalesMonthlyEntry = () => {
             String(getPartNo(part)).trim().toLowerCase() ===
             String(value).trim().toLowerCase(),
         );
-
         if (!selectedPart) {
           return;
         }
-
         setFormData((previous) => ({
           ...previous,
           partNo: getPartNo(selectedPart),
           partName: getPartName(selectedPart),
         }));
-
         setErrors((previous) => ({
           ...previous,
           partNo: "",
@@ -348,11 +312,8 @@ const SalesMonthlyEntry = () => {
     if (!partTomSelectRef.current || !formData.partNo) {
       return;
     }
-
     const part = findPart(formData.partNo);
-
     if (!part) return;
-
     partTomSelectRef.current.setValue(String(getPartNo(part)).trim(), true);
   }, [formData.partNo, parts]);
 
@@ -363,12 +324,10 @@ const SalesMonthlyEntry = () => {
         return;
       }
     }
-
     setFormData((previous) => ({
       ...previous,
       [field]: value,
     }));
-
     setErrors((previous) => ({
       ...previous,
       [field]: "",
@@ -392,16 +351,15 @@ const SalesMonthlyEntry = () => {
       newErrors.financialYear = "Financial Year is required.";
     }
     if (formData.qty === "" && formData.sellRate === "") {
-      newErrors.general = "Enter Qty or Sell Rate.";
+      newErrors.general = "Enter Qty or Sales Rate.";
     }
     if (formData.qty !== "" && Number(formData.qty) < 0) {
       newErrors.qty = "Qty cannot be negative.";
     }
     if (formData.sellRate !== "" && Number(formData.sellRate) < 0) {
-      newErrors.sellRate = "Sell Rate cannot be negative.";
+      newErrors.sellRate = "Sales Rate cannot be negative.";
     }
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
 
@@ -410,9 +368,7 @@ const SalesMonthlyEntry = () => {
     if (!validateForm()) {
       return;
     }
-
     const part = findPart(formData.partNo);
-
     if (!part) {
       setErrors({
         partNo: "Selected Part No. does not exist in Part Master.",
@@ -420,31 +376,17 @@ const SalesMonthlyEntry = () => {
 
       return;
     }
-
     setSaving(true);
-
     try {
       const existingId = editingEntry?.id ?? editingEntry?._id ?? null;
-
       const isEditing = Boolean(existingId);
-
       const payload = {
         partNo: formData.partNo,
-
         partName: getPartName(part) || formData.partName || "",
-
-        /*
-         * Unit is intentionally taken
-         * from Unit Master selection.
-         */
         unit: formData.unit,
-
         financialYear: formData.financialYear,
-
         month: Number(formData.month),
-
         qty: formData.qty === "" ? null : Number(formData.qty),
-
         sellRate: formData.sellRate === "" ? null : Number(formData.sellRate),
       };
 
@@ -454,16 +396,12 @@ const SalesMonthlyEntry = () => {
 
       const response = await fetch(url, {
         method: isEditing ? "PUT" : "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify(payload),
       });
-
       const result = await response.json().catch(() => ({}));
-
       if (!response.ok) {
         throw new Error(
           result?.message ||
@@ -471,20 +409,17 @@ const SalesMonthlyEntry = () => {
             "Unable to save Sales Monthly entry.",
         );
       }
-
       showToast(
         isEditing
           ? "Sales Monthly entry updated successfully."
           : "Sales Monthly entry saved successfully.",
         "success",
       );
-
       window.setTimeout(() => {
         navigate("/sales-monthly");
       }, 700);
     } catch (error) {
       console.error("Save error:", error);
-
       showToast(
         error.message || "Unable to save Sales Monthly entry.",
         "error",
@@ -532,7 +467,7 @@ const SalesMonthlyEntry = () => {
               ? "Edit Monthly Sales Entry"
               : "Add Monthly Sales Entry"}
           </h2>
-          <p>Enter monthly Qty and Sell Rate for a Part Master item.</p>
+          <p>Enter monthly Qty and Sales Rate for a Part Master item.</p>
         </div>
         {editingEntry && (
           <div className="editing-badge">Editing Existing Entry</div>
@@ -682,13 +617,13 @@ const SalesMonthlyEntry = () => {
 
               {/* SELL RATE */}
               <div className="entry-form-group">
-                <label>Sell Rate</label>
+                <label>Sales Rate</label>
                 <input
                   type="text"
                   inputMode="decimal"
                   value={formData.sellRate}
                   disabled={saving}
-                  placeholder="Enter Sell Rate"
+                  placeholder="Enter Sales Rate"
                   onChange={(e) => handleFormChange("sellRate", e.target.value)}
                   className={errors.sellRate ? "input-error" : ""}
                 />
@@ -706,7 +641,7 @@ const SalesMonthlyEntry = () => {
             {/* FOOTER */}
             <div className="sales-entry-footer">
               <div className="form-help">
-                * Required fields. Enter at least Qty or Sell Rate.
+                * Required fields. Enter at least Qty or Sales Rate.
               </div>
               <div className="entry-form-actions">
                 <button

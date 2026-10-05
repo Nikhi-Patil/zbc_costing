@@ -7,6 +7,7 @@ import API_BASE_URL from "../../config/api";
 function RMDetailsForm({
   formData,
   transactionId,
+  readOnly = false,
   handleInputChange,
   handleCompoundChange,
   handlePolymerChange,
@@ -43,9 +44,7 @@ function RMDetailsForm({
     label: compound.compound_code,
     data: compound,
   }));
-  // BOP rows are now fetched by CostingWizard when the Part No. changes.
-  // Here we only attach the applicable monthly BOP rate and calculate cost.
-  // The BOP master/configuration itself is not edited from this form.
+
   useEffect(() => {
     let cancelled = false;
 
@@ -56,9 +55,6 @@ function RMDetailsForm({
       }
 
       const financialYear = formData.financialYear;
-
-      // Keep the fetched rows visible even when the monthly inputs are not
-      // ready yet. Rate/cost will remain blank/zero until they are available.
       if (!financialYear) {
         setBopRowsWithRates(
           bopList.map((bop) => ({
@@ -85,7 +81,6 @@ function RMDetailsForm({
               Number(
                 bop.bopAssemblyQty ?? bop.assembly_qty ?? bop.assemblyQty,
               ) || 0;
-
             if (!bopErpCode || !supplierId || !month) {
               return {
                 ...bop,
@@ -94,7 +89,6 @@ function RMDetailsForm({
                 bopCost: "0.00",
               };
             }
-
             try {
               const params = new URLSearchParams({
                 bopErpCode: String(bopErpCode).trim(),
@@ -107,7 +101,6 @@ function RMDetailsForm({
                 `${API_BASE_URL}/bop-rate-for-costing?${params.toString()}`,
               );
               const result = await response.json();
-
               if (!response.ok || !result.success || !result.found) {
                 return {
                   ...bop,
@@ -116,9 +109,7 @@ function RMDetailsForm({
                   bopCost: "0.00",
                 };
               }
-
               const rate = Number(result.rate) || 0;
-
               return {
                 ...bop,
                 bopmonth: month,
@@ -146,7 +137,6 @@ function RMDetailsForm({
         }
       }
     };
-
     loadBopRates();
 
     return () => {
@@ -321,7 +311,15 @@ function RMDetailsForm({
   ]);
 
   return (
-    <>
+    <fieldset
+      disabled={readOnly}
+      style={{
+        border: "none",
+        padding: 0,
+        margin: 0,
+        minWidth: 0,
+      }}
+    >
       {/* Raw Material Details */}
       <div className="card">
         <div className="card-header">
@@ -509,6 +507,7 @@ function RMDetailsForm({
           </div>
         </div>
       </div>
+
       {/* BOP Table */}
       {formData.hasBop === "Yes" && (
         <BopTable
@@ -523,7 +522,7 @@ function RMDetailsForm({
           Loading monthly BOP rates...
         </div>
       )}
-    </>
+    </fieldset>
   );
 }
 

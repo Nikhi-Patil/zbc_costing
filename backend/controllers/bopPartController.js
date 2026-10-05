@@ -1,18 +1,9 @@
 import BopPart from "../models/bopPartModel.js";
 
-/*
-============================================================
-GET ALL BOP PART CONFIGURATIONS
-============================================================
-*/
-export const getAllBopPartConfigurations = async (
-    req,
-    res,
-) => {
+/* GET ALL BOP PART CONFIGURATIONS */
+export const getAllBopPartConfigurations = async (req, res) => {
     try {
-        const rows =
-            await BopPart.getAll();
-
+        const rows = await BopPart.getAll();
         return res.json({
             success: true,
             data: rows,
@@ -22,54 +13,32 @@ export const getAllBopPartConfigurations = async (
             "GET ALL PART BOPS ERROR:",
             error,
         );
-
         return res.status(500).json({
             success: false,
-            message:
-                "Failed to fetch BOP part configurations",
+            message: "Failed to fetch BOP part configurations",
             error: error.message,
         });
     }
 };
 
 
-/*
-============================================================
-GET BOP CONFIGURATION FOR ONE PART
-============================================================
-
-GET /api/part-bops/:partNo
-============================================================
-*/
-export const getBopPartConfiguration = async (
-    req,
-    res,
-) => {
+/* GET BOP CONFIGURATION FOR ONE PART */
+export const getBopPartConfiguration = async (req,res) => {
     try {
-        const { partNo } =
-            req.params;
-
-        /*
-        ----------------------------------------------------
-        VALIDATE PART NO
-        ----------------------------------------------------
-        */
+        const { partNo } = req.params;
+        
+        /* VALIDATE PART NO */
         if (
             !partNo ||
             !String(partNo).trim()
         ) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Part No. is required",
+                message: "Part No. is required",
             });
         }
 
-        /*
-        ----------------------------------------------------
-        FETCH BOP CONFIGURATION
-        ----------------------------------------------------
-        */
+        /* FETCH BOP CONFIGURATION */
         const rows =
             await BopPart.getByPartNo(
                 String(partNo).trim(),
@@ -77,8 +46,7 @@ export const getBopPartConfiguration = async (
 
         return res.json({
             success: true,
-            partNo:
-                String(partNo).trim(),
+            partNo: String(partNo).trim(),
             data: rows,
         });
 
@@ -90,40 +58,14 @@ export const getBopPartConfiguration = async (
 
         return res.status(500).json({
             success: false,
-            message:
-                "Failed to fetch BOP details for part",
+            message: "Failed to fetch BOP details for part",
             error: error.message,
         });
     }
 };
 
-
-/*
-============================================================
-CREATE / SAVE BOP CONFIGURATION
-============================================================
-
-POST /api/part-bops
-
-Request:
-
-{
-    "partNo": "ABC123",
-    "bops": [
-        {
-            "bopId": 1,
-            "supplierId": 5,
-            "assemblyQty": 2
-        }
-    ]
-}
-
-============================================================
-*/
-export const saveBopPartConfiguration = async (
-    req,
-    res,
-) => {
+/* CREATE / SAVE BOP CONFIGURATION */
+export const saveBopPartConfiguration = async (req,res) => {
     try {
         const {
             partNo,
@@ -132,62 +74,41 @@ export const saveBopPartConfiguration = async (
             updatedBy = null,
         } = req.body || {};
 
-        /*
-        ----------------------------------------------------
-        VALIDATE PART NO
-        ----------------------------------------------------
-        */
+        /* VALIDATE PART NO */
         if (
             !partNo ||
             !String(partNo).trim()
         ) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Part No. is required",
+                message: "Part No. is required",
             });
         }
 
-        /*
-        ----------------------------------------------------
-        VALIDATE BOPS
-        ----------------------------------------------------
-        */
+        /* VALIDATE BOPS */
         if (
             bops !== undefined &&
             !Array.isArray(bops)
         ) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "BOP details must be an array",
+                message: "BOP details must be an array",
             });
         }
 
-        /*
-        ----------------------------------------------------
-        SAVE CONFIGURATION
-        ----------------------------------------------------
-        */
+        /* SAVE CONFIGURATION */
         const result =
             await BopPart.saveForPart({
-                partNo:
-                    String(partNo).trim(),
+                partNo: String(partNo).trim(),
 
-                bops:
-                    Array.isArray(bops)
+                bops: Array.isArray(bops)
                         ? bops
                         : [],
-
                 createdBy,
                 updatedBy,
             });
 
-        /*
-        ----------------------------------------------------
-        SUCCESS RESPONSE
-        ----------------------------------------------------
-        */
+        /* SUCCESS RESPONSE */
         return res.status(201).json({
             success: true,
 
@@ -195,7 +116,6 @@ export const saveBopPartConfiguration = async (
                 result.count > 0
                     ? `BOP configuration saved successfully for Part No. ${result.partNo}`
                     : `BOP configuration cleared for Part No. ${result.partNo}`,
-
             data: result,
         });
 
@@ -205,11 +125,7 @@ export const saveBopPartConfiguration = async (
             error,
         );
 
-        /*
-        ----------------------------------------------------
-        VALIDATION ERRORS
-        ----------------------------------------------------
-        */
+        /* VALIDATION ERRORS */
         const status =
             /not found|required|assigned|duplicate|must be/i.test(
                 error.message || "",
@@ -219,7 +135,6 @@ export const saveBopPartConfiguration = async (
 
         return res.status(status).json({
             success: false,
-
             message:
                 error.message ||
                 "Failed to save BOP configuration",
@@ -228,50 +143,16 @@ export const saveBopPartConfiguration = async (
 };
 
 
-/*
-============================================================
-UPDATE BOP CONFIGURATION
-============================================================
-
-PUT /api/part-bops/:partNo
-
-This performs a complete replacement of the BOP
-configuration for the selected Part No.
-
-IMPORTANT:
-The model preserves existing:
-
-    financial_year
-    bop_month
-    bop_rate
-    bop_cost
-
-for matching BOP + Supplier mappings.
-
-============================================================
-*/
-export const updateBopPartConfiguration = async (
-    req,
-    res,
-) => {
+/* UPDATE BOP CONFIGURATION */
+export const updateBopPartConfiguration = async (req,res) => {
     try {
-
-        /*
-        ----------------------------------------------------
-        PART NO FROM URL
-        ----------------------------------------------------
-        */
+        /* PART NO FROM URL */
         const routePartNo =
             String(
                 req.params.partNo || "",
             ).trim();
 
-
-        /*
-        ----------------------------------------------------
-        PART NO FROM BODY
-        ----------------------------------------------------
-        */
+        /* PART NO FROM BODY */
         const bodyPartNo =
             String(
                 req.body?.partNo ||
@@ -279,25 +160,15 @@ export const updateBopPartConfiguration = async (
             ).trim();
 
 
-        /*
-        ----------------------------------------------------
-        VALIDATE URL PART NO
-        ----------------------------------------------------
-        */
+        /* VALIDATE URL PART NO */
         if (!routePartNo) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Part No. is required",
+                message: "Part No. is required",
             });
         }
 
-
-        /*
-        ----------------------------------------------------
-        MAKE SURE BODY AND URL MATCH
-        ----------------------------------------------------
-        */
+        /* MAKE SURE BODY AND URL MATCH */
         if (
             bodyPartNo &&
             bodyPartNo.toLowerCase() !==
@@ -305,64 +176,40 @@ export const updateBopPartConfiguration = async (
         ) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Part No. in URL and request body do not match",
+                message: "Part No. in URL and request body do not match",
             });
         }
 
 
-        /*
-        ----------------------------------------------------
-        BOPS MUST BE ARRAY
-        ----------------------------------------------------
-        */
-        const bops =
-            req.body?.bops;
-
+        /* BOPS MUST BE ARRAY */
+        const bops = req.body?.bops;
         if (!Array.isArray(bops)) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "BOP details must be an array",
+                message: "BOP details must be an array",
             });
         }
 
 
-        /*
-        ----------------------------------------------------
-        UPDATE CONFIGURATION
-        ----------------------------------------------------
-        */
-        const result =
-            await BopPart.saveForPart({
-                partNo:
-                    routePartNo,
-
+        /* UPDATE CONFIGURATION */
+        const result = await BopPart.saveForPart({
+                partNo: routePartNo,
                 bops,
-
                 createdBy:
                     req.body?.createdBy ??
                     null,
-
                 updatedBy:
                     req.body?.updatedBy ??
                     null,
             });
 
-
-        /*
-        ----------------------------------------------------
-        SUCCESS RESPONSE
-        ----------------------------------------------------
-        */
+        /* SUCCESS RESPONSE */
         return res.json({
             success: true,
-
             message:
                 result.count > 0
                     ? `BOP configuration updated successfully for Part No. ${result.partNo}`
                     : `BOP configuration cleared for Part No. ${result.partNo}`,
-
             data: result,
         });
 
@@ -372,11 +219,7 @@ export const updateBopPartConfiguration = async (
             error,
         );
 
-        /*
-        ----------------------------------------------------
-        VALIDATION ERRORS
-        ----------------------------------------------------
-        */
+        /* VALIDATION ERRORS */
         const status =
             /not found|required|assigned|duplicate|must be/i.test(
                 error.message || "",
@@ -386,7 +229,6 @@ export const updateBopPartConfiguration = async (
 
         return res.status(status).json({
             success: false,
-
             message:
                 error.message ||
                 "Failed to update BOP configuration",

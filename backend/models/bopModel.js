@@ -1,10 +1,6 @@
 import adminDB from "../config/adminDB.js";
-
-const Bop
- = {
-
+const Bop= {
     getBops: async () => {
-
         const [rows] = await adminDB.query(`
             SELECT
                  p.id,
@@ -28,10 +24,7 @@ const Bop
                 GROUP BY p.id
                 ORDER BY p.id DESC
         `);
-
         return rows;
     }
-
 };
-export default Bop
-;
+export default Bop;

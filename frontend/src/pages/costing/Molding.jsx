@@ -1,5 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
+import DataTable from "react-data-table-component";
 import { generateFinancialYears } from "../../utils/costingUtils";
+import {
+  RefreshCw,
+  Search,
+  X,
+  FileSpreadsheet,
+  Plus,
+  Upload,
+  Pencil,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../../config/api";
 import "../../assets/css/Molding.css";
@@ -7,7 +17,14 @@ import * as XLSX from "xlsx";
 
 const SALES_MONTHLY_API = `${API_BASE_URL}/sales-monthly`;
 
-const financialYearOptions = generateFinancialYears(2026);
+const financialYearOptions = generateFinancialYears();
+
+function formatNumber(value, digits = 2) {
+  if (value === null || value === undefined || value === "") return "—";
+  return Number(value).toLocaleString("en-IN", {
+    maximumFractionDigits: digits,
+  });
+}
 
 const defaultFinancialYear =
   financialYearOptions.find((item) => item.selected)?.value ||
@@ -121,17 +138,280 @@ const normalizeSalesMonthlyEntry = (entry) => ({
       : Number(entry.sell_rate),
 });
 
+const formatInteger = (value) =>
+  Number(value || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+
+const MOLDING_TABLE_COLUMNS = (getSavedPeriodValues, handleOpenTransaction) => [
+  {
+    name: "TR ID",
+    selector: (row) => row.transaction_id,
+    sortable: true,
+    width: "55px",
+    cell: (row) => <span className="transaction-id">{row.transaction_id}</span>,
+  },
+  {
+    name: "Customer Name",
+    selector: (row) => row.customer_name,
+    sortable: true,
+    width: "150px",
+    left: true,
+    cell: (row) => <span className="customer-name">{row.customer_name}</span>,
+  },
+  {
+    name: "Subcategory",
+    selector: (row) => row.sub_category,
+    sortable: true,
+    width: "100px",
+    center: true,
+    cell: (row) => <span className="sub-category">{row.sub_category}</span>,
+  },
+  {
+    name: "Part No",
+    selector: (row) => row.part_no,
+    sortable: true,
+    width: "200px",
+    left: true,
+    cell: (row) => <span className="part-no">{row.part_no}</span>,
+  },
+  {
+    name: "Mfg W/O Margin",
+    selector: (row) => Number(row.__display?.subtotalA || 0),
+    sortable: true,
+    width: "95px",
+    center: true,
+    cell: (row) => formatNumber(row.__display?.subtotalA, 2),
+  },
+  {
+    name: "Mfg With Margin",
+    selector: (row) => Number(row.__display?.partCost || 0),
+    sortable: true,
+    width: "95px",
+    center: true,
+    cell: (row) => formatNumber(row.__display?.partCost, 2),
+  },
+  {
+    name: "Sale Cost",
+    selector: (row) => Number(row.__display?.customerSalesCost || 0),
+    sortable: true,
+    width: "76px",
+    center: true,
+    cell: (row) => formatInteger(row.__display?.customerSalesCost),
+  },
+  {
+    name: "Extra P/L",
+    selector: (row) => Number(row.__display?.extra_profit || 0),
+    sortable: true,
+    width: "76px",
+    center: true,
+    cell: (row) => {
+      const value = Number(row.__display?.extra_profit || 0);
+      return (
+        <span className={value >= 0 ? "profit" : "loss"}>
+          {value >= 0 ? "+" : "-"}
+          {formatInteger(Math.abs(value))}
+        </span>
+      );
+    },
+  },
+  {
+    name: "P/L VS Mfg Cost",
+    selector: (row) => Number(row.__display?.profit_vs_mfg_cost || 0),
+    sortable: true,
+    width: "85px",
+    center: true,
+    cell: (row) => {
+      const value = Number(row.__display?.profit_vs_mfg_cost || 0);
+      return (
+        <span className={value >= 0 ? "profit" : "loss"}>
+          {value >= 0 ? "+" : "-"}
+          {formatInteger(Math.abs(value))}
+        </span>
+      );
+    },
+  },
+  {
+    name: "Monthly Qty",
+    selector: (row) => Number(row.__display?.monthlyQty || 0),
+    sortable: true,
+    width: "100px",
+    center: true,
+    cell: (row) => formatInteger(row.__display?.monthlyQty),
+  },
+  {
+    name: "Extra P/L Total",
+    selector: (row) => Number(row.__display?.extra_monthlyProfitLoss || 0),
+    sortable: true,
+    width: "105px",
+    center: true,
+    cell: (row) => {
+      const value = Number(row.__display?.extra_monthlyProfitLoss || 0);
+      return (
+        <span className={value >= 0 ? "profit" : "loss"}>
+          {value >= 0 ? "+" : "-"}
+          {formatInteger(Math.abs(value))}
+        </span>
+      );
+    },
+  },
+  {
+    name: "Total Mfg P/L",
+    selector: (row) => Number(row.__display?.monthlyProfitLoss || 0),
+    sortable: true,
+    width: "100px",
+    center: true,
+    cell: (row) => {
+      const value = Number(row.__display?.monthlyProfitLoss || 0);
+      return (
+        <span className={value >= 0 ? "profit" : "loss"}>
+          {value >= 0 ? "+" : "-"}
+          {formatInteger(Math.abs(value))}
+        </span>
+      );
+    },
+  },
+
+  {
+    name: "Prod Unit",
+    selector: (row) => row.production_unit,
+    sortable: true,
+    width: "75px",
+    center: true,
+    cell: (row) => (
+      <span className="production-unit">{row.production_unit}</span>
+    ),
+  },
+  {
+    name: "Billing Unit",
+    selector: (row) => row.billing_unit,
+    sortable: true,
+    width: "90px",
+    center: true,
+    cell: (row) => <span className="billing-unit">{row.billing_unit}</span>,
+  },
+  {
+    name: "Status",
+    selector: (row) => row.status,
+    sortable: true,
+    width: "65px",
+    center: true,
+    cell: (row) => (
+      <span className={`status ${String(row.status || "").toLowerCase()}`}>
+        {row.status}
+      </span>
+    ),
+  },
+  {
+    name: "Edit",
+    width: "60px",
+    center: true,
+    cell: (row) => (
+      <button
+        type="button"
+        className="molding-edit-btn"
+        onClick={() => handleOpenTransaction(row.transaction_id)}
+        title="Edit Transaction"
+        aria-label="Edit Transaction"
+      >
+        <Pencil size={15} />
+      </button>
+    ),
+  },
+];
+
+const moldingDataTableStyles = {
+  table: {
+    style: {
+      minWidth: "1450px",
+    },
+  },
+  headRow: {
+    style: {
+      fontSize: "11px",
+      minHeight: "55px",
+      backgroundColor: "#eaf2fb",
+      borderBottom: "1px solid #cbd8e8",
+    },
+  },
+  headCells: {
+    style: {
+      paddingLeft: "8px",
+      paddingRight: "8px",
+      color: "#19224a",
+      fontSize: "11px",
+      fontWeight: 700,
+
+      // IMPORTANT: allow header text to wrap
+      whiteSpace: "normal",
+      wordBreak: "normal",
+      overflowWrap: "break-word",
+      lineHeight: "1.15",
+      textAlign: "center",
+
+      borderRight: "1px solid #dce5f0",
+    },
+  },
+  rows: {
+    style: {
+      minHeight: "35px",
+      fontSize: "12px",
+      color: "#475569",
+      borderBottom: "1px solid #edf1f5",
+    },
+    highlightOnHoverStyle: {
+      backgroundColor: "#f5f9ff",
+      outline: "none",
+    },
+  },
+  cells: {
+    style: {
+      paddingLeft: "8px",
+      paddingRight: "8px",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      borderRight: "1px solid #edf1f5",
+    },
+  },
+  pagination: {
+    style: {
+      minHeight: "42px",
+      borderTop: "1px solid #e7ebf0",
+      color: "#64748b",
+      fontSize: "12px",
+    },
+  },
+};
+
 const Molding = () => {
   const navigate = useNavigate();
 
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // PAGINATION
-  const [currentPage, setCurrentPage] = useState(1);
-  const [recordsPerPage, setRecordsPerPage] = useState(10);
+  // Apply-button loading state. Existing filter/data logic remains unchanged.
+  const [isApplyingFilters, setIsApplyingFilters] = useState(false);
 
-  // SALES MONTHLY FILTERS
+  // SELECTED FILTERS (UI only)
+  const [selectedFinancialYear, setSelectedFinancialYear] =
+    useState(defaultFinancialYear);
+
+  const [selectedFromMonth, setSelectedFromMonth] = useState(
+    getCurrentFiscalMonth(),
+  );
+
+  const [selectedToMonth, setSelectedToMonth] = useState(
+    getCurrentFiscalMonth(),
+  );
+
+  const [selectedCustomer, setSelectedCustomer] = useState("All");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("All");
+  const [selectedPartNo, setSelectedPartNo] = useState("All");
+  const [selectedProfitLoss, setSelectedProfitLoss] = useState("All");
+
+  // APPLIED FILTERS
   const [salesFinancialYear, setSalesFinancialYear] =
     useState(defaultFinancialYear);
 
@@ -139,9 +419,31 @@ const Molding = () => {
 
   const [salesToMonth, setSalesToMonth] = useState(getCurrentFiscalMonth());
 
+  const [customerFilter, setCustomerFilter] = useState("All");
+  const [subCategoryFilter, setSubCategoryFilter] = useState("All");
+  const [partFilter, setPartFilter] = useState("All");
+  const [profitLossFilter, setProfitLossFilter] = useState("All");
+  const [searchText, setSearchText] = useState("");
+
   const [salesMonthlyEntries, setSalesMonthlyEntries] = useState([]);
 
   const [salesMonthlyLoading, setSalesMonthlyLoading] = useState(false);
+  const [moldingMonthlyReports, setMoldingMonthlyReports] = useState([]);
+  const [moldingMonthlyReportLoading, setMoldingMonthlyReportLoading] =
+    useState(false);
+  useEffect(() => {
+    if (!isApplyingFilters) return;
+
+    if (salesMonthlyLoading || moldingMonthlyReportLoading) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setIsApplyingFilters(false);
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [isApplyingFilters, salesMonthlyLoading, moldingMonthlyReportLoading]);
 
   // FETCH TRANSACTIONS
   useEffect(() => {
@@ -154,9 +456,17 @@ const Molding = () => {
 
       const response = await fetch(`${API_BASE_URL}/molding`);
       const result = await response.json();
+      console.log("========== MOLDING API CHECK ==========");
+      console.log("API URL:", `${API_BASE_URL}/molding`);
+      console.log("Success:", result.success);
+      console.log(
+        "Records returned:",
+        Array.isArray(result.data) ? result.data.length : "NOT ARRAY",
+      );
+      console.log("Full API response:", result);
+      console.log("=======================================");
       if (result.success) {
         setTransactions(result.data);
-        setCurrentPage(1);
       } else {
         console.error(result.message);
       }
@@ -215,6 +525,175 @@ const Molding = () => {
     };
   }, [salesFinancialYear]);
 
+  // FETCH SAVED MONTHLY MOLDING REPORT
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchMoldingMonthlyReports = async () => {
+      if (!salesFinancialYear) {
+        setMoldingMonthlyReports([]);
+        return;
+      }
+
+      try {
+        setMoldingMonthlyReportLoading(true);
+
+        const response = await fetch(
+          `${API_BASE_URL}/molding-monthly-report?financialYear=${encodeURIComponent(
+            salesFinancialYear,
+          )}`,
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Unable to load saved molding monthly report. Status: ${response.status}`,
+          );
+        }
+
+        const result = await response.json();
+        console.log("========== MOLDING MONTHLY REPORT API CHECK ==========");
+        console.log(
+          "API URL:",
+          `${API_BASE_URL}/molding-monthly-report?financialYear=${encodeURIComponent(
+            salesFinancialYear,
+          )}`,
+        );
+        console.log("Financial Year:", salesFinancialYear);
+        console.log(
+          "Records returned:",
+          Array.isArray(result?.data) ? result.data.length : "NOT ARRAY",
+        );
+        console.log("Full API response:", result);
+        console.log("======================================================");
+
+        if (!result?.success) {
+          throw new Error(
+            result?.message || "Unable to load saved molding monthly report.",
+          );
+        }
+
+        const data = Array.isArray(result.data) ? result.data : [];
+
+        if (!cancelled) {
+          setMoldingMonthlyReports(data);
+        }
+      } catch (error) {
+        console.error("Error fetching saved molding monthly report:", error);
+
+        if (!cancelled) {
+          setMoldingMonthlyReports([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setMoldingMonthlyReportLoading(false);
+        }
+      }
+    };
+
+    fetchMoldingMonthlyReports();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [salesFinancialYear]);
+
+  // SAVED MONTHLY REPORT LOOKUP
+  const savedMonthlyReportByTransactionMonth = useMemo(() => {
+    const map = new Map();
+
+    moldingMonthlyReports.forEach((report) => {
+      const transactionId = normalizeKey(
+        report?.transaction_id ?? report?.transactionId,
+      );
+      const financialYear = normalizeKey(
+        report?.financial_year ?? report?.financialYear,
+      );
+      const month = Number(report?.month);
+
+      if (!transactionId || !financialYear || !Number.isFinite(month)) {
+        return;
+      }
+
+      map.set(`${transactionId}||${financialYear}||${month}`, report);
+    });
+
+    return map;
+  }, [moldingMonthlyReports]);
+
+  const getSavedMonthlyReportsForTransaction = (transactionId) => {
+    const normalizedTransactionId = normalizeKey(transactionId);
+    const normalizedFinancialYear = normalizeKey(salesFinancialYear);
+
+    return fiscalMonths
+      .map((month) =>
+        savedMonthlyReportByTransactionMonth.get(
+          `${normalizedTransactionId}||${normalizedFinancialYear}||${month.value}`,
+        ),
+      )
+      .filter(Boolean);
+  };
+
+  const getSavedPeriodValues = (transactionId) => {
+    const reports = getSavedMonthlyReportsForTransaction(transactionId);
+
+    const fromIndex = getFiscalMonthIndex(salesFromMonth);
+    const toIndex = getFiscalMonthIndex(salesToMonth);
+
+    const selectedReports = reports.filter((report) => {
+      const monthIndex = getFiscalMonthIndex(report.month);
+      return monthIndex >= fromIndex && monthIndex <= toIndex;
+    });
+
+    if (selectedReports.length === 0) {
+      return null;
+    }
+
+    // Monthly quantity is summed across the selected period.
+    const monthlyQty = selectedReports.reduce(
+      (total, report) => total + Number(report.monthly_quantity || 0),
+      0,
+    );
+
+    // Customer Sales Cost is a SIMPLE ARITHMETIC AVERAGE
+    // across all selected saved months.
+    const customerSalesCostTotal = selectedReports.reduce(
+      (total, report) => total + Number(report?.customer_sales_cost || 0),
+      0,
+    );
+
+    const customerSalesCost =
+      selectedReports.length > 0
+        ? customerSalesCostTotal / selectedReports.length
+        : 0;
+
+    // For cost values, use a SIMPLE ARITHMETIC AVERAGE
+    // of all saved months in the selected fiscal period.
+    // No costing recalculation is performed.
+    const subtotalATotal = selectedReports.reduce(
+      (total, report) => total + Number(report?.subtotal_a || 0),
+      0,
+    );
+
+    const partCostTotal = selectedReports.reduce(
+      (total, report) => total + Number(report?.part_cost || 0),
+      0,
+    );
+
+    const reportCount = selectedReports.length;
+
+    const averageSubtotalA = reportCount > 0 ? subtotalATotal / reportCount : 0;
+
+    const averagePartCost = reportCount > 0 ? partCostTotal / reportCount : 0;
+
+    return {
+      subtotalA: averageSubtotalA,
+      partCost: averagePartCost,
+      customerSalesCost,
+      monthlyQty,
+      hasSavedData: true,
+    };
+  };
+
   // SALES MONTHLY CALCULATION
   const salesMonthlyByTransaction = useMemo(() => {
     const map = new Map();
@@ -260,81 +739,6 @@ const Molding = () => {
     return map;
   }, [salesMonthlyEntries, salesFromMonth, salesToMonth]);
 
-  // PAGINATION CALCULATIONS
-  const totalRecords = transactions.length;
-  const totalPages =
-    totalRecords === 0 ? 0 : Math.ceil(totalRecords / recordsPerPage);
-
-  // GET PAGE NUMBERS
-  const getPageNumbers = () => {
-    const maxVisiblePages = 4;
-
-    // No records
-    if (totalPages === 0) {
-      return [];
-    }
-
-    // If total pages are 4 or less
-    if (totalPages <= maxVisiblePages) {
-      return Array.from({ length: totalPages }, (_, index) => index + 1);
-    }
-    let startPage;
-
-    // PAGE 1 AND PAGE 2
-    if (currentPage <= 2) {
-      startPage = 1;
-    }
-
-    // LAST 2 PAGES
-    else if (currentPage >= totalPages - 1) {
-      startPage = totalPages - 3;
-    }
-
-    // MIDDLE PAGES
-    else {
-      startPage = currentPage - 1;
-    }
-    return Array.from(
-      { length: maxVisiblePages },
-      (_, index) => startPage + index,
-    );
-  };
-
-  // PAGINATED TRANSACTIONS
-  const paginatedTransactions = useMemo(() => {
-    const startIndex = (currentPage - 1) * recordsPerPage;
-    const endIndex = startIndex + recordsPerPage;
-    return transactions.slice(startIndex, endIndex);
-  }, [transactions, currentPage, recordsPerPage]);
-
-  // PAGE NAVIGATION
-  const goToPage = (page) => {
-    if (page < 1) {
-      return;
-    }
-    if (totalPages > 0 && page > totalPages) {
-      return;
-    }
-    setCurrentPage(page);
-  };
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
-  const goToNextPage = () => {
-    if (totalPages > 0 && currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
-    }
-  };
-
-  // ROWS PER PAGE
-  const handleRecordsPerPageChange = (event) => {
-    const newRecordsPerPage = Number(event.target.value);
-    setRecordsPerPage(newRecordsPerPage);
-    setCurrentPage(1);
-  };
-
   // KEEP MONTH RANGE VALID IN FINANCIAL-YEAR ORDER
   useEffect(() => {
     if (
@@ -344,16 +748,36 @@ const Molding = () => {
     }
   }, [salesFromMonth, salesToMonth]);
 
-  // FILTERS CHANGE
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [salesFinancialYear, salesFromMonth, salesToMonth]);
+  const handleApplyFilters = () => {
+    const fromIndex = getFiscalMonthIndex(selectedFromMonth);
+    const toIndex = getFiscalMonthIndex(selectedToMonth);
+
+    if (fromIndex > toIndex) {
+      alert("To Month cannot be before From Month.");
+      return;
+    }
+
+    setIsApplyingFilters(true);
+
+    // Rate period
+    setSalesFinancialYear(selectedFinancialYear);
+    setSalesFromMonth(selectedFromMonth);
+    setSalesToMonth(selectedToMonth);
+
+    // Table filters
+    setCustomerFilter(selectedCustomer);
+    setSubCategoryFilter(selectedSubCategory);
+    setPartFilter(selectedPartNo);
+    setProfitLossFilter(selectedProfitLoss);
+  };
 
   // TRANSACTION HANDLERS
   const handleAddTransaction = () => {
     navigate("/molding/costing-wizard");
   };
-
+  const handleBulkUpload = () => {
+    navigate("/molding/bulk-upload");
+  };
   const handleOpenTransaction = (transactionId) => {
     navigate(`/molding/costing-wizard/${transactionId}`);
   };
@@ -393,12 +817,165 @@ const Molding = () => {
     }
   };
 
-  // KEEP CURRENT PAGE VALID
-  useEffect(() => {
-    if (totalPages > 0 && currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
+  // Prepare display values once for DataTable.
+  const tableRows = useMemo(
+    () =>
+      transactions.map((transaction) => {
+        const savedPeriodValues = getSavedPeriodValues(
+          transaction.transaction_id,
+        );
+
+        const subtotalA = savedPeriodValues?.hasSavedData
+          ? savedPeriodValues.subtotalA
+          : Number(transaction.subtotal_a || 0);
+
+        const partCost = savedPeriodValues?.hasSavedData
+          ? savedPeriodValues.partCost
+          : Number(transaction.part_cost || 0);
+
+        const customerSalesCost = savedPeriodValues?.hasSavedData
+          ? savedPeriodValues.customerSalesCost
+          : Number(transaction.customer_sales_cost || 0);
+
+        const monthlyQty = savedPeriodValues?.hasSavedData
+          ? savedPeriodValues.monthlyQty
+          : Number(transaction.monthly_quantity || 0);
+
+        const extra_profit = customerSalesCost - partCost;
+        const profit_vs_mfg_cost = customerSalesCost - subtotalA;
+        const extra_monthlyProfitLoss = extra_profit * monthlyQty;
+        const monthlyProfitLoss = profit_vs_mfg_cost * monthlyQty;
+
+        return {
+          ...transaction,
+          __display: {
+            subtotalA,
+            partCost,
+            customerSalesCost,
+            monthlyQty,
+            extra_profit,
+            profit_vs_mfg_cost,
+            extra_monthlyProfitLoss,
+            monthlyProfitLoss,
+          },
+        };
+      }),
+    [
+      transactions,
+      moldingMonthlyReports,
+      salesFinancialYear,
+      salesFromMonth,
+      salesToMonth,
+    ],
+  );
+
+  const filteredTableRows = useMemo(() => {
+    const search = normalizeKey(searchText);
+
+    return tableRows.filter((row) => {
+      // SEARCH BAR
+      if (search) {
+        const searchableText = [
+          row.transaction_id,
+          row.customer_name,
+          row.sub_category,
+          row.part_no,
+          row.production_unit,
+          row.billing_unit,
+          row.status,
+        ]
+          .map((value) => normalizeKey(value))
+          .join(" ");
+
+        if (!searchableText.includes(search)) {
+          return false;
+        }
+      }
+
+      // CUSTOMER FILTER
+      if (
+        customerFilter !== "All" &&
+        normalizeKey(row.customer_name) !== normalizeKey(customerFilter)
+      ) {
+        return false;
+      }
+
+      // SUB CATEGORY FILTER
+      if (
+        subCategoryFilter !== "All" &&
+        normalizeKey(row.sub_category) !== normalizeKey(subCategoryFilter)
+      ) {
+        return false;
+      }
+
+      // PART NO FILTER
+      if (
+        partFilter !== "All" &&
+        normalizeKey(row.part_no) !== normalizeKey(partFilter)
+      ) {
+        return false;
+      }
+
+      // PROFIT / LOSS FILTER
+      const totalMfgPL = Number(row.__display?.monthlyProfitLoss || 0);
+      if (profitLossFilter === "Profit" && totalMfgPL < 0) {
+        return false;
+      }
+      if (profitLossFilter === "Loss" && totalMfgPL >= 0) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [
+    tableRows,
+    searchText,
+    customerFilter,
+    subCategoryFilter,
+    partFilter,
+    profitLossFilter,
+  ]);
+
+  const customerOptions = useMemo(() => {
+    return [
+      "All",
+      ...new Set(
+        transactions
+          .map((t) => t.customer_name)
+          .filter(Boolean)
+          .sort(),
+      ),
+    ];
+  }, [transactions]);
+
+  const subCategoryOptions = useMemo(() => {
+    return [
+      "All",
+      ...new Set(
+        transactions
+          .map((t) => t.sub_category)
+          .filter(Boolean)
+          .sort(),
+      ),
+    ];
+  }, [transactions]);
+
+  const partOptions = useMemo(() => {
+    return [
+      "All",
+      ...new Set(
+        transactions
+          .map((t) => t.part_no)
+          .filter(Boolean)
+          .sort(),
+      ),
+    ];
+  }, [transactions]);
+
+  const moldingColumns = useMemo(
+    () => MOLDING_TABLE_COLUMNS(getSavedPeriodValues, handleOpenTransaction),
+    [moldingMonthlyReports, salesFinancialYear, salesFromMonth, salesToMonth],
+  );
 
   // RENDER
   return (
@@ -412,70 +989,19 @@ const Molding = () => {
         <div className="molding-actions">
           {/* SALES MONTHLY FILTERS */}
           <div className="sales-monthly-report-filters">
-            {/* FINANCIAL YEAR */}
-            <div className="sales-monthly-filter-group">
-              <label>Financial Year</label>
-
-              <select
-                value={salesFinancialYear}
-                onChange={(event) => setSalesFinancialYear(event.target.value)}
-              >
-                {financialYearOptions.map((year) => (
-                  <option key={year.value} value={year.value}>
-                    {year.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* FROM MONTH */}
-            <div className="sales-monthly-filter-group">
-              <label>From Month</label>
-
-              <select
-                value={salesFromMonth}
-                onChange={(event) =>
-                  setSalesFromMonth(Number(event.target.value))
-                }
-              >
-                {fiscalMonths.map((month) => (
-                  <option key={month.value} value={month.value}>
-                    {month.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* TO MONTH */}
-            <div className="sales-monthly-filter-group">
-              <label>To Month</label>
-
-              <select
-                value={salesToMonth}
-                onChange={(event) =>
-                  setSalesToMonth(Number(event.target.value))
-                }
-              >
-                {fiscalMonths.map((month) => (
-                  <option
-                    key={month.value}
-                    value={month.value}
-                    disabled={
-                      getFiscalMonthIndex(getMonthValue(month)) <
-                      getFiscalMonthIndex(salesFromMonth)
-                    }
-                  >
-                    {month.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             {/* LOADING */}
-            {salesMonthlyLoading && (
+            {(salesMonthlyLoading || moldingMonthlyReportLoading) && (
               <span className="sales-monthly-filter-loading">Loading...</span>
             )}
           </div>
+          <button
+            type="button"
+            className="bulk-upload-btn"
+            onClick={handleBulkUpload}
+          >
+            <Upload size={15} />
+            Bulk Upload
+          </button>
 
           {/* EXPORT */}
           <button
@@ -483,7 +1009,7 @@ const Molding = () => {
             className="export-excel-btn"
             onClick={handleExportExcel}
           >
-            <i className="fa-solid fa-file-excel" aria-hidden="true"></i>
+            <FileSpreadsheet size={15} />
             Export Excel
           </button>
 
@@ -493,341 +1019,216 @@ const Molding = () => {
             className="add-transaction-btn"
             onClick={handleAddTransaction}
           >
-            <i className="fa-solid fa-plus" aria-hidden="true"></i>
+            <Plus size={16} />
             Add New
           </button>
         </div>
+      </div>
+      <div className="molding-table-filters">
+        {/* FINANCIAL YEAR */}
+        <div className="sales-monthly-filter-group">
+          <label>Financial Year</label>
+
+          <select
+            value={selectedFinancialYear}
+            onChange={(event) => setSelectedFinancialYear(event.target.value)}
+          >
+            {financialYearOptions.map((year) => (
+              <option key={year.value} value={year.value}>
+                {year.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* FROM MONTH */}
+        <div className="sales-monthly-filter-group">
+          <label>From Month</label>
+
+          <select
+            value={selectedFromMonth}
+            onChange={(event) =>
+              setSelectedFromMonth(Number(event.target.value))
+            }
+          >
+            {fiscalMonths.map((month) => (
+              <option key={month.value} value={month.value}>
+                {month.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* TO MONTH */}
+        <div className="sales-monthly-filter-group">
+          <label>To Month</label>
+
+          <select
+            value={selectedToMonth}
+            onChange={(event) => setSelectedToMonth(Number(event.target.value))}
+          >
+            {fiscalMonths.map((month) => (
+              <option
+                key={month.value}
+                value={month.value}
+                disabled={
+                  getFiscalMonthIndex(getMonthValue(month)) <
+                  getFiscalMonthIndex(selectedFromMonth)
+                }
+              >
+                {month.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="sales-monthly-filter-group">
+          <label>Customer</label>
+          <select
+            value={selectedCustomer}
+            onChange={(event) => setSelectedCustomer(event.target.value)}
+          >
+            {customerOptions.map((customer) => (
+              <option key={customer} value={customer}>
+                {customer}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="sales-monthly-filter-group">
+          <label>Sub Category</label>
+          <select
+            value={selectedSubCategory}
+            onChange={(event) => setSelectedSubCategory(event.target.value)}
+          >
+            {subCategoryOptions.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="sales-monthly-filter-group">
+          <label>Part No</label>
+          <select
+            value={selectedPartNo}
+            onChange={(event) => setSelectedPartNo(event.target.value)}
+          >
+            {partOptions.map((part) => (
+              <option key={part} value={part}>
+                {part}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="sales-monthly-filter-group">
+          <label>Total Mfg P/L</label>
+          <select
+            value={selectedProfitLoss}
+            onChange={(event) => setSelectedProfitLoss(event.target.value)}
+          >
+            <option value="All">All</option>
+            <option value="Profit">Profit</option>
+            <option value="Loss">Loss</option>
+          </select>
+        </div>
+
+        <button
+          type="button"
+          className="molding-apply-filter-btn"
+          onClick={handleApplyFilters}
+          disabled={isApplyingFilters}
+        >
+          <RefreshCw
+            size={15}
+            className={isApplyingFilters ? "molding-apply-spin" : ""}
+          />
+          {isApplyingFilters ? "Loading..." : "Apply"}
+        </button>
       </div>
 
       {/* TABLE CARD */}
       <div className="molding-table-card">
         {/* TABLE HEADER */}
         <div className="table-header">
-          <h3>Transactions</h3>
-          <span className="transaction-count-range">
-            <span className="selected-month-range">
-              <span>Period - </span>
-              {getSelectedMonthLabel(
-                salesFinancialYear,
-                salesFromMonth,
-                salesToMonth,
+          <div className="table-header-left">
+            <h3>Transactions</h3>
+            {/* SEARCH */}
+            <div className="moldingb-search-box">
+              <Search size={16} className="molding-search-icon" />
+
+              <input
+                type="text"
+                placeholder="Search transactions..."
+                value={searchText}
+                onChange={(event) => setSearchText(event.target.value)}
+              />
+
+              {searchText && (
+                <button
+                  type="button"
+                  className="molding-search-clear"
+                  onClick={() => setSearchText("")}
+                  aria-label="Clear search"
+                >
+                  <X size={15} />
+                </button>
               )}
-            </span>
-            <span className="transaction-count-range">
-              {transactions.length} Transactions
-            </span>
-          </span>
-        </div>
-
-        {/* TABLE SCROLL AREA */}
-        <div className="molding-table-scroll">
-          <table className="molding-table">
-            {/* TABLE HEADER */}
-            <thead>
-              <tr>
-                <th>TR ID</th>
-                <th>Customer Name</th>
-                <th>Prod Unit</th>
-                <th>Billing Unit</th>
-                <th>Subcategory</th>
-                <th>Part No</th>
-                <th>Mfg W/O Margin</th>
-                <th>Mfg With Margin</th>
-                <th>Sale Cost</th>
-                <th>Extra P/L</th>
-                <th>P/L VS Mfg Cost</th>
-                <th>Monthly Qty</th>
-                <th>Total Mfg P/L</th>
-                <th>Extra P/L Total</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-
-            {/* TABLE BODY */}
-            <tbody>
-              {/* LOADING */}
-              {loading ? (
-                <tr>
-                  <td colSpan="16" className="no-data">
-                    Loading transactions...
-                  </td>
-                </tr>
-              ) : transactions.length === 0 ? (
-                /* NO DATA */
-                <tr>
-                  <td colSpan="16" className="no-data">
-                    No transactions found
-                  </td>
-                </tr>
-              ) : (
-                /* PAGINATED DATA */
-                paginatedTransactions.map((transaction) => {
-                  // SALES MONTHLY MATCH
-                  const salesKey = `${normalizeKey(
-                    transaction.part_no,
-                  )}||${normalizeKey(transaction.billing_unit)}`;
-
-                  const salesMonthly = salesMonthlyByTransaction.get(salesKey);
-
-                  // SELL COST
-                  const customerSalesCost = salesMonthly?.hasData
-                    ? Number(salesMonthly.weightedAverageSellCost || 0)
-                    : Number(transaction.customer_sales_cost || 0);
-
-                  // MONTHLY QTY
-                  const monthlyQty = salesMonthly?.hasData
-                    ? Number(salesMonthly.totalQty || 0)
-                    : Number(transaction.monthly_quantity || 0);
-
-                  // EXISTING CALCULATIONS
-                  const extra_profit =
-                    customerSalesCost - Number(transaction.part_cost || 0);
-                  const profit_vs_mfg_cost =
-                    customerSalesCost - Number(transaction.subtotal_a || 0);
-                  const extra_monthlyProfitLoss = extra_profit * monthlyQty;
-                  const monthlyProfitLoss = profit_vs_mfg_cost * monthlyQty;
-
-                  return (
-                    <tr key={transaction.transaction_id}>
-                      {/* TRANSACTION ID */}
-                      <td className="transaction-id">
-                        {transaction.transaction_id}
-                      </td>
-
-                      {/* CUSTOMER */}
-                      <td className="customer-name">
-                        {transaction.customer_name}
-                      </td>
-
-                      {/* PRODUCTION UNIT */}
-                      <td className="production-unit">
-                        {transaction.production_unit}
-                      </td>
-
-                      {/* BILLING UNIT */}
-                      <td className="billing-unit">
-                        {transaction.billing_unit}
-                      </td>
-
-                      {/* SUBCATEGORY */}
-                      <td className="sub-category">
-                        {transaction.sub_category}
-                      </td>
-
-                      {/* PART NO */}
-                      <td className="part-no">{transaction.part_no}</td>
-
-                      {/* MFG W/O MARGIN */}
-                      <td className="part-cost">
-                        {Number(transaction.subtotal_a || 0).toLocaleString(
-                          "en-IN",
-                          {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0,
-                          },
-                        )}
-                      </td>
-
-                      {/* MFG WITH MARGIN */}
-                      <td className="part-cost">
-                        {Number(transaction.part_cost || 0).toLocaleString(
-                          "en-IN",
-                          {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0,
-                          },
-                        )}
-                      </td>
-
-                      {/* SELL COST */}
-                      <td className="sell-cost">
-                        {customerSalesCost.toLocaleString("en-IN", {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0,
-                        })}
-                      </td>
-
-                      {/* EXTRA P/L */}
-                      <td className="profit-loss">
-                        <span className={extra_profit >= 0 ? "profit" : "loss"}>
-                          {extra_profit >= 0 ? "+" : "-"}
-                          {Math.abs(extra_profit).toLocaleString("en-IN", {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0,
-                          })}
-                        </span>
-                      </td>
-
-                      {/* P/L VS MFG COST */}
-                      <td className="profit-loss">
-                        <span
-                          className={
-                            profit_vs_mfg_cost >= 0 ? "profit" : "loss"
-                          }
-                        >
-                          {profit_vs_mfg_cost >= 0 ? "+" : "-"}
-                          {Math.abs(profit_vs_mfg_cost).toLocaleString(
-                            "en-IN",
-                            {
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 0,
-                            },
-                          )}
-                        </span>
-                      </td>
-
-                      {/* MONTHLY QTY */}
-                      <td className="monthly-qty">
-                        {monthlyQty.toLocaleString("en-IN")}
-                      </td>
-
-                      {/* TOTAL MFG P/L */}
-                      <td className="monthly-profit-loss">
-                        <span
-                          className={monthlyProfitLoss >= 0 ? "profit" : "loss"}
-                        >
-                          {monthlyProfitLoss >= 0 ? "+" : "-"}
-                          {Math.abs(monthlyProfitLoss).toLocaleString("en-IN", {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0,
-                          })}
-                        </span>
-                      </td>
-
-                      {/* EXTRA P/L TOTAL */}
-                      <td className="monthly-profit-loss">
-                        <span
-                          className={
-                            extra_monthlyProfitLoss >= 0 ? "profit" : "loss"
-                          }
-                        >
-                          {extra_monthlyProfitLoss >= 0 ? "+" : "-"}
-                          {Math.abs(extra_monthlyProfitLoss).toLocaleString(
-                            "en-IN",
-                            {
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 0,
-                            },
-                          )}
-                        </span>
-                      </td>
-
-                      {/* STATUS */}
-                      <td className="status-cell">
-                        <span
-                          className={`status ${String(
-                            transaction.status || "",
-                          ).toLowerCase()}`}
-                        >
-                          {transaction.status}
-                        </span>
-                      </td>
-
-                      {/* ACTION */}
-                      <td className="action-cell">
-                        <button
-                          type="button"
-                          className="open-btn"
-                          onClick={() =>
-                            handleOpenTransaction(transaction.transaction_id)
-                          }
-                        >
-                          Open
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* PAGINATION */}
-        {!loading && totalRecords > 0 && (
-          <div className="sales-pagination">
-            {/* ROWS PER PAGE */}
-            <div className="records-per-page">
-              <label>Rows:</label>
-
-              <select
-                value={recordsPerPage}
-                onChange={handleRecordsPerPageChange}
-              >
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </div>
-
-            {/* PAGE CONTROLS */}
-            <div className="pagination-controls">
-              {/* FIRST PAGE */}
-              <button
-                type="button"
-                className="pagination-arrow"
-                onClick={() => goToPage(1)}
-                disabled={currentPage === 1}
-                title="First Page"
-              >
-                «
-              </button>
-
-              {/* PREVIOUS PAGE */}
-              <button
-                type="button"
-                className="pagination-arrow"
-                onClick={goToPreviousPage}
-                disabled={currentPage === 1}
-                title="Previous Page"
-              >
-                ‹
-              </button>
-
-              {/* PAGE NUMBERS */}
-              <div className="page-numbers">
-                {getPageNumbers().map((page) => (
-                  <button
-                    key={page}
-                    type="button"
-                    className={
-                      currentPage === page
-                        ? "pagination-page active"
-                        : "pagination-page"
-                    }
-                    onClick={() => goToPage(page)}
-                  >
-                    {page}
-                  </button>
-                ))}
-              </div>
-
-              {/* NEXT PAGE */}
-              <button
-                type="button"
-                className="pagination-arrow"
-                onClick={goToNextPage}
-                disabled={currentPage === totalPages}
-                title="Next Page"
-              >
-                ›
-              </button>
-
-              {/* LAST PAGE */}
-              <button
-                type="button"
-                className="pagination-arrow"
-                onClick={() => goToPage(totalPages)}
-                disabled={currentPage === totalPages}
-                title="Last Page"
-              >
-                »
-              </button>
             </div>
           </div>
-        )}
+
+          <div className="table-header-right">
+            {/* PERIOD + COUNT */}
+            <span className="transaction-count-range">
+              <span className="selected-month-range">
+                <span>Period - </span>
+
+                {getSelectedMonthLabel(
+                  salesFinancialYear,
+                  salesFromMonth,
+                  salesToMonth,
+                )}
+              </span>
+
+              <span className="transaction-count-range">
+                {filteredTableRows.length} Transactions
+              </span>
+            </span>
+          </div>
+        </div>
+
+        {/* DATA TABLE */}
+        <div className="molding-table-scroll">
+          <DataTable
+            className="molding-data-table"
+            columns={moldingColumns}
+            data={filteredTableRows}
+            customStyles={moldingDataTableStyles}
+            progressPending={loading}
+            progressComponent={
+              <div className="no-data">Loading transactions...</div>
+            }
+            noDataComponent={
+              <div className="no-data">No transactions found</div>
+            }
+            pagination
+            paginationPerPage={10}
+            paginationRowsPerPageOptions={[10, 25, 50, 100]}
+            paginationComponentOptions={{
+              rowsPerPageText: "Rows:",
+              rangeSeparatorText: "of",
+              noRowsPerPage: false,
+              selectAllRowsItem: false,
+            }}
+            persistTableHead
+            highlightOnHover
+            responsive={false}
+            dense
+          />
+        </div>
       </div>
     </div>
   );

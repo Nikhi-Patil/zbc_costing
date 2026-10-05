@@ -1,5 +1,4 @@
 import express from "express";
-
 import {
     saveCostingEntry,
     getAllCostingEntries,
@@ -8,43 +7,21 @@ import {
     removeCostingEntry
 } from "../controllers/costingEntryController.js";
 
-
 const router = express.Router();
 
-
 // CREATE
-router.post(
-    "/",
-    saveCostingEntry
-);
-
+router.post("/", saveCostingEntry);
 
 // GET ALL
-router.get(
-    "/",
-    getAllCostingEntries
-);
-
+router.get("/", getAllCostingEntries);
 
 // GET ONE
-router.get(
-    "/:entryId",
-    getSingleCostingEntry
-);
-
+router.get("/:entryId", getSingleCostingEntry);
 
 // UPDATE
-router.put(
-    "/:entryId",
-    editCostingEntry
-);
-
+router.put("/:entryId", editCostingEntry);
 
 // DELETE
-router.delete(
-    "/:entryId",
-    removeCostingEntry
-);
-
+router.delete("/:entryId", removeCostingEntry);
 
 export default router;

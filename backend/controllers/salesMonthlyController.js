@@ -55,6 +55,135 @@ export const getSalesMonthlyReport = async (req, res) => {
     }
 };
 
+/* GET PREVIOUS MONTH SALES FOR COSTING */
+export const getPreviousMonthSales = async (req, res) => {
+    try {
+        const {
+            partNo,
+            financialYear,
+            month,
+        } = req.query;
+
+        if (!partNo || !financialYear || !month) {
+            return res.status(400).json({
+                success: false,
+                message: "Part No, Financial Year and Month are required",
+            });
+        }
+
+        const currentMonth = Number(month);
+
+        if (
+            !Number.isInteger(currentMonth) ||
+            currentMonth < 1 ||
+            currentMonth > 12
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Month",
+            });
+        }
+
+        /*
+         * Example:
+         *
+         * April 2026  -> March 2026
+         * January 2027 -> December 2026
+         */
+
+        let previousMonth;
+        let previousFinancialYear;
+
+        if (currentMonth === 1) {
+            // January -> December of previous FY
+            previousMonth = 12;
+
+            const startYear = Number(
+                String(financialYear).split("-")[0]
+            );
+
+            previousFinancialYear = `${startYear - 1}-${String(startYear - 1 + 1).slice(-2)}`;
+        } else {
+            previousMonth = currentMonth - 1;
+
+            /*
+             * If current month is April,
+             * previous month is March of previous FY.
+             */
+            if (currentMonth === 4) {
+                const startYear = Number(
+                    String(financialYear).split("-")[0]
+                );
+
+                previousFinancialYear = `${startYear - 1}-${String(startYear).slice(-2)}`;
+            } else {
+                previousFinancialYear = String(financialYear).trim();
+            }
+        }
+
+        /*
+         * If multiple records exist for the same Part/FY/Month,
+         * take the record having the maximum Qty.
+         */
+        const [rows] = await zbcDB.query(
+            `
+            SELECT
+                id,
+                part_no,
+                part_name,
+                financial_year,
+                month,
+                qty,
+                sell_rate
+            FROM sales_monthly
+            WHERE LOWER(TRIM(part_no)) = LOWER(TRIM(?))
+              AND financial_year = ?
+              AND month = ?
+            ORDER BY qty DESC, id DESC
+            LIMIT 1
+            `,
+            [
+                String(partNo).trim(),
+                previousFinancialYear,
+                previousMonth,
+            ]
+        );
+
+        if (rows.length === 0) {
+            return res.json({
+                success: true,
+                found: false,
+                data: null,
+                previousFinancialYear,
+                previousMonth,
+            });
+        }
+
+        return res.json({
+            success: true,
+            found: true,
+            previousFinancialYear,
+            previousMonth,
+            data: {
+                qty: rows[0].qty,
+                sell_rate: rows[0].sell_rate,
+            },
+        });
+
+    } catch (error) {
+        console.error(
+            "Previous Month Sales error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch previous month sales",
+            error: error.message,
+        });
+    }
+};
+
 /* GET ONE SALES MONTHLY RECORD */
 export const getSalesMonthlyById = async (req, res) => {
     try {
@@ -292,15 +421,7 @@ export const createSalesMonthly = async (req, res) => {
                 month,
                 qty,
                 sell_rate
-            )VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE
-                part_no = VALUES(part_no),
-                part_name = VALUES(part_name),
-                unit_id = VALUES(unit_id),
-                unit = VALUES(unit),
-                qty = VALUES(qty),
-                sell_rate = VALUES(sell_rate),
-                updated_at = CURRENT_TIMESTAMP`,
+            )VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 part.id,
                 part.part_no,
@@ -361,60 +482,51 @@ export const bulkCreateSalesMonthly = async (req, res) => {
     let connection;
 
     try {
-        const {
-            financialYear,
-            entries,
-        } = req.body;
+        const { financialYear, entries } = req.body;
 
         /* -------------------------------------------------
            BASIC VALIDATION
         ------------------------------------------------- */
 
-        if (
-            !financialYear ||
-            !String(financialYear).trim()
-        ) {
+        if (!Array.isArray(entries) || entries.length === 0) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Financial Year is required",
-            });
-        }
-
-        if (
-            !Array.isArray(entries) ||
-            entries.length === 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "No bulk entries received",
+                message: "No bulk entries received",
             });
         }
 
         if (entries.length > 5000) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Maximum 5000 records can be uploaded at once.",
+                message: "Maximum 5000 records can be uploaded at once.",
             });
         }
 
-        const selectedFinancialYear =
-            String(financialYear).trim();
+        /*
+         * financialYear is now optional at request level.
+         *
+         * Each Excel row should contain:
+         * entry.financialYear
+         *
+         * If the frontend still sends a general financialYear,
+         * it will be used as fallback when a row does not contain FY.
+         */
+        const fallbackFinancialYear =
+            financialYear && String(financialYear).trim()
+                ? String(financialYear).trim()
+                : null;
 
         /* -------------------------------------------------
            LOAD PART MASTER ONCE
         ------------------------------------------------- */
 
-        const [partRows] =
-            await adminDB.query(`
-                SELECT
-                    id,
-                    part_no,
-                    part_name
-                FROM part_master
-            `);
+        const [partRows] = await adminDB.query(`
+            SELECT
+                id,
+                part_no,
+                part_name
+            FROM part_master
+        `);
 
         const partMap = new Map();
 
@@ -431,13 +543,12 @@ export const bulkCreateSalesMonthly = async (req, res) => {
            LOAD UNIT MASTER ONCE
         ------------------------------------------------- */
 
-        const [unitRows] =
-            await adminDB.query(`
-                SELECT
-                    id,
-                    unit
-                FROM unit_master
-            `);
+        const [unitRows] = await adminDB.query(`
+            SELECT
+                id,
+                unit
+            FROM unit_master
+        `);
 
         const unitMap = new Map();
 
@@ -458,291 +569,309 @@ export const bulkCreateSalesMonthly = async (req, res) => {
         const errors = [];
 
         /*
-         * Duplicate detection inside uploaded
-         * Excel file.
+         * Duplicate detection inside uploaded Excel.
          *
-         * Your database unique key is:
+         * Database identity:
          *
          * part_id
          * unit_id
          * month
          * financial_year
+         *
+         * Therefore the same Part + Unit + Month can exist
+         * in different Financial Years.
          */
 
         const duplicateMap = new Map();
 
-        entries.forEach(
-            (entry, index) => {
-                const excelRow =
-                    Number(entry.excelRow) ||
-                    index + 2;
+        entries.forEach((entry, index) => {
+            const excelRow =
+                Number(entry.excelRow) || index + 2;
 
-                const partNo =
-                    String(
-                        entry.partNo ??
-                        entry.part_no ??
-                        ""
-                    ).trim();
+            const partNo = String(
+                entry.partNo ??
+                entry.part_no ??
+                ""
+            ).trim();
 
-                const partName =
-                    String(
-                        entry.partName ??
-                        entry.part_name ??
-                        ""
-                    ).trim();
+            const partName = String(
+                entry.partName ??
+                entry.part_name ??
+                ""
+            ).trim();
 
-                const unit =
-                    String(
-                        entry.unit ?? ""
-                    ).trim();
+            const unit = String(
+                entry.unit ?? ""
+            ).trim();
 
-                const month =
-                    Number(entry.month);
+            const month = Number(entry.month);
 
-                const qty =
-                    entry.qty === null ||
-                        entry.qty === undefined ||
-                        entry.qty === ""
-                        ? null
-                        : Number(entry.qty);
+            const qty =
+                entry.qty === null ||
+                    entry.qty === undefined ||
+                    entry.qty === ""
+                    ? null
+                    : Number(entry.qty);
 
-                const sellRate =
-                    entry.sellRate === null ||
-                        entry.sellRate === undefined ||
-                        entry.sellRate === ""
-                        ? null
-                        : Number(entry.sellRate);
+            const sellRate =
+                entry.sellRate === null ||
+                    entry.sellRate === undefined ||
+                    entry.sellRate === ""
+                    ? null
+                    : Number(entry.sellRate);
 
-                /* -----------------------------------------
-                   PART NO.
-                ----------------------------------------- */
+            /*
+             * FINANCIAL YEAR
+             *
+             * First take Financial Year from Excel row.
+             * If missing, use the old frontend dropdown value
+             * as fallback.
+             */
+            const rowFinancialYear =
+                entry.financialYear !== undefined &&
+                    entry.financialYear !== null &&
+                    String(entry.financialYear).trim() !== ""
+                    ? String(entry.financialYear).trim()
+                    : fallbackFinancialYear;
 
-                if (!partNo) {
-                    errors.push({
-                        row: excelRow,
-                        message:
-                            "Part No. is required",
-                    });
+            /* -----------------------------------------
+               FINANCIAL YEAR
+            ----------------------------------------- */
 
-                    return;
-                }
-
-                const part =
-                    partMap.get(
-                        partNo.toLowerCase()
-                    );
-
-                if (!part) {
-                    errors.push({
-                        row: excelRow,
-                        partNo,
-                        message:
-                            `Part No. '${partNo}' was not found in Part Master`,
-                    });
-
-                    return;
-                }
-
-                /* -----------------------------------------
-                   PART NAME
-                ----------------------------------------- */
-
-                if (!partName) {
-                    errors.push({
-                        row: excelRow,
-                        partNo,
-                        message:
-                            "Part Name is required",
-                    });
-
-                    return;
-                }
-
-                /*
-                 * IMPORTANT:
-                 *
-                 * We use Part Master as the authoritative
-                 * source for the saved part name.
-                 *
-                 * This prevents an incorrect name from
-                 * being stored against a valid Part No.
-                 */
-
-                const finalPartName =
-                    part.part_name ||
-                    partName ||
-                    null;
-
-                /* -----------------------------------------
-                   UNIT
-                ----------------------------------------- */
-
-                if (!unit) {
-                    errors.push({
-                        row: excelRow,
-                        partNo,
-                        message:
-                            "Unit is required",
-                    });
-
-                    return;
-                }
-
-                const unitMaster =
-                    unitMap.get(
-                        unit.toLowerCase()
-                    );
-
-                if (!unitMaster) {
-                    errors.push({
-                        row: excelRow,
-                        partNo,
-                        message:
-                            `Unit '${unit}' was not found in Unit Master`,
-                    });
-
-                    return;
-                }
-
-                /* -----------------------------------------
-                   MONTH
-                ----------------------------------------- */
-
-                if (
-                    !Number.isInteger(month) ||
-                    month < 1 ||
-                    month > 12
-                ) {
-                    errors.push({
-                        row: excelRow,
-                        partNo,
-                        message:
-                            "Month must be between 1 and 12",
-                    });
-
-                    return;
-                }
-
-                /* -----------------------------------------
-                   QTY
-                ----------------------------------------- */
-
-                if (
-                    qty !== null &&
-                    (
-                        !Number.isFinite(qty) ||
-                        qty < 0
-                    )
-                ) {
-                    errors.push({
-                        row: excelRow,
-                        partNo,
-                        message:
-                            "Qty must be a valid non-negative number",
-                    });
-
-                    return;
-                }
-
-                /* -----------------------------------------
-                   SELLS RATE
-                ----------------------------------------- */
-
-                if (
-                    sellRate !== null &&
-                    (
-                        !Number.isFinite(
-                            sellRate
-                        ) ||
-                        sellRate < 0
-                    )
-                ) {
-                    errors.push({
-                        row: excelRow,
-                        partNo,
-                        message:
-                            "Sells Rate must be a valid non-negative number",
-                    });
-
-                    return;
-                }
-
-                /* -----------------------------------------
-                   VALUE REQUIRED
-                ----------------------------------------- */
-
-                if (
-                    qty === null &&
-                    sellRate === null
-                ) {
-                    errors.push({
-                        row: excelRow,
-                        partNo,
-                        message:
-                            "Qty or Sells Rate is required",
-                    });
-
-                    return;
-                }
-
-                /* -----------------------------------------
-                   DUPLICATE
-                ----------------------------------------- */
-
-                const duplicateKey =
-                    `${part.id}||${unitMaster.id}||${month}||${selectedFinancialYear}`;
-
-                if (
-                    duplicateMap.has(
-                        duplicateKey
-                    )
-                ) {
-                    errors.push({
-                        row: excelRow,
-                        partNo,
-                        message:
-                            "Duplicate Part + Unit + Month found in upload",
-                    });
-
-                    return;
-                }
-
-                duplicateMap.set(
-                    duplicateKey,
-                    true
-                );
-
-                /* -----------------------------------------
-                   VALID RECORD
-                ----------------------------------------- */
-
-                validatedEntries.push({
-                    partId:
-                        part.id,
-
-                    partNo:
-                        part.part_no,
-
-                    partName:
-                        finalPartName,
-
-                    unitId:
-                        unitMaster.id,
-
-                    unit:
-                        unitMaster.unit,
-
-                    financialYear:
-                        selectedFinancialYear,
-
-                    month,
-
-                    qty,
-
-                    sellRate,
+            if (!rowFinancialYear) {
+                errors.push({
+                    row: excelRow,
+                    partNo,
+                    message: "Financial Year is required",
                 });
+
+                return;
             }
-        );
+
+            /*
+             * Optional format validation.
+             *
+             * Expected:
+             * 2026-27
+             * 2027-28
+             */
+            if (!/^\d{4}-\d{2}$/.test(rowFinancialYear)) {
+                errors.push({
+                    row: excelRow,
+                    partNo,
+                    message:
+                        `Invalid Financial Year '${rowFinancialYear}'. Expected format YYYY-YY.`,
+                });
+
+                return;
+            }
+
+            /* -----------------------------------------
+               PART NO.
+            ----------------------------------------- */
+
+            if (!partNo) {
+                errors.push({
+                    row: excelRow,
+                    message: "Part No. is required",
+                });
+
+                return;
+            }
+
+            const part = partMap.get(
+                partNo.toLowerCase()
+            );
+
+            if (!part) {
+                errors.push({
+                    row: excelRow,
+                    partNo,
+                    message:
+                        `Part No. '${partNo}' was not found in Part Master`,
+                });
+
+                return;
+            }
+
+            /* -----------------------------------------
+               PART NAME
+            ----------------------------------------- */
+
+            if (!partName) {
+                errors.push({
+                    row: excelRow,
+                    partNo,
+                    message: "Part Name is required",
+                });
+
+                return;
+            }
+
+            /*
+             * Part Master remains the authoritative
+             * source for saved Part Name.
+             */
+            const finalPartName =
+                part.part_name ||
+                partName ||
+                null;
+
+            /* -----------------------------------------
+               UNIT
+            ----------------------------------------- */
+
+            if (!unit) {
+                errors.push({
+                    row: excelRow,
+                    partNo,
+                    message: "Unit is required",
+                });
+
+                return;
+            }
+
+            const unitMaster = unitMap.get(
+                unit.toLowerCase()
+            );
+
+            if (!unitMaster) {
+                errors.push({
+                    row: excelRow,
+                    partNo,
+                    message:
+                        `Unit '${unit}' was not found in Unit Master`,
+                });
+
+                return;
+            }
+
+            /* -----------------------------------------
+               MONTH
+            ----------------------------------------- */
+
+            if (
+                !Number.isInteger(month) ||
+                month < 1 ||
+                month > 12
+            ) {
+                errors.push({
+                    row: excelRow,
+                    partNo,
+                    message:
+                        "Month must be between 1 and 12",
+                });
+
+                return;
+            }
+
+            /* -----------------------------------------
+               QTY
+            ----------------------------------------- */
+
+            if (
+                qty !== null &&
+                (
+                    !Number.isFinite(qty) ||
+                    qty < 0
+                )
+            ) {
+                errors.push({
+                    row: excelRow,
+                    partNo,
+                    message:
+                        "Qty must be a valid non-negative number",
+                });
+
+                return;
+            }
+
+            /* -----------------------------------------
+               SELLS RATE
+            ----------------------------------------- */
+
+            if (
+                sellRate !== null &&
+                (
+                    !Number.isFinite(sellRate) ||
+                    sellRate < 0
+                )
+            ) {
+                errors.push({
+                    row: excelRow,
+                    partNo,
+                    message:
+                        "Sells Rate must be a valid non-negative number",
+                });
+
+                return;
+            }
+
+            /* -----------------------------------------
+               VALUE REQUIRED
+            ----------------------------------------- */
+
+            if (
+                qty === null &&
+                sellRate === null
+            ) {
+                errors.push({
+                    row: excelRow,
+                    partNo,
+                    message:
+                        "Qty or Sells Rate is required",
+                });
+
+                return;
+            }
+
+            /* -----------------------------------------
+               DUPLICATE INSIDE EXCEL
+            ----------------------------------------- */
+
+            const duplicateKey =
+                `${part.id}||${unitMaster.id}||${month}||${rowFinancialYear}||${sellRate}`;
+
+            if (duplicateMap.has(duplicateKey)) {
+                errors.push({
+                    row: excelRow,
+                    partNo,
+                    message:
+                        "Duplicate Part + Unit + Month + Financial Year + Sells Rate found in upload",
+                });
+
+                return;
+            }
+
+            duplicateMap.set(
+                duplicateKey,
+                true
+            );
+
+            /* -----------------------------------------
+               VALID RECORD
+            ----------------------------------------- */
+
+            validatedEntries.push({
+                partId: part.id,
+
+                partNo: part.part_no,
+
+                partName: finalPartName,
+
+                unitId: unitMaster.id,
+
+                unit: unitMaster.unit,
+
+                financialYear: rowFinancialYear,
+
+                month,
+
+                qty,
+
+                sellRate,
+            });
+        });
 
         /* -------------------------------------------------
            DO NOT SAVE IF ANY VALIDATION ERROR EXISTS
@@ -754,8 +883,7 @@ export const bulkCreateSalesMonthly = async (req, res) => {
                 message:
                     "Bulk upload contains invalid records.",
                 errors,
-                totalErrors:
-                    errors.length,
+                totalErrors: errors.length,
             });
         }
 
@@ -772,9 +900,7 @@ export const bulkCreateSalesMonthly = async (req, res) => {
            INSERT / UPDATE
         ------------------------------------------------- */
 
-        for (
-            const entry of validatedEntries
-        ) {
+        for (const entry of validatedEntries) {
             await connection.query(
                 `
                 INSERT INTO sales_monthly (
@@ -789,16 +915,6 @@ export const bulkCreateSalesMonthly = async (req, res) => {
                     sell_rate
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-
-                ON DUPLICATE KEY UPDATE
-                    part_no = VALUES(part_no),
-                    part_name = VALUES(part_name),
-                    unit_id = VALUES(unit_id),
-                    unit = VALUES(unit),
-                    qty = VALUES(qty),
-                    sell_rate = VALUES(sell_rate),
-                    updated_at =
-                        CURRENT_TIMESTAMP
                 `,
                 [
                     entry.partId,
@@ -827,7 +943,9 @@ export const bulkCreateSalesMonthly = async (req, res) => {
             totalRecords:
                 validatedEntries.length,
         });
+
     } catch (error) {
+
         /* -------------------------------------------------
            ROLLBACK
         ------------------------------------------------- */
@@ -852,14 +970,13 @@ export const bulkCreateSalesMonthly = async (req, res) => {
             success: false,
             message:
                 "Failed to save bulk Sales Monthly entries",
-            error:
-                error.message,
-            code:
-                error.code,
-            sqlState:
-                error.sqlState,
+            error: error.message,
+            code: error.code,
+            sqlState: error.sqlState,
         });
+
     } finally {
+
         if (connection) {
             connection.release();
         }

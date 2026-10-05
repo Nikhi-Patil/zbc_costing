@@ -1,10 +1,6 @@
 import adminDB from "../config/adminDB.js";
-
-const Part
- = {
-
+const Part = {
     getParts: async () => {
-
         const [rows] = await adminDB.query(`
             SELECT
                     p.id,
@@ -30,10 +26,7 @@ const Part
                     ON sd.unit_id = u.id
                 ORDER BY p.id DESC
         `);
-
         return rows;
     }
-
 };
-export default Part
-;
+export default Part;

@@ -3,13 +3,40 @@ import { useNavigate } from "react-router-dom";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 
+
+const getMonthYearLabel = (monthValue, financialYearValue) => {
+  const monthNumber = Number(monthValue);
+  const match = String(financialYearValue || "").match(/^(\d{4})-(\d{2})$/);
+
+  if (!match || monthNumber < 1 || monthNumber > 12) {
+    return "";
+  }
+
+  const startYear = Number(match[1]);
+  const year = monthNumber >= 4 ? startYear : startYear + 1;
+
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  return `${monthNames[monthNumber - 1]} ${year}`;
+};
+
 const CompoundMonthlyMaster = () => {
   const navigate = useNavigate();
 
-  // =====================================================
   // Financial Years
-  // =====================================================
-
   const financialYears = generateFinancialYears();
 
   const currentFinancialYear =
@@ -17,29 +44,18 @@ const CompoundMonthlyMaster = () => {
     financialYears[0]?.value ||
     "";
 
-  // =====================================================
   // State
-  // =====================================================
-
   const [financialYear, setFinancialYear] = useState(currentFinancialYear);
-
   const [data, setData] = useState([]);
-
   const [loading, setLoading] = useState(false);
-
   const [viewType, setViewType] = useState("qty");
-
   const [units, setUnits] = useState([]);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // =====================================================
   // Load Report + Units
-  // =====================================================
-
   useEffect(() => {
     fetchUnits();
   }, []);
@@ -48,18 +64,12 @@ const CompoundMonthlyMaster = () => {
     fetchReport();
   }, [financialYear]);
 
-  // =====================================================
   // Reset pagination when filters change
-  // =====================================================
-
   useEffect(() => {
     setCurrentPage(1);
   }, [financialYear, rowsPerPage]);
 
-  // =====================================================
   // Fetch Units
-  // =====================================================
-
   const fetchUnits = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/units`);
@@ -305,12 +315,16 @@ const CompoundMonthlyMaster = () => {
                     <th>Polymer Name</th>
                     <th>IM Code</th>
                     <th>Unit</th>
-
                     {months.map((month) => (
+                      <th key={month.value} className="month-col">
+                        {getMonthYearLabel(month.value, financialYear)}
+                      </th>
+                    ))}
+                    {/* {months.map((month) => (
                       <th key={month.value}>
                         {month.label} {viewType === "qty" ? "Qty" : "Rate"}
                       </th>
-                    ))}
+                    ))} */}
                   </tr>
                 </thead>
 

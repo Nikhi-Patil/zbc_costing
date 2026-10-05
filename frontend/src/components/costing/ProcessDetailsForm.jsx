@@ -4,6 +4,7 @@ import API_BASE_URL from "../../config/api";
 function ProcessDetailsForm({
   formData,
   transactionId,
+    readOnly = false,
   handleInputChange,
   handleMachineChange,
   handleTonnageChange,
@@ -40,7 +41,15 @@ function ProcessDetailsForm({
   );
 
   return (
-    <>
+    <fieldset
+      disabled={readOnly}
+      style={{
+        border: "none",
+        padding: 0,
+        margin: 0,
+        minWidth: 0,
+      }}
+    >
       <div className="card">
         <div className="card-header d-flex align-items-center">
           <h5 className="mb-0">
@@ -509,7 +518,7 @@ function ProcessDetailsForm({
           </div>
         </div>
       </div>
-    </>
+    </fieldset>
   );
 }
 

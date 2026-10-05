@@ -1,0 +1,1301 @@
+/* ============================================================
+   MOLDING BULK UPLOAD
+   Same compact UI style as Sales Monthly Bulk Upload
+   ============================================================ */
+
+.molding-bulk-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  background: #f5f7fa;
+  font-family: "Times New Roman", Times, serif;
+  color: #1f2937;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.molding-bulk-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.molding-bulk-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.bulk-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 34px;
+  padding: 0 14px;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+
+  background: #fff;
+  color: #334155;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.bulk-back-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+/* ============================================================
+   CONTROL CARD
+   ============================================================ */
+
+.molding-bulk-control-card {
+  width: 100%;
+  padding: 10px 0;
+  margin-bottom: 8px;
+
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.bulk-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bulk-control-group label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.bulk-control-group select {
+  width: 175px;
+  height: 38px;
+
+  padding: 0 10px;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+
+  background: #fff;
+  color: #334155;
+
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.bulk-control-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  margin-top: 2px;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.download-template-btn,
+.choose-file-btn {
+  height: 35px;
+  padding: 0 5px;
+
+  border-radius: 6px;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.download-template-btn {
+  background: #fff;
+  color: #006b6b;
+  border: 1px solid #008b8b;
+}
+
+.download-template-btn:hover {
+  background: #f0fdfa;
+}
+
+.choose-file-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #213f68;
+  color: #fff;
+  border: 1px solid #213f68;
+}
+
+.choose-file-btn:hover {
+  background: #183456;
+}
+
+.choose-file-btn input {
+  display: none;
+}
+
+.download-template-btn:disabled,
+.choose-file-btn:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   SELECTED FILE
+   ============================================================ */
+
+.selected-file {
+  display: inline-flex;
+  align-items: center;
+
+  max-width: 350px;
+  min-height: 34px;
+
+  padding: 0 10px;
+
+  border-radius: 4px;
+  background: #e2e2e2;
+  border: none;
+
+  color: #31577f;
+  font-size: 14px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   INFORMATION
+   ============================================================ */
+
+.sales-bulk-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 12px 14px;
+  margin: 0 0 12px;
+
+  border: 1px solid #d6e4f5;
+  border-radius: 6px;
+
+  background: #eef6ff;
+
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.sales-bulk-info strong {
+  color: #174b8a;
+}
+
+/* ============================================================
+   SUMMARY
+   ============================================================ */
+
+.molding-bulk-summary {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(130px, 1fr));
+  gap: 8px;
+
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.summary-box {
+  min-height: 60px;
+  box-sizing: border-box;
+
+  padding: 0px 16px;
+
+  background: #fff;
+  border: 1px solid #dfe5ec;
+  border-radius: 6px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.summary-box span {
+  display: block;
+  margin-bottom: 4px;
+
+  font-size: 13px;
+  color: #64748b;
+}
+
+.summary-box strong {
+  display: block;
+
+  font-size: 22px;
+  line-height: 1;
+
+  color: #1e293b;
+}
+
+.summary-box.valid {
+  border-color: #b7ebcc;
+}
+
+.summary-box.valid strong {
+  color: #008c4a;
+}
+
+.summary-box.invalid {
+  border-color: #ffc6c6;
+}
+
+.summary-box.invalid strong {
+  color: #dc2626;
+}
+
+/* ============================================================
+   TABLE CARD
+   ============================================================ */
+
+.molding-bulk-table-card {
+  width: 100%;
+  box-sizing: border-box;
+
+  background: transparent;
+  border: none;
+  border-radius: 0;
+
+  overflow: hidden;
+}
+
+.molding-bulk-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 2px 0 8px;
+
+  background: transparent;
+}
+
+.molding-bulk-table-header h3 {
+  margin: 0;
+
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.molding-bulk-table-header span {
+  display: block;
+  margin-top: 4px;
+
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* ============================================================
+   CLEAR BUTTON
+   ============================================================ */
+
+.clear-bulk-btn {
+  height: 38px;
+  padding: 0 15px;
+
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+
+  background: #fff;
+  color: #dc2626;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.clear-bulk-btn:hover {
+  background: #fff1f2;
+}
+
+/* ============================================================
+   TABLE SCROLL
+   ============================================================ */
+
+.molding-bulk-table-scroll {
+  width: 100%;
+
+  max-height: 58vh;
+
+  overflow-x: auto;
+  overflow-y: auto;
+
+  border-radius: 5px;
+
+  scrollbar-width: thin;
+}
+
+.molding-bulk-table-scroll::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.molding-bulk-table-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.molding-bulk-table-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+
+.molding-bulk-table {
+  width: max-content;
+  min-width: 100%;
+
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  background: #fff;
+}
+
+.molding-bulk-table th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+
+  padding: 9px 8px;
+
+  background: #eef2f7;
+  border-bottom: 1px solid #d8dee8;
+  border-right: 1px solid #e2e8f0;
+
+  color: #263b55;
+
+  font-family: "Times New Roman", Times, serif;
+  font-size: 12px;
+  font-weight: 700;
+
+  text-align: left;
+  white-space: nowrap;
+}
+
+.molding-bulk-table td {
+  padding: 5px 6px;
+
+  border-bottom: 1px solid #edf1f5;
+  border-right: 1px solid #edf1f5;
+
+  background: #fff;
+
+  color: #334155;
+  font-size: 12px;
+
+  vertical-align: middle;
+}
+
+.molding-bulk-table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+.molding-bulk-table tbody tr.bulk-invalid-row td {
+  background: #fff7f7;
+}
+
+/* ============================================================
+   COLUMN WIDTHS
+   ============================================================ */
+
+.molding-bulk-table th:nth-child(1),
+.molding-bulk-table td:nth-child(1) {
+  width: 45px;
+}
+
+.molding-bulk-table th:nth-child(2),
+.molding-bulk-table td:nth-child(2) {
+  width: 120px;
+}
+
+.molding-bulk-table th:nth-child(3),
+.molding-bulk-table td:nth-child(3) {
+  width: 120px;
+}
+
+.molding-bulk-table th:nth-child(4),
+.molding-bulk-table td:nth-child(4) {
+  width: 125px;
+}
+
+.molding-bulk-table th:nth-child(5),
+.molding-bulk-table td:nth-child(5) {
+  width: 120px;
+}
+
+.molding-bulk-table th:nth-child(6),
+.molding-bulk-table td:nth-child(6) {
+  width: 110px;
+}
+
+.molding-bulk-table th:nth-child(7),
+.molding-bulk-table td:nth-child(7) {
+  width: 80px;
+}
+
+.molding-bulk-table th:nth-child(8),
+.molding-bulk-table td:nth-child(8) {
+  width: 105px;
+}
+
+.molding-bulk-table th:nth-child(9),
+.molding-bulk-table td:nth-child(9) {
+  width: 90px;
+}
+
+.molding-bulk-table th:nth-child(10),
+.molding-bulk-table td:nth-child(10) {
+  width: 90px;
+}
+
+.molding-bulk-table th:nth-child(11),
+.molding-bulk-table td:nth-child(11) {
+  width: 110px;
+}
+
+.molding-bulk-table th:nth-child(12),
+.molding-bulk-table td:nth-child(12) {
+  width: 100px;
+}
+
+.molding-bulk-table th:nth-child(13),
+.molding-bulk-table td:nth-child(13) {
+  width: 110px;
+}
+
+.molding-bulk-table th:nth-child(14),
+.molding-bulk-table td:nth-child(14) {
+  width: 95px;
+}
+
+.molding-bulk-table th:nth-child(15),
+.molding-bulk-table td:nth-child(15) {
+  width: 95px;
+}
+
+.molding-bulk-table th:nth-child(16),
+.molding-bulk-table td:nth-child(16) {
+  width: 110px;
+}
+
+.molding-bulk-table th:nth-child(17),
+.molding-bulk-table td:nth-child(17) {
+  width: 105px;
+}
+
+.molding-bulk-table th:nth-child(18),
+.molding-bulk-table td:nth-child(18) {
+  width: 150px;
+}
+
+.molding-bulk-table th:nth-child(19),
+.molding-bulk-table td:nth-child(19) {
+  width: 60px;
+}
+
+/* ============================================================
+   SERIAL NUMBER
+   ============================================================ */
+
+.bulk-sr {
+  width: 45px;
+  min-width: 45px;
+  max-width: 45px;
+
+  text-align: center !important;
+  font-weight: 600;
+}
+
+/* ============================================================
+   INPUTS
+   ============================================================ */
+
+.bulk-edit-input,
+.bulk-month-select {
+  width: 100%;
+  height: 30px;
+
+  box-sizing: border-box;
+
+  padding: 4px 6px;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+
+  background: #fff;
+  color: #334155;
+
+  font-family: "Times New Roman", Times, serif;
+  font-size: 12px;
+
+  outline: none;
+}
+
+.bulk-edit-input:focus,
+.bulk-month-select:focus {
+  border-color: #5279a7;
+  box-shadow: 0 0 0 2px rgba(82, 121, 167, 0.12);
+}
+
+.bulk-edit-input[type="number"] {
+  text-align: right;
+}
+
+.bulk-month-select {
+  min-width: 90px;
+  cursor: pointer;
+}
+
+/* ============================================================
+   VALIDATION
+   ============================================================ */
+
+.bulk-error-cell,
+.bulk-error-col {
+  min-width: 180px;
+}
+
+.bulk-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  color: #b91c1c;
+
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.bulk-errors span {
+  display: block;
+}
+
+.valid-badge {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 24px;
+
+  padding: 2px 8px;
+
+  border-radius: 12px;
+
+  background: #e9f9ef;
+  border: 1px solid #b7ebcc;
+
+  color: #008c4a;
+
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   ACTION
+   ============================================================ */
+
+.bulk-action-cell,
+.bulk-action-col {
+  width: 55px;
+  min-width: 55px;
+
+  text-align: center !important;
+}
+
+.remove-row-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 32px;
+  height: 32px;
+
+  padding: 0;
+
+  border: 1px solid #fecaca;
+  border-radius: 5px;
+
+  background: #fff;
+  color: #dc2626;
+
+  font-family: Arial, sans-serif;
+  font-size: 17px;
+
+  cursor: pointer;
+}
+
+.remove-row-btn:hover {
+  background: #fff1f2;
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.bulk-empty-state {
+  min-height: 220px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  color: #64748b;
+  text-align: center;
+}
+
+.bulk-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 48px;
+  height: 48px;
+
+  margin-bottom: 10px;
+
+  border: 1px dashed #94a3b8;
+  border-radius: 50%;
+
+  color: #64748b;
+  font-size: 23px;
+}
+
+.bulk-empty-state h4 {
+  margin: 0 0 4px;
+
+  color: #475569;
+  font-size: 15px;
+}
+
+.bulk-empty-state p {
+  margin: 0;
+
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.molding-bulk-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  padding: 10px 0;
+}
+
+.bulk-cancel-btn,
+.bulk-save-btn {
+  height: 38px;
+
+  padding: 0 18px;
+
+  border-radius: 5px;
+
+  font-family: "Times New Roman", Times, serif;
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.bulk-cancel-btn {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #475569;
+}
+
+.bulk-cancel-btn:hover {
+  background: #f8fafc;
+}
+
+.bulk-save-btn {
+  border: 1px solid #11823b;
+  background: #11823b;
+  color: #fff;
+}
+
+.bulk-save-btn:hover {
+  background: #0d6d31;
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+
+.molding-bulk-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+
+  z-index: 99999;
+
+  min-width: 280px;
+  max-width: 420px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  padding: 14px 16px;
+
+  border-radius: 6px;
+
+  background: #1e293b;
+  color: #ffffff;
+
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18);
+
+  font-family: "Times New Roman", Times, serif;
+  font-size: 13px;
+  line-height: 1.4;
+
+  box-sizing: border-box;
+}
+
+.molding-bulk-toast.success {
+  background: #166534;
+}
+
+.molding-bulk-toast.error {
+  background: #b91c1c;
+}
+
+.molding-bulk-toast .toast-icon {
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+.molding-bulk-toast button {
+  flex-shrink: 0;
+
+  margin-left: auto;
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  color: #ffffff;
+
+  font-size: 20px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+.toast-icon {
+  font-weight: 700;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1000px) {
+  .molding-bulk-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .molding-bulk-page {
+    padding: 8px;
+  }
+
+  .molding-bulk-header {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .bulk-back-btn {
+    align-self: flex-start;
+  }
+
+  .bulk-control-actions {
+    width: 100%;
+  }
+
+  .download-template-btn,
+  .choose-file-btn {
+    width: 100%;
+  }
+
+  .selected-file {
+    max-width: 100%;
+  }
+
+  .molding-bulk-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .molding-bulk-table-scroll {
+    max-height: 55vh;
+  }
+
+  .molding-bulk-footer {
+    justify-content: stretch;
+  }
+
+  .bulk-cancel-btn,
+  .bulk-save-btn {
+    flex: 1;
+  }
+}
+
+/* =========================================================
+   CALCULATE & VALIDATE BUTTON
+========================================================= */
+
+.bulk-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bulk-calculate-btn {
+  height: 34px;
+  padding: 0 16px;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  font-family: "Times New Roman", serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.bulk-calculate-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.bulk-calculate-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   SAVE BUTTON - DISABLED
+========================================================= */
+
+.bulk-save-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   VALIDATION NOT CALCULATED
+========================================================= */
+
+.validation-pending {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   CALCULATED VALUES CARD
+========================================================= */
+
+.molding-calculated-card {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 12px;
+
+  background: transparent;
+  border: none;
+  border-radius: 0;
+
+  overflow: hidden;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.molding-calculated-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 2px 0 8px;
+
+  background: transparent;
+
+  gap: 12px;
+}
+
+.molding-calculated-header h3 {
+  margin: 0;
+
+  font-size: 22px;
+  font-weight: 700;
+
+  color: #1f2937;
+}
+
+.molding-calculated-header span {
+  display: block;
+
+  margin-top: 4px;
+
+  font-size: 13px;
+
+  color: #64748b;
+}
+
+/* =========================================================
+   CALCULATION STATUS
+========================================================= */
+
+.calculation-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 24px;
+
+  padding: 3px 9px;
+
+  border-radius: 12px;
+
+  font-family: "Times New Roman", Times, serif;
+  font-size: 11px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.calculation-status.success {
+  background: #e9f9ef;
+  border: 1px solid #b7ebcc;
+
+  color: #008c4a;
+}
+
+.calculation-status.error {
+  background: #fff1f2;
+  border: 1px solid #fecaca;
+
+  color: #dc2626;
+}
+
+/* =========================================================
+   TABLE SCROLL
+   Same behavior as bulk molding table
+========================================================= */
+
+.molding-calculated-scroll {
+  width: 100%;
+
+  max-height: 58vh;
+
+  overflow-x: auto;
+  overflow-y: auto;
+
+  border-radius: 5px;
+
+  scrollbar-width: thin;
+}
+
+.molding-calculated-scroll::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.molding-calculated-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.molding-calculated-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+/* =========================================================
+   CALCULATED TABLE
+========================================================= */
+
+.molding-calculated-table {
+  width: max-content;
+  min-width: 100%;
+
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  background: #fff;
+
+  font-family: "Times New Roman", Times, serif;
+}
+
+/* =========================================================
+   TABLE HEADER
+   Same as bulk molding table
+========================================================= */
+
+.molding-calculated-table th {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 5;
+
+  padding: 9px 8px;
+
+  background: #eef2f7;
+
+  border-bottom: 1px solid #d8dee8;
+  border-right: 1px solid #e2e8f0;
+
+  color: #263b55;
+
+  font-family: "Times New Roman", Times, serif;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  text-align: left;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   TABLE BODY
+   Same as bulk molding table
+========================================================= */
+
+.molding-calculated-table td {
+  padding: 5px 6px;
+
+  border-bottom: 1px solid #edf1f5;
+  border-right: 1px solid #edf1f5;
+
+  background: #fff;
+
+  color: #334155;
+
+  font-family: "Times New Roman", Times, serif;
+
+  font-size: 12px;
+
+  vertical-align: middle;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   ROW HOVER
+   Same as bulk molding table
+========================================================= */
+
+.molding-calculated-table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+/* =========================================================
+   INVALID CALCULATED ROW
+========================================================= */
+
+.molding-calculated-table tbody tr.calculated-invalid-row td {
+  background: #fff7f7;
+}
+
+/* =========================================================
+   COLUMN WIDTHS
+========================================================= */
+
+.molding-calculated-table th:nth-child(1),
+.molding-calculated-table td:nth-child(1) {
+  width: 45px;
+}
+
+.molding-calculated-table th:nth-child(2),
+.molding-calculated-table td:nth-child(2) {
+  width: 120px;
+}
+
+.molding-calculated-table th:nth-child(3),
+.molding-calculated-table td:nth-child(3) {
+  width: 120px;
+}
+
+.molding-calculated-table th:nth-child(4),
+.molding-calculated-table td:nth-child(4) {
+  width: 125px;
+}
+
+.molding-calculated-table th:nth-child(5),
+.molding-calculated-table td:nth-child(5) {
+  width: 120px;
+}
+
+.molding-calculated-table th:nth-child(6),
+.molding-calculated-table td:nth-child(6) {
+  width: 110px;
+}
+
+.molding-calculated-table th:nth-child(7),
+.molding-calculated-table td:nth-child(7) {
+  width: 80px;
+}
+
+.molding-calculated-table th:nth-child(8),
+.molding-calculated-table td:nth-child(8) {
+  width: 105px;
+}
+
+.molding-calculated-table th:nth-child(9),
+.molding-calculated-table td:nth-child(9) {
+  width: 90px;
+}
+
+.molding-calculated-table th:nth-child(10),
+.molding-calculated-table td:nth-child(10) {
+  width: 90px;
+}
+
+.molding-calculated-table th:nth-child(11),
+.molding-calculated-table td:nth-child(11) {
+  width: 110px;
+}
+
+.molding-calculated-table th:nth-child(12),
+.molding-calculated-table td:nth-child(12) {
+  width: 100px;
+}
+
+.molding-calculated-table th:nth-child(13),
+.molding-calculated-table td:nth-child(13) {
+  width: 110px;
+}
+
+.molding-calculated-table th:nth-child(14),
+.molding-calculated-table td:nth-child(14) {
+  width: 95px;
+}
+
+.molding-calculated-table th:nth-child(15),
+.molding-calculated-table td:nth-child(15) {
+  width: 95px;
+}
+
+.molding-calculated-table th:nth-child(16),
+.molding-calculated-table td:nth-child(16) {
+  width: 110px;
+}
+
+.molding-calculated-table th:nth-child(17),
+.molding-calculated-table td:nth-child(17) {
+  width: 105px;
+}
+
+/* =========================================================
+   CALCULATED VALUES
+========================================================= */
+
+.calculated-part-cost {
+  font-weight: 700;
+}
+
+.calculated-sales-cost {
+  font-weight: 700;
+}
+
+.calculated-profit {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.calculated-loss {
+  color: #dc2626;
+  font-weight: 700;
+}
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 768px) {
+  .bulk-footer-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .bulk-calculate-btn,
+  .bulk-save-btn {
+    flex: 1;
+    min-width: 150px;
+  }
+
+  .molding-calculated-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+@media (max-width: 768px) {
+  .molding-calculated-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 6px;
+  }
+
+  .molding-calculated-header h3 {
+    font-size: 19px;
+  }
+
+  .molding-calculated-scroll {
+    max-height: 55vh;
+  }
+}

@@ -1,11 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import TomSelect from "tom-select";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
-
 import API_BASE_URL from "../../config/api";
 
 /* BOP MANAGEMENT TABLE */
-
 const BopTable = ({
   bopList = [],
   updateBop,
@@ -43,7 +41,6 @@ const BopTable = ({
             : Array.isArray(result?.bops)
               ? result.bops
               : [];
-
         setBops(data);
       } catch (error) {
         console.error("Error fetching BOP master:", error);
@@ -120,8 +117,6 @@ const BopTable = ({
     updateBop(bop.id, "bopPartName", selectedBop.bop_part_name || "");
     updateBop(bop.id, "commodity", selectedBop.commodity || "");
     updateBop(bop.id, "suppliers", suppliers);
-
-    /* CLEAR PREVIOUS SUPPLIER */
     updateBop(bop.id, "supplierId", "");
   };
 
@@ -130,19 +125,15 @@ const BopTable = ({
     if (isRM || !bops.length || !bopList?.length) {
       return;
     }
-
     const timer = setTimeout(() => {
       bopList.forEach((bop) => {
         const element = bopFgRefs.current[bop.id];
-
         if (!element) {
           return;
         }
-
         if (element.tomselect) {
           return;
         }
-
         const tom = new TomSelect(element, {
           create: false,
           searchField: ["text"],

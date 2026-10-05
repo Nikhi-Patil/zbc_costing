@@ -1,19 +1,23 @@
+/* =========================================================
+   MOLDING DATA PAGE
+   Only styles used by MoldingData.jsx
+   ========================================================= */
+
 .molding-data-page {
   min-height: 100vh;
-  padding: 22px;
+  padding: 0 22px;
   background: #f5f7fb;
   color: #334155;
   box-sizing: border-box;
 }
 
 /* HEADER */
-
 .molding-data-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  margin-bottom: 18px;
+  margin-bottom: 8px;
 }
 
 .molding-data-header h1 {
@@ -24,56 +28,23 @@
   font-weight: 700;
 }
 
-.molding-data-header p {
-  margin: 5px 0 0;
+.molding-history-label {
+  margin-top: 4px;
+  font-size: 13px;
   color: #64748b;
-  font-size: 13px;
 }
 
-/* REFRESH */
-
-.molding-refresh-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 38px;
-  padding: 0 15px;
-  border: 0;
-  border-radius: 7px;
-  background: #173d70;
-  color: white;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
+.molding-history-label strong {
+  color: #173d70;
+  font-weight: 700;
 }
 
-.molding-refresh-btn:hover {
-  background: #12325c;
-}
-
-.molding-refresh-btn:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-.spin {
-  animation: molding-spin 0.8s linear infinite;
-}
-
-@keyframes molding-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* TOOLBAR */
-
+/* TOOLBAR / SEARCH */
 .molding-data-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 15px;
-  margin-bottom: 12px;
 }
 
 .molding-search-box {
@@ -81,12 +52,12 @@
   align-items: center;
   gap: 9px;
   width: min(420px, 100%);
-  height: 38px;
+  height: 30px;
   padding: 0 11px;
-  border: 1px solid #d7dee8;
+  border: 1px solid #000;
   border-radius: 7px;
-  background: white;
-  color: #64748b;
+  background: #fff;
+  color: #000;
 }
 
 .molding-search-box input {
@@ -95,12 +66,12 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: #334155;
+  color: #000;
   font-size: 13px;
 }
 
 .molding-search-box input::placeholder {
-  color: #94a3b8;
+  color: #95989d;
 }
 
 .molding-clear-search {
@@ -119,26 +90,85 @@
   background: #f1f5f9;
 }
 
-.molding-page-size {
+.filters {
   display: flex;
   align-items: center;
-  gap: 7px;
-  color: #64748b;
-  font-size: 13px;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.molding-page-size select {
-  height: 35px;
-  padding: 0 28px 0 9px;
-  border: 1px solid #d7dee8;
+/* REFRESH / APPLY BUTTON */
+.molding-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 7px;
+  background: #173d70;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.molding-refresh-btn:hover {
+  background: #12325c;
+}
+
+.molding-refresh-btn:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.mdata-apply-btn {
+  height: 30px;
+  min-width: 100px;
+  flex: 0 0 auto;
+  padding: 0 15px;
+  margin-left: 4px;
+  border: 1px solid #2563eb;
   border-radius: 6px;
-  background: white;
-  color: #334155;
-  outline: none;
+  background: #2563eb;
+  color: #fff;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+  box-sizing: border-box;
+}
+
+.mdata-apply-btn:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.mdata-apply-btn:active {
+  transform: translateY(1px);
+}
+
+.mdata-apply-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.spin {
+  animation: molding-spin 0.8s linear infinite;
+}
+
+@keyframes molding-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ERROR */
-
 .molding-data-error {
   margin-bottom: 12px;
   padding: 11px 14px;
@@ -150,341 +180,21 @@
 }
 
 /* TABLE CARD */
-
 .molding-data-card {
   overflow: hidden;
-  border: 1px solid #dfe5ed;
   border-radius: 10px;
-  background: white;
+  background: #fff;
   box-shadow: 0 3px 14px rgb(15 23 42 / 5%);
 }
 
-.molding-table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: calc(100vh - 235px);
-}
+/* =========================================================
+   REACT DATA TABLE
+   ========================================================= */
 
-/* TABLE */
-
-.molding-data-table {
-  width: max-content;
-  min-width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 12px;
-}
-
-.molding-data-table th {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  padding: 10px;
-  border-right: 1px solid #dce5f0;
-  border-bottom: 1px solid #cbd8e8;
-  background: #eaf2fb;
-  color: #173d70;
-  text-align: left;
-  white-space: nowrap;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.molding-data-table td {
-  min-width: 70px;
-  max-width: 280px;
-  padding: 9px 12px;
-  border-right: 1px solid #edf1f5;
-  border-bottom: 1px solid #edf1f5;
-  color: #475569;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.molding-data-table tbody tr {
-  cursor: pointer;
-  transition: background 0.12s ease;
-}
-
-.molding-data-table tbody tr:hover {
-  background: #f5f9ff;
-}
-
-.molding-data-table tbody tr:nth-child(even) {
-  background: #fbfcfe;
-}
-
-.molding-data-table tbody tr:nth-child(even):hover {
-  background: #f5f9ff;
-}
-
-/* NUMBER COLUMN */
-
-.sticky-number-column {
-  position: sticky !important;
-  left: 0;
-  z-index: 7 !important;
-  min-width: 55px !important;
-  width: 55px;
-  text-align: center !important;
-  background: #eef4fb !important;
-}
-
-.molding-data-table tbody .sticky-number-column {
-  z-index: 4 !important;
-  background: white !important;
-}
-
-.molding-data-table tbody tr:nth-child(even) .sticky-number-column {
-  background: #fbfcfe !important;
-}
-
-.molding-data-table tbody tr:hover .sticky-number-column {
-  background: #f5f9ff !important;
-}
-
-.row-number {
-  color: #64748b !important;
-  font-weight: 600;
-}
-
-/* EMPTY */
-
-.molding-empty {
-  width: 100%;
-  padding: 50px 20px !important;
-  color: #94a3b8 !important;
-  text-align: center !important;
-  font-size: 13px;
-}
-
-/* PAGINATION */
-
-.molding-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  min-height: 30px;
-  padding: 3px 14px;
-  border-top: 1px solid #e7ebf0;
-  background: white;
-}
-
-.molding-pagination-info {
-  color: #64748b;
-  font-size: 12px;
-}
-
-.molding-pagination-info strong {
-  color: #173d70;
-}
-
-.molding-pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.molding-pagination-controls button {
-  display: grid;
-  min-width: 23px;
-  height: 20px;
-  padding: 0 5px;
-  place-items: center;
-  border: 1px solid #d9e1eb;
-  border-radius: 5px;
-  background: white;
-  color: #475569;
-  cursor: pointer;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.molding-pagination-controls button:hover:not(:disabled) {
-  border-color: #9db7d5;
-  background: #f1f6fc;
-  color: #173d70;
-}
-
-.molding-pagination-controls button.active {
-  border-color: #173d70;
-  background: #173d70;
-  color: white;
-}
-
-.molding-pagination-controls button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.pagination-dots {
-  min-width: 24px;
-  text-align: center;
-  color: #94a3b8;
-}
-
-/* DETAIL MODAL */
-
-.molding-detail-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 25px;
-  background: rgb(15 23 42 / 45%);
-}
-
-.molding-detail-modal {
-  width: min(1100px, 100%);
-  max-height: 90vh;
-  overflow: hidden;
-  border-radius: 12px;
-  background: white;
-  box-shadow: 0 25px 70px rgb(15 23 42 / 25%);
-}
-
-.molding-detail-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  padding: 17px 20px;
-  border-bottom: 1px solid #e5eaf0;
-}
-
-.molding-detail-header h2 {
-  margin: 0;
-  color: #173d70;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 19px;
-}
-
-.molding-detail-header p {
-  margin: 4px 0 0;
-  color: #64748b;
-  font-size: 12px;
-}
-
-.molding-detail-header button {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border: 0;
-  border-radius: 6px;
-  background: #f1f5f9;
-  color: #475569;
-  cursor: pointer;
-}
-
-.molding-detail-header button:hover {
-  background: #e2e8f0;
-}
-
-.molding-detail-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  max-height: calc(90vh - 90px);
-  overflow-y: auto;
-  padding: 10px;
-}
-
-.molding-detail-item {
-  min-width: 0;
-  padding: 11px 12px;
-  border-bottom: 1px solid #edf1f5;
-}
-
-.molding-detail-item span {
-  display: block;
-  margin-bottom: 4px;
-  color: #94a3b8;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.molding-detail-item strong {
-  display: block;
-  overflow: hidden;
-  color: #334155;
-  font-size: 12px;
-  font-weight: 600;
-  text-overflow: ellipsis;
-}
-
-/* RESPONSIVE */
-
-@media (max-width: 900px) {
-  .molding-data-page {
-    padding: 15px;
-  }
-
-  .molding-data-header {
-    align-items: flex-start;
-  }
-
-  .molding-data-toolbar {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .molding-search-box {
-    width: 100%;
-  }
-
-  .molding-page-size {
-    justify-content: flex-end;
-  }
-
-  .molding-detail-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 600px) {
-  .molding-data-header {
-    flex-direction: column;
-  }
-
-  .molding-refresh-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .molding-pagination {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .molding-pagination-controls {
-    justify-content: center;
-  }
-
-  .molding-detail-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .molding-detail-overlay {
-    padding: 10px;
-  }
-}
-
-/* REACT DATA TABLE COMPONENT */
 .molding-datatable-wrapper {
   width: 100%;
   overflow: visible;
 }
-/* =========================================
-   STICKY TABLE HEADER
-   ========================================= */
 
 .molding-datatable-wrapper .rdt_TableWrapper {
   width: 100%;
@@ -493,24 +203,21 @@
   overflow-y: auto !important;
 }
 
-/* Keep header fixed while scrolling vertically */
 .molding-datatable-wrapper .rdt_TableHead {
   position: sticky !important;
   top: 0 !important;
   z-index: 30 !important;
 }
 
-/* Header row */
 .molding-datatable-wrapper .rdt_TableHeadRow {
   position: sticky !important;
   top: 0 !important;
   z-index: 30 !important;
-  background: #eaf2fb !important;
+  background: #19244a !important;
 }
 
-/* Header cells */
 .molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol {
-  background: #eaf2fb !important;
+  background: #19244a !important;
   z-index: 31 !important;
 }
 
@@ -542,29 +249,67 @@
   font-size: 13px;
 }
 
-.rdt_cellBase {
-  padding-left: var(--rdt-cell-padding-x, 3px) !important;
-  padding-right: var(--rdt-cell-padding-x, 0px) !important;
-  font-size: 13px !important;
+/* HEADER TEXT */
+.molding-datatable-wrapper
+  .rdt_TableHeadRow
+  .rdt_TableCol
+  .rdt_TableCol_Sortable {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
 }
-/* =========================================
-   STICKY PART COLUMNS
-   Column order:
-   1 = ID
-   2 = TRANS ID
-   3 = Part No.
-   4 = Part Name
-   5 = FG Code
-   ========================================= */
 
-/* Part No. */
+.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol {
+  white-space: normal !important;
+  overflow: visible !important;
+  min-width: 0 !important;
+}
+
+.molding-datatable-wrapper
+  .rdt_TableHeadRow
+  .rdt_TableCol
+  .rdt_TableCol_Sortable
+  > div {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+}
+
+/* STICKY COLUMNS: Part No, Part Name, FG Code */
+/* Customer */
 .molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol:nth-child(3) {
   position: sticky !important;
   left: 0 !important;
   z-index: 40 !important;
-  background: #eaf2fb !important;
+  background: #19244a !important;
 }
 
+/* Part No. */
+.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol:nth-child(4) {
+  position: sticky !important;
+  left: 180px !important;
+  z-index: 40 !important;
+  background: #19244a !important;
+}
+
+/* FG Code */
+.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol:nth-child(5) {
+  position: sticky !important;
+  left: 360px !important;
+  z-index: 40 !important;
+  background: #19244a !important;
+}
+/* Customer */
 .molding-datatable-wrapper
   .rdt_TableBody
   .rdt_TableRow
@@ -575,43 +320,28 @@
   background: #fff !important;
 }
 
-/* Part Name */
-.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol:nth-child(4) {
-  position: sticky !important;
-  left: 100px !important;
-  z-index: 40 !important;
-  background: #eaf2fb !important;
-}
-
+/* Part No. */
 .molding-datatable-wrapper
   .rdt_TableBody
   .rdt_TableRow
   .rdt_TableCell:nth-child(4) {
   position: sticky !important;
-  left: 100px !important;
+  left: 180px !important;
   z-index: 15 !important;
   background: #fff !important;
 }
 
 /* FG Code */
-.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol:nth-child(5) {
-  position: sticky !important;
-  left: 200px !important;
-  z-index: 40 !important;
-  background: #eaf2fb !important;
-}
-
 .molding-datatable-wrapper
   .rdt_TableBody
   .rdt_TableRow
   .rdt_TableCell:nth-child(5) {
   position: sticky !important;
-  left: 200px !important;
+  left: 360px !important;
   z-index: 15 !important;
   background: #fff !important;
 }
 
-/* Keep sticky cells visible on hover */
 .molding-datatable-wrapper
   .rdt_TableBody
   .rdt_TableRow:hover
@@ -625,11 +355,35 @@
   .rdt_TableRow:hover
   .rdt_TableCell:nth-child(5) {
   background: #f5f9ff !important;
+  }
+/* EDIT BUTTON */
+.molding-open-transaction-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #173d70;
+  cursor: pointer;
 }
 
-/* HIDE / VIEW PROCESS & ASSEMBLY COLUMNS */
+.molding-open-transaction-btn:hover {
+  background: #eaf2fb;
+  border-color: #173d70;
+}
+
+.molding-open-transaction-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* PROCESS / ASSEMBLY COLUMN TOGGLE */
 .molding-column-toggle-btn {
-  height: 38px;
+  height: 30px;
   min-width: 72px;
   padding: 0 16px;
   border: 1px solid #173d70;
@@ -660,29 +414,14 @@
   background: #eaf2fb;
 }
 
-@media (max-width: 900px) {
-  .molding-column-toggle-btn {
-    align-self: flex-end;
-  }
-}
-
-@media (max-width: 600px) {
-  .molding-column-toggle-btn {
-    width: 100%;
-  }
-}
-.rdt_columnText {
-  font-size: 13px !important;
-}
-
 /* SUB CATEGORY FILTER */
 .molding-subcategory-select {
-  height: 38px;
+  height: 30px;
   min-width: 110px;
   padding: 0 10px 0 5px;
   border: 1px solid #173d70;
   border-radius: 7px;
-  background: white;
+  background: #fff;
   color: #173d70;
   font-size: 12px;
   font-weight: 700;
@@ -693,17 +432,8 @@
 .molding-subcategory-select:focus {
   box-shadow: 0 0 0 2px rgb(23 61 112 / 12%);
 }
-.filters {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
 
-/* ============================================================
-   BOP COUNT BUTTON
-   ============================================================ */
-
+/* BOP COUNT BUTTON */
 .molding-bop-count-btn {
   display: inline-flex;
   align-items: center;
@@ -732,10 +462,7 @@
   outline-offset: 2px;
 }
 
-/* ============================================================
-   BOP DETAILS MODAL
-   ============================================================ */
-
+/* BOP DETAILS MODAL */
 .molding-bop-overlay {
   position: fixed;
   inset: 0;
@@ -762,7 +489,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding: 5px 5px;
+  padding: 5px;
   border-bottom: 1px solid #e2e8f0;
   background: #f8fafc;
 }
@@ -870,6 +597,111 @@
   background: #f5f9ff;
 }
 
+/* TABLE FILTERS */
+.mdata-filters {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: nowrap;
+  gap: 10px;
+  padding: 8px 5px;
+  margin: 0 0 10px;
+  background: #c7d1f8;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+.mdata-filter-group {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 4px;
+  box-sizing: border-box;
+}
+
+.mdata-filter-group label {
+  margin: 0;
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.mdata-filter-group select {
+  width: 120px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  color: #374151;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.mdata-filter-group select:hover {
+  border-color: #9ca3af;
+}
+
+.mdata-filter-group select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgb(37 99 235 / 8%);
+}
+
+#mdata-filter-financial-year,
+#mdata-filter-month,
+#mdata-filter-customer,
+#mdata-filter-part-no,
+#mdata-filter-sub-category,
+#mdata-filter-sales-pl {
+  width: 170px;
+}
+
+/* PROFIT / LOSS */
+.profit {
+  color: #16a34a !important;
+  font-weight: 700;
+}
+
+.loss {
+  color: #dc2626 !important;
+  font-weight: 700;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .molding-data-page {
+    padding: 15px;
+  }
+
+  .molding-data-header {
+    align-items: flex-start;
+  }
+
+  .molding-data-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .molding-search-box {
+    width: 100%;
+  }
+
+  .molding-column-toggle-btn {
+    align-self: flex-end;
+  }
+
+  .mdata-filters {
+    overflow-x: auto;
+  }
+}
+
 @media (max-width: 768px) {
   .molding-bop-overlay {
     padding: 12px;
@@ -885,3 +717,36 @@
     padding: 10px;
   }
 }
+
+@media (max-width: 600px) {
+  .molding-data-header {
+    flex-direction: column;
+  }
+
+  .molding-refresh-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .molding-column-toggle-btn {
+    width: 100%;
+  }
+
+  .mdata-filters {
+    gap: 8px;
+    padding: 8px 5px;
+  }
+}
+/* .molding-datatable-wrapper .rdt_TableRow {
+  border-bottom: none !important;
+}
+
+.molding-datatable-wrapper .rdt_TableCell {
+  border-right: 1px solid #cccccc !important;
+  border-bottom: 1px solid #cccccc !important;
+  box-sizing: border-box;
+}
+
+.molding-datatable-wrapper .rdt_TableCell:last-child {
+  border-right: none !important;
+} */

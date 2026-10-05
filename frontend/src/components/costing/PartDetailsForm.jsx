@@ -1,41 +1,37 @@
 import { useEffect, useRef, useState } from "react";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
+import { getUser } from "../../auth/auth";
 import TomSelect from "tom-select";
 
 function PartDetailsForm({
   formData,
   transactionId,
+  readOnly = false,
   handleInputChange,
   handlePartSelect,
   bopList,
 }) {
   const financialYears = generateFinancialYears();
-
   const [units, setUnits] = useState([]);
   const [subDepartments, setSubDepartments] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [parts, setParts] = useState([]);
+  const [sessionUser, setSessionUser] = useState(null);
   const [bopMasters, setBopMasters] = useState([]);
-
   const partNoRef = useRef(null);
+  const customerRef = useRef(null);
 
-  // ============================================================
   // FETCH BOP MASTER
-  // Used to restore supplier names after page refresh
-  // ============================================================
   useEffect(() => {
     const fetchBopMasters = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/bops`);
-
         if (!response.ok) {
           throw new Error("Failed to fetch BOP master");
         }
-
         const result = await response.json();
-
         const data = Array.isArray(result)
           ? result
           : Array.isArray(result?.data)
@@ -50,151 +46,182 @@ function PartDetailsForm({
         setBopMasters([]);
       }
     };
-
     fetchBopMasters();
   }, []);
 
-  // ============================================================
   // FETCH PARTS
-  // ============================================================
   useEffect(() => {
     const fetchParts = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/parts`);
-
         if (!response.ok) {
           throw new Error("Failed to fetch parts");
         }
-
         const data = await response.json();
-
         setParts(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching parts:", error);
         setParts([]);
       }
     };
-
     fetchParts();
   }, []);
 
-  // ============================================================
-  // FETCH SUB CATEGORIES
-  // ============================================================
+  // FETCH SUB CATEGORIES BASED ON LOGGED-IN USER
   useEffect(() => {
+    const user = getUser();
+    if (!user?.unit || !user?.sub_department) {
+      console.warn("Unit or Sub Department not found in logged-in user");
+      setSubCategories([]);
+      return;
+    }
+    const unitId = user.unit;
+    const subDepartmentId = user.sub_department;
     const fetchSubCategories = async () => {
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/subcategories?category=Molding`,
-        );
-
+        const url =
+          `${API_BASE_URL}/subcategories` +
+          `?unitId=${encodeURIComponent(unitId)}` +
+          `&subDepartmentId=${encodeURIComponent(subDepartmentId)}`;
+        const response = await fetch(url);
         if (!response.ok) {
-          throw new Error("Failed to fetch subcategories");
+          throw new Error(`Failed to fetch subcategories: ${response.status}`);
         }
-
         const data = await response.json();
-
         setSubCategories(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching subcategories:", error);
         setSubCategories([]);
       }
     };
-
     fetchSubCategories();
   }, []);
 
-  // ============================================================
   // FETCH CUSTOMERS
-  // ============================================================
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/customers`);
-
         if (!response.ok) {
           throw new Error("Failed to fetch customers");
         }
-
         const data = await response.json();
-
         setCustomers(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching customers:", error);
         setCustomers([]);
       }
     };
-
     fetchCustomers();
   }, []);
 
-  // ============================================================
   // FETCH UNITS
-  // ============================================================
   useEffect(() => {
     const fetchUnits = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/units`);
-
         if (!response.ok) {
           throw new Error("Failed to fetch units");
         }
-
         const data = await response.json();
-
         setUnits(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching units:", error);
         setUnits([]);
       }
     };
-
     fetchUnits();
   }, []);
 
-  // ============================================================
+  useEffect(() => {
+    const user = getUser();
+    if (!user) {
+      console.warn("No logged-in user found");
+      return;
+    }
+    console.log("Logged-in session user:", user);
+    setSessionUser(user);
+  }, []);
+
   // FETCH SUB DEPARTMENTS
-  // ============================================================
   useEffect(() => {
     if (!formData.productionUnit) {
       setSubDepartments([]);
       return;
     }
-
     const fetchSubDepartments = async () => {
       try {
         const response = await fetch(
           `${API_BASE_URL}/subdepartments?unitId=${formData.productionUnit}`,
         );
-
         if (!response.ok) {
           throw new Error("Failed to fetch sub departments");
         }
-
         const data = await response.json();
-
         setSubDepartments(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching sub departments:", error);
         setSubDepartments([]);
       }
     };
-
     fetchSubDepartments();
   }, [formData.productionUnit]);
 
-  // ============================================================
+  // INITIALIZE TOM SELECT FOR CUSTOMER
+  useEffect(() => {
+    if (!customerRef.current || customers.length === 0) {
+      return;
+    }
+
+    // Destroy existing TomSelect instance
+    if (customerRef.current.tomselect) {
+      customerRef.current.tomselect.destroy();
+    }
+    const tomSelect = new TomSelect(customerRef.current, {
+      create: false,
+      sortField: {
+        field: "text",
+        direction: "asc",
+      },
+      placeholder: "Search Customer No...",
+      allowEmptyOption: true,
+    });
+
+    // Restore existing customer
+    if (formData.customerName) {
+      const selectedCustomer = customers.find(
+        (customer) =>
+          String(customer.id) === String(formData.customerName) ||
+          String(customer.sub_customer ?? "").trim() ===
+            String(formData.customerName).trim(),
+      );
+      if (selectedCustomer) {
+        tomSelect.setValue(String(selectedCustomer.id), true);
+      }
+    }
+    tomSelect.on("change", (value) => {
+      handleInputChange({
+        target: {
+          name: "customerName",
+          value: value || "",
+        },
+      });
+    });
+    return () => {
+      if (customerRef.current?.tomselect) {
+        customerRef.current.tomselect.destroy();
+      }
+    };
+  }, [customers]);
+
   // INITIALIZE TOM SELECT FOR PART NO
-  // ============================================================
   useEffect(() => {
     if (!partNoRef.current || parts.length === 0) {
       return;
     }
-
     if (partNoRef.current.tomselect) {
       return;
     }
-
     const tomSelect = new TomSelect(partNoRef.current, {
       create: false,
       sortField: {
@@ -211,47 +238,36 @@ function PartDetailsForm({
         (part) =>
           String(part.part_no).trim() === String(formData.partNo).trim(),
       );
-
       if (selectedPart) {
         tomSelect.setValue(selectedPart.part_no, true);
       }
     }
-
     return () => {
       tomSelect.destroy();
     };
   }, [parts]);
 
-  // ============================================================
   // SYNC PART NO WITH REACT
-  // ============================================================
   useEffect(() => {
     if (!partNoRef.current) {
       return;
     }
-
     const tomSelect = partNoRef.current.tomselect;
-
     if (!tomSelect) {
       return;
     }
-
     const value = formData.partNo || "";
-
     if (value) {
       const selectedPart = parts.find(
         (part) => String(part.part_no).trim() === String(value).trim(),
       );
-
       if (selectedPart) {
         tomSelect.setValue(selectedPart.part_no, true);
       }
     } else {
       tomSelect.clear(true);
     }
-
     const wrapper = tomSelect.wrapper;
-
     if (value) {
       wrapper.classList.add("field-filled");
     } else {
@@ -264,7 +280,6 @@ function PartDetailsForm({
     if (!formData.subCategory || subCategories.length === 0) {
       return;
     }
-
     const selectedSubCategory = subCategories.find(
       (subCategory) => String(subCategory.id) === String(formData.subCategory),
     );
@@ -293,13 +308,20 @@ function PartDetailsForm({
   };
 
   return (
-    <>
+    <fieldset
+      disabled={readOnly}
+      style={{
+        border: "none",
+        padding: 0,
+        margin: 0,
+        minWidth: 0,
+      }}
+    >
       <div className="card">
         <div className="card-header d-flex align-items-center">
           <h5 className="mb-0">
             <b style={{ fontSize: "14px" }}>Part Details</b>
           </h5>
-
           <span className="transaction-id-header">
             Transaction ID: <b>{transactionId || "Not Saved"}</b>
           </span>
@@ -312,7 +334,6 @@ function PartDetailsForm({
               <label className="form-label">
                 <b>Financial Year</b>
               </label>
-
               <select
                 className={`form-control ${
                   formData.financialYear ? "field-filled" : ""
@@ -322,7 +343,6 @@ function PartDetailsForm({
                 onChange={handleInputChange}
               >
                 <option value="">Select</option>
-
                 {financialYears.map((fy) => (
                   <option key={fy.value} value={fy.value}>
                     {fy.label}
@@ -335,7 +355,6 @@ function PartDetailsForm({
               <label className="form-label">
                 <b>Month</b>
               </label>
-
               <select
                 className={`form-control ${
                   formData.month ? "field-filled" : ""
@@ -345,7 +364,6 @@ function PartDetailsForm({
                 onChange={handleInputChange}
               >
                 <option value="">Select</option>
-
                 {months.map((month) => (
                   <option key={month.value} value={month.value}>
                     {month.label}
@@ -358,7 +376,6 @@ function PartDetailsForm({
               <label className="form-label">
                 <b>Effective Date</b>
               </label>
-
               <input
                 type="date"
                 className={`form-control ${
@@ -374,17 +391,12 @@ function PartDetailsForm({
               <label className="form-label">
                 <b>Customer Name</b>
               </label>
-
               <select
-                className={`form-control ${
-                  formData.customerName ? "field-filled" : ""
-                }`}
+                ref={customerRef}
                 name="customerName"
                 value={formData.customerName || ""}
-                onChange={handleInputChange}
               >
-                <option value="">Select</option>
-
+                <option value=""></option>
                 {customers.map((customer) => (
                   <option key={customer.id} value={customer.id}>
                     {customer.sub_customer}
@@ -405,10 +417,18 @@ function PartDetailsForm({
                   formData.productionUnit ? "field-filled" : ""
                 }`}
                 name="productionUnit"
-                value={formData.productionUnit}
-                onChange={handleInputChange}
+                value={formData.productionUnit || ""}
+                disabled
               >
                 <option value="">Select</option>
+                {sessionUser?.unit &&
+                  !units.some(
+                    (unit) => String(unit.id) === String(sessionUser.unit),
+                  ) && (
+                    <option value={sessionUser.unit}>
+                      {sessionUser.unit_name || sessionUser.unit}
+                    </option>
+                  )}
                 {units.map((unit) => (
                   <option key={unit.id} value={unit.id}>
                     {unit.unit}
@@ -447,10 +467,21 @@ function PartDetailsForm({
                   formData.subDepartment ? "field-filled" : ""
                 }`}
                 name="subDepartment"
-                value={formData.subDepartment}
-                onChange={handleInputChange}
+                value={formData.subDepartment || ""}
+                disabled
               >
                 <option value="">Select</option>
+                {sessionUser?.sub_department &&
+                  !subDepartments.some(
+                    (subDepartment) =>
+                      String(subDepartment.id) ===
+                      String(sessionUser.sub_department),
+                  ) && (
+                    <option value={sessionUser.sub_department}>
+                      {sessionUser.sub_department_name ||
+                        sessionUser.sub_department}
+                    </option>
+                  )}
                 {subDepartments.map((subDepartment) => (
                   <option key={subDepartment.id} value={subDepartment.id}>
                     {subDepartment.sub_department_name}
@@ -504,7 +535,7 @@ function PartDetailsForm({
                 value={formData.partNo || ""}
                 onChange={handlePartNoChange}
               >
-                <option value="">Select Part No</option>
+                <option value=""></option>
                 {parts.map((part) => (
                   <option key={part.id} value={part.part_no}>
                     {part.part_no}
@@ -633,10 +664,8 @@ function PartDetailsForm({
             <h5 className="mb-0">
               <b style={{ fontSize: "14px" }}>BOP Details</b>
             </h5>
-
             <span className="text-success">BOP configuration loaded</span>
           </div>
-
           <div className="card-body">
             <div className="table-responsive">
               <table className="table bop-table part-bop-table">
@@ -671,21 +700,17 @@ function PartDetailsForm({
                     );
 
                     const supplierId = bop.supplierId ?? bop.supplier_id ?? "";
-
                     const supplierIds = String(bopMaster?.supplier_id ?? "")
                       .split(",")
                       .map((id) => id.trim())
                       .filter(Boolean);
-
                     const supplierNames = String(bopMaster?.supplier_name ?? "")
                       .split(",")
                       .map((name) => name.trim())
                       .filter(Boolean);
-
                     const supplierIndex = supplierIds.findIndex(
                       (id) => String(id) === String(supplierId),
                     );
-
                     const restoredSupplierName =
                       bop.supplierName ??
                       bop.supplier_name ??
@@ -694,7 +719,6 @@ function PartDetailsForm({
                     return (
                       <tr key={bop.id ?? `bop-${index}`}>
                         <td className="text-center">{index + 1}</td>
-
                         <td>
                           <input
                             type="text"
@@ -812,7 +836,7 @@ function PartDetailsForm({
           </div>
         </div>
       )}
-    </>
+    </fieldset>
   );
 }
 

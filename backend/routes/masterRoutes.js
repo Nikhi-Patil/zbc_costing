@@ -11,6 +11,7 @@ import {
     getAllUnits,
     getAllMachines,
     getCompoundByImCode,
+    getAllMargins,
 } from "../controllers/masterController.js";
 
 import {
@@ -23,9 +24,8 @@ import {
     createBulkBopMonthlyRate,
     createBulkCompoundMonthlyRate,
     getCompoundPolymerMonthlyReport,
+    getHistoricalCompoundRate,
 } from "../controllers/monthlyReports.js";
-
-
 
 const router = express.Router();
 
@@ -38,6 +38,7 @@ router.get("/subcategories", getAllSubCategories);
 router.get("/subdepartments", getAllSubDepartments);
 router.get("/units", getAllUnits);
 router.get("/machines", getAllMachines);
+router.get("/margins", getAllMargins);
 router.get("/monthly-compound-rate", getCompoundMonthlyReport);
 router.post("/monthly-compound-rate", createCompoundMonthlyRate);
 router.get("/monthly-bop-rate", getBopMonthlyReport);
@@ -47,6 +48,7 @@ router.get("/bop-rate-for-costing", getBopRateForCosting);
 router.get("/compound-by-im-code", getCompoundByImCode);
 router.post("/monthly-bop-rate/bulk", createBulkBopMonthlyRate);
 router.post("/monthly-compound-rate/bulk", createBulkCompoundMonthlyRate);
-router.get("/monthly-compound-polymer-report",getCompoundPolymerMonthlyReport);
+router.get("/monthly-compound-polymer-report", getCompoundPolymerMonthlyReport);
+router.get("/historical-compound-rate", getHistoricalCompoundRate);
 
 export default router;
