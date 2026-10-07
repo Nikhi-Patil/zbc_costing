@@ -86,10 +86,7 @@ const CompoundMonthlyMaster = () => {
     }
   };
 
-  // =====================================================
   // Fetch Compound Monthly Report
-  // =====================================================
-
   const fetchReport = async () => {
     try {
       setLoading(true);
@@ -99,7 +96,6 @@ const CompoundMonthlyMaster = () => {
           financialYear,
         )}`,
       );
-
       const result = await response.json();
 
       if (!response.ok || !result.success) {
@@ -109,30 +105,17 @@ const CompoundMonthlyMaster = () => {
       setData(result.data || []);
 
       // Always return to first page after
-      // loading a new financial year
       setCurrentPage(1);
     } catch (error) {
       console.error("Error fetching report:", error);
-
       setData([]);
-
       setCurrentPage(1);
     } finally {
       setLoading(false);
     }
   };
 
-  // =====================================================
   // Group Data
-  //
-  // IMPORTANT:
-  // Keep the existing grouping.
-  //
-  // Multiple monthly records belonging to the same
-  // Compound + Unit + Financial Year are displayed
-  // as ONE row with Jan-Dec columns.
-  // =====================================================
-
   const groupedData = useMemo(
     () =>
       Object.values(
@@ -162,41 +145,24 @@ const CompoundMonthlyMaster = () => {
     [data],
   );
 
-  // =====================================================
   // Unit Map
-  // =====================================================
-
   const unitMap = useMemo(
     () => new Map(units.map((unit) => [String(unit.id), unit.unit])),
     [units],
   );
 
-  // =====================================================
   // Pagination
-  //
-  // Pagination is applied to groupedData,
-  // NOT to the original data.
-  // =====================================================
-
   const totalEntries = groupedData.length;
-
   const totalPages = Math.max(1, Math.ceil(totalEntries / rowsPerPage));
-
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;
-
     return groupedData.slice(startIndex, startIndex + rowsPerPage);
   }, [groupedData, currentPage, rowsPerPage]);
 
-  // =====================================================
   // Pagination Handlers
-  // =====================================================
-
   const handleRowsPerPageChange = (e) => {
     const newRowsPerPage = Number(e.target.value);
-
     setRowsPerPage(newRowsPerPage);
-
     setCurrentPage(1);
   };
 
@@ -216,16 +182,10 @@ const CompoundMonthlyMaster = () => {
     setCurrentPage(totalPages);
   };
 
-  // =====================================================
   // Render
-  // =====================================================
-
   return (
     <div className="compound-report-page">
-      {/* =================================================
-          Toolbar
-      ================================================= */}
-
+      {/* Toolbar */}
       <div className="report-toolbar">
         <div className="report-filters">
           {/* Financial Year */}
@@ -294,18 +254,13 @@ const CompoundMonthlyMaster = () => {
         </div>
       </div>
 
-      {/* =================================================
-          Report
-      ================================================= */}
-
+      {/* Report */}
       <div className="compound-report-container mt-3">
         {loading ? (
           <div className="text-center p-4">Loading...</div>
         ) : (
           <>
-            {/* ================================
-          TABLE + HORIZONTAL SCROLLER
-          ================================ */}
+            {/* TABLE + HORIZONTAL SCROLLER */}
             <div className="compound-table-scroll">
               <table className="table table-bordered compound-report-table">
                 <thead>
@@ -320,11 +275,6 @@ const CompoundMonthlyMaster = () => {
                         {getMonthYearLabel(month.value, financialYear)}
                       </th>
                     ))}
-                    {/* {months.map((month) => (
-                      <th key={month.value}>
-                        {month.label} {viewType === "qty" ? "Qty" : "Rate"}
-                      </th>
-                    ))} */}
                   </tr>
                 </thead>
 
@@ -342,29 +292,22 @@ const CompoundMonthlyMaster = () => {
                     paginatedData.map((compound, index) => {
                       const serialNumber =
                         (currentPage - 1) * rowsPerPage + index + 1;
-
                       return (
                         <tr
                           key={`${compound.compound_id}-${compound.unit_id}-${compound.financial_year}`}
                         >
                           <td>{serialNumber}</td>
-
                           <td>{compound.compound_code || "-"}</td>
-
                           <td>{compound.polymer_name || "-"}</td>
-
                           <td>{compound.im_code || "-"}</td>
-
                           <td>
                             {unitMap.get(String(compound.unit_id)) || "-"}
                           </td>
-
                           {months.map((month) => {
                             const monthData = compound.months[month.value] || {
                               qty: null,
                               rate: null,
                             };
-
                             return (
                               <td
                                 key={month.value}
@@ -391,14 +334,11 @@ const CompoundMonthlyMaster = () => {
               </table>
             </div>
 
-            {/* ================================
-          PAGINATION - BELOW SCROLLER
-          ================================ */}
+            {/* PAGINATION - BELOW SCROLLER */}
             {groupedData.length > 0 && (
               <div className="compound-pagination">
                 <div className="pagination-left">
                   <span>Show</span>
-
                   <select
                     className="form-select"
                     value={rowsPerPage}

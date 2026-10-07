@@ -53,7 +53,7 @@ body {
   flex: 1;
   width: 100%;
   min-width: 0;
-  padding: 20px;
+  padding: 10px;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -1461,4 +1461,10 @@ h5 {
 .sidebar-manue {
   font-size: 14px !important;
   font-family: "Segoe UI", sans-serif !important;
+}
+.Total-part-cost{
+    background-color: #9bffe9 !important;
+  font-weight: 800 !important;
+  color: #1e00ff;
+  font-size: 14px !important;
 }

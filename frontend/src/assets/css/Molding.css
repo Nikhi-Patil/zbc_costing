@@ -125,6 +125,7 @@
   width: 100%;
   max-width: 100%;
   overflow-x: auto;
+  min-width: 0 !important;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
@@ -1058,9 +1059,9 @@
 }
 
 .molding-data-table .rdt_Table {
-  min-width: 1259px;
+  width: 100% !important;
+  min-width: 0 !important;
 }
-
 /* ---------------------------------------------------------
    RESPONSIVE
    --------------------------------------------------------- */
@@ -1081,7 +1082,8 @@
 
 @media (max-width: 768px) {
   .molding-data-table .rdt_Table {
-    min-width: 1259px;
+    width: 100% !important;
+    min-width: 0 !important;
   }
 
   .molding-data-table .rdt_TableHeadRow {
@@ -1115,7 +1117,7 @@
 }
 /* FILTERS ABOVE MOLDING TABLE */
 .molding-table-filters {
-  width: 100%;
+  width: 100% !important;
   display: flex;
   align-items: flex-end;
   gap: 10px;
@@ -1124,7 +1126,8 @@
   background: #c7d1f8;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  box-sizing: border-box;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .molding-table-filter-group {
@@ -1167,7 +1170,7 @@
 
 /* APPLY */
 .molding-table-filters .molding-apply-filter-btn {
-  height: 35px;
+  height: 30px;
   min-width: 100px;
   padding: 0 15px;
   margin-left: 4px;
@@ -1257,7 +1260,7 @@
 
 .sales-monthly-filter-group select {
   width: 150px;
-  height: 35px;
+  height: 30px;
   padding: 4px 12px;
   border: 1px solid #ced4da;
   border-radius: 6px;
@@ -1321,7 +1324,7 @@
 .molding-actions > .bulk-upload-btn,
 .molding-actions > .export-excel-btn,
 .molding-actions > .add-transaction-btn {
-  height: 35px;
+  height: 30px;
   box-sizing: border-box;
 }
 
@@ -1386,7 +1389,7 @@
 }
 
 .moldingb-search-box input {
-  width: 100%;  
+  width: 100%;
   height: 30px;
   padding: 0 34px 0 34px;
   border: 1px solid #000000;
@@ -1558,4 +1561,121 @@
   overflow-wrap: break-word !important;
   line-height: 1.15 !important;
   text-align: center !important;
+}
+/* =========================================================
+   MOLDING TABLE - EXPAND WITH SIDEBAR
+   ========================================================= */
+
+.molding-data-table {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* React Data Table main wrapper */
+.molding-data-table .rdt_Table {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Header and body must use the full available width */
+.molding-data-table .rdt_TableHeadRow,
+.molding-data-table .rdt_TableRow {
+  width: 100% !important;
+  min-width: 100% !important;
+}
+
+/* Allow columns to stretch */
+.molding-data-table .rdt_TableCol,
+.molding-data-table .rdt_TableCell {
+  min-width: 0 !important;
+}
+
+/* Keep the table card full width */
+.molding-table-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  flex: 1 1 auto;
+}
+
+/* Keep horizontal scrolling only when the screen is genuinely too small */
+.molding-data-table .rdt_TableWrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+}
+/* =========================================================
+   MOLDING TABLE - HEADER / CELL ALIGNMENT
+   ========================================================= */
+
+.molding-data-table .rdt_TableCol,
+.molding-data-table .rdt_TableCell {
+  box-sizing: border-box !important;
+}
+
+/* Header column */
+.molding-data-table .rdt_TableCol {
+  padding-left: 3px !important;
+  padding-right: 3px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Header inner sortable container */
+.molding-data-table .rdt_TableCol .rdt_TableCol_Sortable {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+/* Header text */
+.molding-data-table .rdt_TableCol .rdt_TableCol_Sortable > div {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+
+/* Body cells */
+.molding-data-table .rdt_TableCell {
+  padding-left: 3px !important;
+  padding-right: 3px !important;
+  box-sizing: border-box !important;
+}
+/* ACTION BUTTONS */
+.molding-action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+}
+
+/* DOWNLOAD EXCEL BUTTON */
+.molding-download-btn {
+  width: 30px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #198754;
+  border-radius: 5px;
+  background: #fff;
+  color: #198754;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.molding-download-btn:hover {
+  background: #198754;
+  color: #fff;
 }

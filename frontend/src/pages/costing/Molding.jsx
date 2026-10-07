@@ -23,6 +23,7 @@ function formatNumber(value, digits = 2) {
   if (value === null || value === undefined || value === "") return "—";
   return Number(value).toLocaleString("en-IN", {
     maximumFractionDigits: digits,
+    minimumFractionDigits: digits,
   });
 }
 
@@ -144,43 +145,52 @@ const formatInteger = (value) =>
     maximumFractionDigits: 0,
   });
 
-const MOLDING_TABLE_COLUMNS = (getSavedPeriodValues, handleOpenTransaction) => [
+const MOLDING_TABLE_COLUMNS = (
+  getSavedPeriodValues,
+  handleOpenTransaction,
+  handleDownloadExcel,
+) => [
   {
     name: "TR ID",
     selector: (row) => row.transaction_id,
+    grow: 0.8,
     sortable: true,
-    width: "55px",
+    minWidth: "50px",
     cell: (row) => <span className="transaction-id">{row.transaction_id}</span>,
   },
   {
     name: "Customer Name",
     selector: (row) => row.customer_name,
     sortable: true,
-    width: "150px",
+    grow: 2.4,
+    minWidth: "170px",
     left: true,
     cell: (row) => <span className="customer-name">{row.customer_name}</span>,
-  },
-  {
-    name: "Subcategory",
-    selector: (row) => row.sub_category,
-    sortable: true,
-    width: "100px",
-    center: true,
-    cell: (row) => <span className="sub-category">{row.sub_category}</span>,
   },
   {
     name: "Part No",
     selector: (row) => row.part_no,
     sortable: true,
-    width: "200px",
+    grow: 2.4,
+    minWidth: "170px",
     left: true,
     cell: (row) => <span className="part-no">{row.part_no}</span>,
+  },
+  {
+    name: "Sub category",
+    selector: (row) => row.sub_category,
+    sortable: true,
+    grow: 0.9,
+    minWidth: "80px",
+    center: true,
+    cell: (row) => <span className="sub-category">{row.sub_category}</span>,
   },
   {
     name: "Mfg W/O Margin",
     selector: (row) => Number(row.__display?.subtotalA || 0),
     sortable: true,
-    width: "95px",
+    grow: 0.9,
+    minWidth: "75px",
     center: true,
     cell: (row) => formatNumber(row.__display?.subtotalA, 2),
   },
@@ -188,7 +198,8 @@ const MOLDING_TABLE_COLUMNS = (getSavedPeriodValues, handleOpenTransaction) => [
     name: "Mfg With Margin",
     selector: (row) => Number(row.__display?.partCost || 0),
     sortable: true,
-    width: "95px",
+    grow: 0.9,
+    minWidth: "75px",
     center: true,
     cell: (row) => formatNumber(row.__display?.partCost, 2),
   },
@@ -196,22 +207,27 @@ const MOLDING_TABLE_COLUMNS = (getSavedPeriodValues, handleOpenTransaction) => [
     name: "Sale Cost",
     selector: (row) => Number(row.__display?.customerSalesCost || 0),
     sortable: true,
-    width: "76px",
+    grow: 0.9,
+    minWidth: "60px",
     center: true,
-    cell: (row) => formatInteger(row.__display?.customerSalesCost),
+    cell: (row) => formatNumber(row.__display?.customerSalesCost, 2),
   },
   {
     name: "Extra P/L",
     selector: (row) => Number(row.__display?.extra_profit || 0),
     sortable: true,
-    width: "76px",
+    grow: 1,
+    minWidth: "60px",
     center: true,
     cell: (row) => {
       const value = Number(row.__display?.extra_profit || 0);
       return (
-        <span className={value >= 0 ? "profit" : "loss"}>
-          {value >= 0 ? "+" : "-"}
-          {formatInteger(Math.abs(value))}
+        <span className={value > 0 ? "profit" : value < 0 ? "loss" : "neutral"}>
+          {value > 0
+            ? `+${formatNumber(value, 2)}`
+            : value < 0
+              ? `-${formatNumber(Math.abs(value), 2)}`
+              : formatNumber(0, 2)}
         </span>
       );
     },
@@ -220,14 +236,19 @@ const MOLDING_TABLE_COLUMNS = (getSavedPeriodValues, handleOpenTransaction) => [
     name: "P/L VS Mfg Cost",
     selector: (row) => Number(row.__display?.profit_vs_mfg_cost || 0),
     sortable: true,
-    width: "85px",
+    grow: 1,
+    minWidth: "75px",
     center: true,
     cell: (row) => {
       const value = Number(row.__display?.profit_vs_mfg_cost || 0);
+
       return (
-        <span className={value >= 0 ? "profit" : "loss"}>
-          {value >= 0 ? "+" : "-"}
-          {formatInteger(Math.abs(value))}
+        <span className={value > 0 ? "profit" : value < 0 ? "loss" : "neutral"}>
+          {value > 0
+            ? `+${formatNumber(value, 2)}`
+            : value < 0
+              ? `-${formatNumber(Math.abs(value), 2)}`
+              : formatNumber(0, 2)}
         </span>
       );
     },
@@ -236,7 +257,8 @@ const MOLDING_TABLE_COLUMNS = (getSavedPeriodValues, handleOpenTransaction) => [
     name: "Monthly Qty",
     selector: (row) => Number(row.__display?.monthlyQty || 0),
     sortable: true,
-    width: "100px",
+    grow: 1,
+    minWidth: "75px",
     center: true,
     cell: (row) => formatInteger(row.__display?.monthlyQty),
   },
@@ -244,14 +266,18 @@ const MOLDING_TABLE_COLUMNS = (getSavedPeriodValues, handleOpenTransaction) => [
     name: "Extra P/L Total",
     selector: (row) => Number(row.__display?.extra_monthlyProfitLoss || 0),
     sortable: true,
-    width: "105px",
+    grow: 1,
+    minWidth: "75px",
     center: true,
     cell: (row) => {
       const value = Number(row.__display?.extra_monthlyProfitLoss || 0);
       return (
-        <span className={value >= 0 ? "profit" : "loss"}>
-          {value >= 0 ? "+" : "-"}
-          {formatInteger(Math.abs(value))}
+        <span className={value > 0 ? "profit" : value < 0 ? "loss" : "neutral"}>
+          {value > 0
+            ? `+${formatInteger(Math.abs(value))}`
+            : value < 0
+              ? `-${formatInteger(Math.abs(value))}`
+              : formatInteger(0)}
         </span>
       );
     },
@@ -260,14 +286,18 @@ const MOLDING_TABLE_COLUMNS = (getSavedPeriodValues, handleOpenTransaction) => [
     name: "Total Mfg P/L",
     selector: (row) => Number(row.__display?.monthlyProfitLoss || 0),
     sortable: true,
-    width: "100px",
+    grow: 1,
+    minWidth: "75px",
     center: true,
     cell: (row) => {
       const value = Number(row.__display?.monthlyProfitLoss || 0);
       return (
-        <span className={value >= 0 ? "profit" : "loss"}>
-          {value >= 0 ? "+" : "-"}
-          {formatInteger(Math.abs(value))}
+        <span className={value > 0 ? "profit" : value < 0 ? "loss" : "neutral"}>
+          {value > 0
+            ? `+${formatInteger(Math.abs(value))}`
+            : value < 0
+              ? `-${formatInteger(Math.abs(value))}`
+              : formatInteger(0)}
         </span>
       );
     },
@@ -277,7 +307,8 @@ const MOLDING_TABLE_COLUMNS = (getSavedPeriodValues, handleOpenTransaction) => [
     name: "Prod Unit",
     selector: (row) => row.production_unit,
     sortable: true,
-    width: "75px",
+    grow: 0.8,
+    minWidth: "60px",
     center: true,
     cell: (row) => (
       <span className="production-unit">{row.production_unit}</span>
@@ -287,7 +318,8 @@ const MOLDING_TABLE_COLUMNS = (getSavedPeriodValues, handleOpenTransaction) => [
     name: "Billing Unit",
     selector: (row) => row.billing_unit,
     sortable: true,
-    width: "90px",
+    grow: 0.8,
+    minWidth: "60px",
     center: true,
     cell: (row) => <span className="billing-unit">{row.billing_unit}</span>,
   },
@@ -295,7 +327,8 @@ const MOLDING_TABLE_COLUMNS = (getSavedPeriodValues, handleOpenTransaction) => [
     name: "Status",
     selector: (row) => row.status,
     sortable: true,
-    width: "65px",
+    grow: 0.8,
+    minWidth: "60px",
     center: true,
     cell: (row) => (
       <span className={`status ${String(row.status || "").toLowerCase()}`}>
@@ -304,19 +337,33 @@ const MOLDING_TABLE_COLUMNS = (getSavedPeriodValues, handleOpenTransaction) => [
     ),
   },
   {
-    name: "Edit",
-    width: "60px",
+    name: "Action",
+    width: "90px",
     center: true,
     cell: (row) => (
-      <button
-        type="button"
-        className="molding-edit-btn"
-        onClick={() => handleOpenTransaction(row.transaction_id)}
-        title="Edit Transaction"
-        aria-label="Edit Transaction"
-      >
-        <Pencil size={15} />
-      </button>
+      <div className="molding-action-buttons">
+        {/* EDIT */}
+        <button
+          type="button"
+          className="molding-edit-btn"
+          onClick={() => handleOpenTransaction(row.transaction_id)}
+          title="Edit Transaction"
+          aria-label="Edit Transaction"
+        >
+          <Pencil size={14} />
+        </button>
+
+        {/* DOWNLOAD EXCEL */}
+        <button
+          type="button"
+          className="molding-download-btn"
+          onClick={() => handleDownloadExcel(row.transaction_id)}
+          title="Download Excel"
+          aria-label="Download Excel"
+        >
+          <FileSpreadsheet size={14} />
+        </button>
+      </div>
     ),
   },
 ];
@@ -324,7 +371,9 @@ const MOLDING_TABLE_COLUMNS = (getSavedPeriodValues, handleOpenTransaction) => [
 const moldingDataTableStyles = {
   table: {
     style: {
-      minWidth: "1450px",
+      width: "100%",
+      minWidth: "0",
+      maxWidth: "100%",
     },
   },
   headRow: {
@@ -782,6 +831,41 @@ const Molding = () => {
     navigate(`/molding/costing-wizard/${transactionId}`);
   };
 
+  const handleDownloadExcel = async (transactionId) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/molding/${transactionId}/download-excel`,
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+
+        console.error("Excel API error:", errorText);
+
+        throw new Error(
+          `Excel download failed (${response.status}): ${errorText}`,
+        );
+      }
+
+      const blob = await response.blob();
+
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${transactionId}_Costing.xlsx`;
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Excel download error:", error);
+      alert("Failed to download Excel.");
+    }
+  };
+
   // EXPORT EXCEL
   const handleExportExcel = async () => {
     try {
@@ -918,7 +1002,7 @@ const Molding = () => {
 
       // PROFIT / LOSS FILTER
       const totalMfgPL = Number(row.__display?.monthlyProfitLoss || 0);
-      if (profitLossFilter === "Profit" && totalMfgPL < 0) {
+      if (profitLossFilter === "Profit" && totalMfgPL <= 0) {
         return false;
       }
       if (profitLossFilter === "Loss" && totalMfgPL >= 0) {
@@ -973,7 +1057,12 @@ const Molding = () => {
   }, [transactions]);
 
   const moldingColumns = useMemo(
-    () => MOLDING_TABLE_COLUMNS(getSavedPeriodValues, handleOpenTransaction),
+    () =>
+      MOLDING_TABLE_COLUMNS(
+        getSavedPeriodValues,
+        handleOpenTransaction,
+        handleDownloadExcel,
+      ),
     [moldingMonthlyReports, salesFinancialYear, salesFromMonth, salesToMonth],
   );
 
@@ -1215,8 +1304,8 @@ const Molding = () => {
               <div className="no-data">No transactions found</div>
             }
             pagination
-            paginationPerPage={10}
-            paginationRowsPerPageOptions={[10, 25, 50, 100]}
+            paginationPerPage={12}
+            paginationRowsPerPageOptions={[12, 25, 50, 100]}
             paginationComponentOptions={{
               rowsPerPageText: "Rows:",
               rangeSeparatorText: "of",

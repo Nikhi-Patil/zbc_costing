@@ -9,6 +9,8 @@ import {
     getAllMoldingData,
     bulkCreateMoldingController,
     calculateMoldingBulkController,
+    updateCurrentMoldingMargins,
+    downloadMoldingExcel
 } from "../controllers/moldingController.js";
 
 const router = express.Router();
@@ -27,6 +29,8 @@ router.post("/bulk", bulkCreateMoldingController);
 
 router.post("/bulk/calculate", calculateMoldingBulkController);
 
+router.get("/:transactionId/download-excel", downloadMoldingExcel);
+
 // GET /api/molding/:transactionId
 router.get("/:transactionId", getMoldingTransactionById);
 
@@ -35,5 +39,7 @@ router.post("/draft", saveDraft);
 
 // POST /api/molding/submit
 router.post("/submit", finalSubmit);
+router.post("/update-current-margin", updateCurrentMoldingMargins);
+
 
 export default router;

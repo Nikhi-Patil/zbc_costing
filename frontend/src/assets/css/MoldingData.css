@@ -355,37 +355,13 @@
   .rdt_TableRow:hover
   .rdt_TableCell:nth-child(5) {
   background: #f5f9ff !important;
-  }
-/* EDIT BUTTON */
-.molding-open-transaction-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: #fff;
-  color: #173d70;
-  cursor: pointer;
-}
-
-.molding-open-transaction-btn:hover {
-  background: #eaf2fb;
-  border-color: #173d70;
-}
-
-.molding-open-transaction-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 /* PROCESS / ASSEMBLY COLUMN TOGGLE */
 .molding-column-toggle-btn {
   height: 30px;
   min-width: 72px;
-  padding: 0 16px;
+  padding: 0 4px;
   border: 1px solid #173d70;
   border-radius: 7px;
   font-size: 12px;
@@ -534,7 +510,7 @@
 .molding-bop-modal-body {
   max-height: calc(88vh - 78px);
   overflow: auto;
-  padding: 16px;
+  padding: 4px;
 }
 
 .molding-bop-message {
@@ -750,3 +726,413 @@
 .molding-datatable-wrapper .rdt_TableCell:last-child {
   border-right: none !important;
 } */
+/* =========================================================
+   PART NO - MAX 2 LINES
+   ========================================================= */
+
+.molding-datatable-wrapper .molding-data-part-no {
+  display: -webkit-box;
+  width: 100%;
+
+  white-space: normal !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  line-clamp: 2;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+
+  line-height: 1.2;
+  text-align: left;
+}
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.molding-datatable-wrapper .status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 50px;
+  padding: 5px 7px;
+
+  border-radius: 20px;
+
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+.molding-datatable-wrapper .status.completed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.molding-datatable-wrapper .status.draft {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.molding-datatable-wrapper .status.submitted {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+/* =========================================================
+   EDIT / PENCIL BUTTON
+   ========================================================= */
+.molding-open-transaction-btn {
+  width: 30px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #2563eb;
+  border-radius: 5px;
+  background: #fff;
+  color: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.molding-open-transaction-btn:hover {
+  background: #2563eb;
+  color: #fff;
+}
+/* Force Molding DataTable cell padding */
+.molding-datatable-wrapper .rdt_TableCell {
+  padding-left: 7px !important;
+  padding-right: 7px !important;
+  box-sizing: border-box !important;
+}
+
+/* Remove padding from the inner cell wrapper */
+.molding-datatable-wrapper .rdt_TableCell > div {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.rdt_columnText {
+  font-size: 10px !important;
+}
+/* =========================================================
+   CUSTOMER NAME - MAX 2 LINES
+   ========================================================= */
+
+.molding-datatable-wrapper .molding-data-customer-name {
+  display: -webkit-box;
+  width: 100%;
+
+  white-space: normal !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  line-clamp: 2;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+
+  line-height: 1.2;
+  text-align: left;
+}
+
+/* =========================================================
+   UPDATE MARGIN BUTTON
+========================================================= */
+
+.molding-margin-update-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  height: 30px;
+  padding: 0 10px;
+
+  border: 1px solid #173d70;
+  border-radius: 6px;
+
+  background: #ffffff;
+  color: #173d70;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.molding-margin-update-btn:hover:not(:disabled) {
+  background: #f4f7fa;
+  border-color: #aeb7c2;
+}
+
+.molding-margin-update-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.molding-margin-modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.molding-margin-modal {
+  width: 460px;
+  max-width: calc(100vw - 30px);
+
+  background: #ffffff;
+
+  border-radius: 10px;
+
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+
+  overflow: hidden;
+}
+
+/* HEADER */
+
+.molding-margin-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  padding: 18px 20px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.molding-margin-modal-header h2 {
+  margin: 0;
+
+  font-size: 17px;
+  font-weight: 700;
+
+  color: #20252b;
+}
+
+.molding-margin-modal-header p {
+  margin: 5px 0 0;
+
+  font-size: 12px;
+  line-height: 1.5;
+
+  color: #6b7280;
+}
+
+.molding-margin-close-btn {
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 5px;
+
+  background: transparent;
+  color: #6b7280;
+
+  cursor: pointer;
+}
+
+.molding-margin-close-btn:hover {
+  background: #f1f3f5;
+  color: #222;
+}
+
+/* BODY */
+
+.molding-margin-modal-body {
+  padding: 18px 20px;
+}
+
+/* WARNING */
+
+.molding-margin-warning {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  padding: 11px 12px;
+
+  margin-bottom: 16px;
+
+  border: 1px solid #f0d58a;
+  border-radius: 6px;
+
+  background: #fff9e8;
+}
+
+.molding-margin-warning strong {
+  font-size: 12px;
+  color: #7a5a00;
+}
+
+.molding-margin-warning span {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #765f22;
+}
+
+/* MARGIN INFO */
+
+.molding-margin-info {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 8px;
+}
+
+.molding-margin-info > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 10px 11px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+
+  background: #fafbfc;
+}
+
+.molding-margin-info span {
+  font-size: 11px;
+  color: #606975;
+}
+
+.molding-margin-info strong {
+  font-size: 11px;
+  color: #303740;
+}
+
+/* NOTE */
+
+.molding-margin-note {
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+
+  margin-top: 14px;
+
+  padding: 10px 11px;
+
+  border-radius: 6px;
+
+  background: #f4f6f8;
+}
+
+.molding-margin-note strong {
+  font-size: 11px;
+  color: #303740;
+}
+
+.molding-margin-note span {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+/* FOOTER */
+
+.molding-margin-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+
+  padding: 14px 20px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.molding-margin-cancel-btn,
+.molding-margin-confirm-btn {
+  height: 34px;
+
+  padding: 0 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  border-radius: 6px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.molding-margin-cancel-btn {
+  border: 1px solid #d7dce2;
+
+  background: #ffffff;
+  color: #444b54;
+}
+
+.molding-margin-cancel-btn:hover:not(:disabled) {
+  background: #f5f6f7;
+}
+
+.molding-margin-confirm-btn {
+  border: 1px solid #303840;
+
+  background: #303840;
+  color: #ffffff;
+}
+
+.molding-margin-confirm-btn:hover:not(:disabled) {
+  background: #20262c;
+}
+
+.molding-margin-cancel-btn:disabled,
+.molding-margin-confirm-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* SPINNER */
+
+.spin {
+  animation: molding-margin-spin 0.8s linear infinite;
+}
+
+@keyframes molding-margin-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

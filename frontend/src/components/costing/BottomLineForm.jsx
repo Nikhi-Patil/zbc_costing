@@ -223,7 +223,7 @@ function BottomLineForm({
               </label>
               <input
                 type="text"
-                className="form-control conversion-highlight"
+                className="form-control  Total-part-cost"
                 value={totalPartCost.toFixed(2)}
                 readOnly
               />

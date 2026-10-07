@@ -1,7 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
-import { RefreshCw, Search, X, Pencil } from "lucide-react";
+import {
+  RefreshCw,
+  Search,
+  X,
+  Pencil,
+  RotateCcw,
+  FileSpreadsheet,
+} from "lucide-react";
 import API_BASE_URL from "../../config/api";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import "../../assets/css/MoldingData.css";
@@ -29,19 +36,16 @@ function getMonthName(month) {
   );
   return found?.label ?? found?.name ?? "—";
 }
+
 const getFinancialMonthLabel = (month, financialYear) => {
   const monthNumber = Number(month);
-
   if (!monthNumber || !financialYear) return "—";
-
   const startYear = Number(String(financialYear).slice(0, 4));
 
   // April-Dec = financial year's starting year
   // Jan-Mar   = financial year's ending year
   const calendarYear = monthNumber >= 4 ? startYear : startYear + 1;
-
   const date = new Date(calendarYear, monthNumber - 1, 1);
-
   return date
     .toLocaleDateString("en-US", {
       month: "short",
@@ -60,7 +64,7 @@ const TABLE_COLUMNS = [
     center: true,
   },
   {
-    name: "TRANS ID",
+    name: "Trans ID",
     selector: (row) => row.transaction_id,
     cell: (row) => formatValue(row.transaction_id),
     sortable: true,
@@ -68,16 +72,22 @@ const TABLE_COLUMNS = [
     center: true,
   },
   {
-    name: "Customer",
+    name: "Customer Name",
     selector: (row) => row.customer_name,
-    cell: (row) => formatValue(row.customer_name),
+    cell: (row) => (
+      <span className="molding-data-customer-name">
+        {formatValue(row.customer_name)}
+      </span>
+    ),
     sortable: true,
     width: "180px",
   },
   {
     name: "Part No.",
     selector: (row) => row.part_no,
-    cell: (row) => formatValue(row.part_no),
+    cell: (row) => (
+      <span className="molding-data-part-no">{formatValue(row.part_no)}</span>
+    ),
     sortable: true,
     width: "180px",
     style: {
@@ -116,7 +126,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.sub_department,
     cell: (row) => formatValue(row.sub_department),
     sortable: true,
-    width: "80px",
+    width: "50px",
     center: true,
   },
   {
@@ -141,15 +151,15 @@ const TABLE_COLUMNS = [
     selector: (row) => row.rm_im_code,
     cell: (row) => formatValue(row.rm_im_code),
     sortable: true,
-    width: "90px",
+    width: "70px",
     center: true,
   },
   {
-    name: "Polymer Name",
+    name: "Polymer",
     selector: (row) => row.polymer_name,
     cell: (row) => formatValue(row.polymer_name),
     sortable: true,
-    width: "70px",
+    width: "60px",
     center: true,
   },
   {
@@ -167,7 +177,7 @@ const TABLE_COLUMNS = [
     cell: (row) =>
       getFinancialMonthLabel(row.comp_month, row.historical_financial_year),
     sortable: true,
-    width: "70px",
+    width: "50px",
     center: true,
   },
   {
@@ -175,7 +185,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.compound_rate,
     cell: (row) => formatNumber(row.compound_rate, 0),
     sortable: true,
-    width: "75px",
+    width: "50px",
     center: true,
   },
   {
@@ -183,7 +193,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.net_weight,
     cell: (row) => formatNumber(row.net_weight, 0),
     sortable: true,
-    width: "60px",
+    width: "50px",
     center: true,
   },
   {
@@ -191,7 +201,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.gross_weight,
     cell: (row) => formatNumber(row.gross_weight, 0),
     sortable: true,
-    width: "60px",
+    width: "50px",
     center: true,
   },
   {
@@ -199,15 +209,13 @@ const TABLE_COLUMNS = [
     selector: (row) => row.loading_per,
     cell: (row) => {
       const value = row.loading_per;
-
       if (value === null || value === undefined || value === "") {
         return "—";
       }
-
       return `${formatNumber(value, 0)} %`;
     },
     sortable: true,
-    width: "65px",
+    width: "55px",
     center: true,
   },
   {
@@ -215,7 +223,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.total_rm_cost,
     cell: (row) => formatNumber(row.total_rm_cost, 0),
     sortable: true,
-    width: "70px",
+    width: "50px",
     center: true,
   },
   {
@@ -223,9 +231,7 @@ const TABLE_COLUMNS = [
     selector: (row) => Number(row.bop_count || 0),
     cell: (row) => {
       const count = Number(row.bop_count || 0);
-
       if (!count) return "—";
-
       return (
         <button
           type="button"
@@ -241,7 +247,7 @@ const TABLE_COLUMNS = [
       );
     },
     sortable: true,
-    width: "80px",
+    width: "50px",
     center: true,
     ignoreRowClick: true,
   },
@@ -250,7 +256,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.total_bop_cost,
     cell: (row) => formatNumber(row.total_bop_cost, 0),
     sortable: true,
-    width: "75px",
+    width: "65px",
     center: true,
   },
   {
@@ -258,7 +264,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.final_rm_cost,
     cell: (row) => formatNumber(row.final_rm_cost, 0),
     sortable: true,
-    width: "75px",
+    width: "65px",
     center: true,
   },
   {
@@ -270,11 +276,11 @@ const TABLE_COLUMNS = [
     center: true,
   },
   {
-    name: "Machine T",
+    name: "M/C Tonnage",
     selector: (row) => row.machine_tonnage,
     cell: (row) => formatValue(row.machine_tonnage),
     sortable: true,
-    width: "80px",
+    width: "60px",
     center: true,
   },
   {
@@ -282,7 +288,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.shift_rate,
     cell: (row) => formatNumber(row.shift_rate, 0),
     sortable: true,
-    width: "85px",
+    width: "60px",
     center: true,
   },
   {
@@ -290,7 +296,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.total_cavity,
     cell: (row) => formatNumber(row.total_cavity, 0),
     sortable: true,
-    width: "65px",
+    width: "50px",
     center: true,
   },
   {
@@ -298,7 +304,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.running_cavity,
     cell: (row) => formatNumber(row.running_cavity, 0),
     sortable: true,
-    width: "75px",
+    width: "60px",
     center: true,
   },
   {
@@ -306,7 +312,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.cycle_time,
     cell: (row) => formatNumber(row.cycle_time, 0),
     sortable: true,
-    width: "75px",
+    width: "50px",
     center: true,
   },
   {
@@ -314,23 +320,21 @@ const TABLE_COLUMNS = [
     selector: (row) => row.shift_time_efficiency,
     cell: (row) => {
       const value = row.shift_time_efficiency;
-
       if (value === null || value === undefined || value === "") {
         return "—";
       }
-
       return `${formatNumber(value, 0)} %`;
     },
     sortable: true,
-    width: "80px",
+    width: "50px",
     center: true,
   },
   {
-    name: "Efficiency",
+    name: "Effic",
     selector: (row) => row.efficiency,
     cell: (row) => formatNumber(row.efficiency, 0),
     sortable: true,
-    width: "80px",
+    width: "50px",
     center: true,
   },
   {
@@ -338,7 +342,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.total_shots,
     cell: (row) => formatNumber(row.total_shots, 0),
     sortable: true,
-    width: "60px",
+    width: "50px",
     center: true,
   },
   {
@@ -346,7 +350,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.total_production_per_shift,
     cell: (row) => formatNumber(row.total_production_per_shift, 0),
     sortable: true,
-    width: "70px",
+    width: "50px",
     center: true,
   },
   // {
@@ -370,7 +374,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.process_cost_a,
     cell: (row) => formatNumber(row.process_cost_a, 0),
     sortable: true,
-    width: "80px",
+    width: "50px",
     center: true,
   },
   {
@@ -378,7 +382,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.post_curing,
     cell: (row) => formatNumber(row.post_curing, 0),
     sortable: true,
-    width: "65px",
+    width: "50px",
     center: true,
   },
   {
@@ -386,7 +390,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.finishing,
     cell: (row) => formatNumber(row.finishing, 0),
     sortable: true,
-    width: "75px",
+    width: "60px",
     center: true,
   },
   {
@@ -394,7 +398,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.inspection,
     cell: (row) => formatNumber(row.inspection, 0),
     sortable: true,
-    width: "75px",
+    width: "50px",
     center: true,
   },
   {
@@ -402,7 +406,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.shot_blasting,
     cell: (row) => formatNumber(row.shot_blasting, 0),
     sortable: true,
-    width: "65px",
+    width: "50px",
     center: true,
   },
   {
@@ -410,7 +414,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.vapour_degreasing,
     cell: (row) => formatNumber(row.vapour_degreasing, 0),
     sortable: true,
-    width: "80px",
+    width: "50px",
     center: true,
   },
   {
@@ -418,7 +422,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.chromating,
     cell: (row) => formatNumber(row.chromating, 0),
     sortable: true,
-    width: "85px",
+    width: "50px",
     center: true,
   },
   {
@@ -426,7 +430,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.phospating,
     cell: (row) => formatNumber(row.phospating, 0),
     sortable: true,
-    width: "85px",
+    width: "50px",
     center: true,
   },
   {
@@ -435,7 +439,7 @@ const TABLE_COLUMNS = [
     cell: (row) => formatNumber(row.adhesive, 0),
     sortable: true,
     center: true,
-    width: "65px",
+    width: "50px",
   },
   {
     name: "Painting",
@@ -443,7 +447,7 @@ const TABLE_COLUMNS = [
     cell: (row) => formatNumber(row.painting, 0),
     sortable: true,
     center: true,
-    width: "65px",
+    width: "50px",
   },
   {
     name: "Cylindrical Grinding",
@@ -451,30 +455,30 @@ const TABLE_COLUMNS = [
     cell: (row) => formatNumber(row.cylindrical_grinding, 0),
     sortable: true,
     center: true,
-    width: "85px",
+    width: "50px",
   },
   {
-    name: "Assembly Qty",
+    name: "Assy Qty",
     selector: (row) => row.assembly_qty,
     cell: (row) => formatNumber(row.assembly_qty, 0),
     sortable: true,
     center: true,
-    width: "75px",
+    width: "50px",
   },
   {
-    name: "Assembly / Cost",
+    name: "Assy / Cost",
     selector: (row) => row.assembly_per_cost,
     cell: (row) => formatNumber(row.assembly_per_cost, 0),
     sortable: true,
-    width: "75px",
+    width: "50px",
     center: true,
   },
   {
-    name: "Total Assembly Cost",
+    name: "Total Assy Cost",
     selector: (row) => row.total_assembly_cost,
     cell: (row) => formatNumber(row.total_assembly_cost, 0),
     sortable: true,
-    width: "85px",
+    width: "50px",
     center: true,
   },
   {
@@ -482,7 +486,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.process_cost_b,
     cell: (row) => formatNumber(row.process_cost_b, 0),
     sortable: true,
-    width: "80px",
+    width: "50px",
     center: true,
   },
   {
@@ -490,7 +494,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.conversion_cost,
     cell: (row) => formatNumber(row.conversion_cost, 0),
     sortable: true,
-    width: "80px",
+    width: "65px",
     center: true,
   },
   {
@@ -498,23 +502,31 @@ const TABLE_COLUMNS = [
     selector: (row) => row.subtotal_a,
     cell: (row) => formatNumber(row.subtotal_a, 0),
     sortable: true,
-    width: "85px",
+    width: "50px",
     center: true,
+    conditionalCellStyles: [
+      {
+        when: () => true,
+        style: {
+          backgroundColor: "#00ff1565",
+        },
+      },
+    ],
   },
   {
     name: "ICC",
     selector: (row) => row.icc_on_rm_cost,
     cell: (row) => formatNumber(row.icc_on_rm_cost, 0),
     sortable: true,
-    width: "55px",
+    width: "50px",
     center: true,
   },
   {
-    name: "Rejection",
+    name: "Rej.",
     selector: (row) => row.rej_on_subtotal_cost,
     cell: (row) => formatNumber(row.rej_on_subtotal_cost, 0),
     sortable: true,
-    width: "70px",
+    width: "50px",
     center: true,
   },
   {
@@ -522,7 +534,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.oh_on_subtotal_cost,
     cell: (row) => formatNumber(row.oh_on_subtotal_cost, 0),
     sortable: true,
-    width: "55px",
+    width: "50px",
     center: true,
   },
   {
@@ -530,15 +542,15 @@ const TABLE_COLUMNS = [
     selector: (row) => row.profit_on_subtotal_cost,
     cell: (row) => formatNumber(row.profit_on_subtotal_cost, 0),
     sortable: true,
-    width: "55px",
+    width: "50px",
     center: true,
   },
   {
-    name: "Packaging",
+    name: "Packing",
     selector: (row) => row.packaging_on_subtotal_cost,
     cell: (row) => formatNumber(row.packaging_on_subtotal_cost, 0),
     sortable: true,
-    width: "75px",
+    width: "60px",
     center: true,
   },
   {
@@ -546,7 +558,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.transport_on_subtotal_cost,
     cell: (row) => formatNumber(row.transport_on_subtotal_cost, 0),
     sortable: true,
-    width: "75px",
+    width: "60px",
     center: true,
   },
   {
@@ -554,24 +566,50 @@ const TABLE_COLUMNS = [
     selector: (row) => row.subtotal_b,
     cell: (row) => formatNumber(row.subtotal_b, 0),
     sortable: true,
-    width: "75px",
+    width: "50px",
     center: true,
+    conditionalCellStyles: [
+      {
+        when: () => true,
+        style: {
+          backgroundColor: "#00ff1565",
+        },
+      },
+    ],
   },
   {
     name: "Total Part Cost",
     selector: (row) => row.part_cost,
     cell: (row) => formatNumber(row.part_cost, 2),
     sortable: true,
-    width: "100px",
+    width: "60px",
     center: true,
+    conditionalCellStyles: [
+      {
+        when: () => true,
+        style: {
+          backgroundColor: "#fbff0065",
+          fontWeight: "bold",
+        },
+      },
+    ],
   },
   {
     name: "Sales Cost",
     selector: (row) => row.sell_cost,
     cell: (row) => formatNumber(row.sell_cost, 2),
     sortable: true,
-    width: "75px",
+    width: "50px",
     center: true,
+    conditionalCellStyles: [
+      {
+        when: () => true,
+        style: {
+          backgroundColor: "#00fbff65",
+          fontWeight: "bold",
+        },
+      },
+    ],
   },
   {
     name: "Sales P/L",
@@ -587,7 +625,7 @@ const TABLE_COLUMNS = [
       );
     },
     sortable: true,
-    width: "80px",
+    width: "50px",
     center: true,
   },
   {
@@ -595,7 +633,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.monthly_quantity,
     cell: (row) => formatNumber(row.monthly_quantity, 0),
     sortable: true,
-    width: "90px",
+    width: "70px",
     center: true,
   },
   {
@@ -603,7 +641,6 @@ const TABLE_COLUMNS = [
     selector: (row) => Number(row.monthly_profit_loss || 0),
     cell: (row) => {
       const value = Number(row.monthly_profit_loss || 0);
-
       return (
         <span className={value >= 0 ? "profit" : "loss"}>
           {value >= 0 ? "+" : "-"}
@@ -612,7 +649,7 @@ const TABLE_COLUMNS = [
       );
     },
     sortable: true,
-    width: "90px",
+    width: "70px",
     center: true,
   },
   {
@@ -634,10 +671,18 @@ const TABLE_COLUMNS = [
   {
     name: "Status",
     selector: (row) => row.status,
-    cell: (row) => formatValue(row.status),
     sortable: true,
-    width: "60px",
+    width: "75px",
     center: true,
+    cell: (row) => (
+      <span
+        className={`status ${String(row.status || "")
+          .trim()
+          .toLowerCase()}`}
+      >
+        {row.status || "—"}
+      </span>
+    ),
   },
   {
     name: "Updated At",
@@ -655,7 +700,6 @@ const customStyles = {
       minWidth: "100%",
     },
   },
-
   headRow: {
     style: {
       minHeight: "55px",
@@ -666,10 +710,10 @@ const customStyles = {
 
   headCells: {
     style: {
-      paddingLeft: "5px",
-      paddingRight: "5px",
+      paddingLeft: "7px",
+      paddingRight: "7px",
       color: "#fff",
-      fontSize: "13px",
+      fontSize: "10px",
       fontWeight: 700,
       whiteSpace: "normal",
       overflowWrap: "break-word",
@@ -679,7 +723,6 @@ const customStyles = {
       borderRight: "1px solid #dce5f0",
     },
   },
-
   rows: {
     style: {
       minHeight: "35px",
@@ -687,36 +730,31 @@ const customStyles = {
       color: "#475569",
       borderBottom: "1px solid #cdcbcb",
     },
-
     highlightOnHoverStyle: {
       backgroundColor: "#f5f9ff",
       outline: "none",
     },
   },
-
   cells: {
     style: {
-      paddingLeft: "5px",
-      paddingRight: "5px",
+      paddingLeft: "7px",
+      paddingRight: "7px",
       color: "#000000",
       whiteSpace: "nowrap",
       overflow: "hidden",
       textOverflow: "ellipsis",
-
-      // Vertical + horizontal grid lines
       borderRight: "1px solid #cdcbcb",
     },
   },
-
   pagination: {
     style: {
       minHeight: "30px",
-      // borderTop: "1px solid #e7ebf0",
       color: "#64748b",
       fontSize: "12px",
     },
   },
 };
+
 const toNumber = (value) => {
   const number = Number(value);
   return Number.isFinite(number) ? number : 0;
@@ -744,17 +782,10 @@ const getHistoricalCompoundRate = async ({
       financial_year: String(financialYear ?? "").trim(),
       month: String(month ?? "").trim(),
     });
-
-    console.log(
-      "Historical Compound Rate Request:",
-      `${API_BASE_URL}/historical-compound-rate?${params.toString()}`,
-    );
-
     const response = await fetch(
       `${API_BASE_URL}/historical-compound-rate?${params.toString()}`,
     );
     const result = await response.json();
-    console.log("Historical Compound Rate Response:", result);
     if (!response.ok) {
       return null;
     }
@@ -863,28 +894,25 @@ export default function MoldingData() {
   const [bopLoading, setBopLoading] = useState(false);
   const [showProcessAssemblyColumns, setShowProcessAssemblyColumns] =
     useState(false);
-
-  // MTRB = only MTRB records. MOLDING = all records except MTRB records.
-  // Keep this separate from the row-level Sub Category filter below.
   const [subCategoryFilter, setSubCategoryFilter] = useState("MOLDING");
 
   // ROW-LEVEL TABLE FILTERS
-  // Selections are kept separate from applied values so the table changes
-  // only after the user clicks Apply.
   const [selectedCustomer, setSelectedCustomer] = useState("All");
   const [selectedPartNo, setSelectedPartNo] = useState("All");
   const [selectedTableSubCategory, setSelectedTableSubCategory] =
     useState("All");
   const [selectedSalesPL, setSelectedSalesPL] = useState("All");
-
   const [customerFilter, setCustomerFilter] = useState("All");
   const [partNoFilter, setPartNoFilter] = useState("All");
   const [tableSubCategoryFilter, setTableSubCategoryFilter] = useState("All");
   const [salesPLFilter, setSalesPLFilter] = useState("All");
 
+  const [showMarginUpdateModal, setShowMarginUpdateModal] = useState(false);
+  const [marginUpdateLoading, setMarginUpdateLoading] = useState(false);
+  const [marginUpdateResult, setMarginUpdateResult] = useState(null);
+
   // HISTORICAL REPORT
   const financialYears = useMemo(() => generateFinancialYears(), []);
-
   const [historicalFinancialYear, setHistoricalFinancialYear] = useState(() => {
     const years = generateFinancialYears();
     return (
@@ -1195,13 +1223,11 @@ export default function MoldingData() {
       },
       search.trim() ? 300 : 0,
     );
-
     return () => clearTimeout(timer);
   }, [search, subCategoryFilter]);
 
   useEffect(() => {
     let cancelled = false;
-
     const loadHistoricalReport = async () => {
       try {
         setHistoricalLoading(true);
@@ -1225,7 +1251,6 @@ export default function MoldingData() {
 
   useEffect(() => {
     let cancelled = false;
-
     const calculateHistoricalReport = async () => {
       // rows now contains ALL transactions
       if (!Array.isArray(rows) || rows.length === 0) {
@@ -1236,50 +1261,26 @@ export default function MoldingData() {
       try {
         setHistoricalLoading(true);
 
-        console.log(
-          `[Historical Calculation] Starting calculation for ${rows.length} transactions`,
-        );
-
-        // ============================================================
         // 1. CALCULATE ALL TRANSACTIONS
-        // ============================================================
         const calculated = await buildHistoricalRows({
           sourceRows: rows,
           financialYear: historicalFinancialYear,
           month: historicalMonth,
         });
-
         if (cancelled) return;
 
-        console.log(
-          `[Historical Calculation] Completed: ${calculated.length} transactions`,
-        );
-
-        // ============================================================
         // 2. SHOW CALCULATED DATA
-        // ============================================================
         setHistoricalRows(calculated);
 
-        // ============================================================
         // 3. SAVE THE SAME CALCULATED DATA
-        // ============================================================
         if (calculated.length > 0) {
           try {
             setHistoricalSaveLoading(true);
-
-            console.log(
-              `[Historical Save] Saving ${calculated.length} transactions`,
-            );
-
             await saveHistoricalMonthlyReport({
               calculatedRows: calculated,
               financialYear: historicalFinancialYear,
               month: historicalMonth,
             });
-
-            console.log(
-              `[Historical Save] Successfully saved ${calculated.length} transactions`,
-            );
           } catch (saveError) {
             console.error("[Historical Save] Error:", saveError);
           } finally {
@@ -1290,7 +1291,6 @@ export default function MoldingData() {
         }
       } catch (error) {
         console.error("[Historical Calculation] Error:", error);
-
         if (!cancelled) {
           setHistoricalRows([]);
         }
@@ -1302,7 +1302,6 @@ export default function MoldingData() {
     };
 
     calculateHistoricalReport();
-
     return () => {
       cancelled = true;
     };
@@ -1319,18 +1318,14 @@ export default function MoldingData() {
 
   const openBopDetails = async (row) => {
     if (!row?.transaction_id) return;
-
     try {
       setSelectedBopRow(row);
       setBopDetails([]);
       setBopLoading(true);
-
       const response = await fetch(
         `${API_BASE_URL}/molding/${encodeURIComponent(row.transaction_id)}`,
       );
-
       const result = await response.json();
-
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Failed to load BOP details");
       }
@@ -1350,6 +1345,40 @@ export default function MoldingData() {
   };
 
   const tableSourceRows = historicalRows.length ? historicalRows : rows;
+
+  const handleDownloadExcel = async (transactionId) => {
+    if (!transactionId) return;
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/molding/${encodeURIComponent(
+          transactionId,
+        )}/download-excel`,
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to download Excel");
+      }
+
+      const blob = await response.blob();
+
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${transactionId}_Costing.xlsx`;
+
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Excel download error:", error);
+      alert("Failed to download Excel.");
+    }
+  };
 
   const customerOptions = useMemo(() => {
     const values = Array.from(
@@ -1392,14 +1421,12 @@ export default function MoldingData() {
       ) {
         return false;
       }
-
       if (
         partNoFilter !== "All" &&
         normalizeKey(row?.part_no) !== normalizeKey(partNoFilter)
       ) {
         return false;
       }
-
       if (
         tableSubCategoryFilter !== "All" &&
         normalizeKey(row?.sub_category) !== normalizeKey(tableSubCategoryFilter)
@@ -1408,15 +1435,13 @@ export default function MoldingData() {
       }
 
       const salesPL = toNumber(row?.sales_profit_loss);
-
-      if (salesPLFilter === "Profit" && salesPL < 0) {
+      if (salesPLFilter === "Profit" && salesPL <= 0) {
         return false;
       }
 
-      if (salesPLFilter === "Loss" && salesPL >= 0) {
+      if (salesPLFilter === "Loss" && salesPL > 0) {
         return false;
       }
-
       return true;
     });
   }, [
@@ -1432,9 +1457,6 @@ export default function MoldingData() {
     setPartNoFilter(selectedPartNo);
     setTableSubCategoryFilter(selectedTableSubCategory);
     setSalesPLFilter(selectedSalesPL);
-
-    // Year and month are now applied with the same Apply button.
-    // Existing historical calculation logic remains unchanged.
     setHistoricalFinancialYear(selectedHistoricalFinancialYear);
     setHistoricalMonth(Number(selectedHistoricalMonth));
 
@@ -1485,28 +1507,49 @@ export default function MoldingData() {
     const openColumn = {
       name: "Edit",
       cell: (row) => (
-        <button
-          type="button"
-          className="molding-open-transaction-btn"
-          onClick={(event) => {
-            event.stopPropagation();
+        <div className="molding-action-buttons">
+          {/* EDIT */}
+          <button
+            type="button"
+            className="molding-open-transaction-btn"
+            onClick={(event) => {
+              event.stopPropagation();
 
-            if (row.transaction_id) {
-              navigate(
-                `/molding/costing-wizard/${encodeURIComponent(
-                  row.transaction_id,
-                )}`,
-              );
-            }
-          }}
-          disabled={!row.transaction_id}
-          title="Edit transaction"
-          aria-label="Edit transaction"
-        >
-          <Pencil size={15} strokeWidth={2} />
-        </button>
+              if (row.transaction_id) {
+                navigate(
+                  `/molding/costing-wizard/${encodeURIComponent(
+                    row.transaction_id,
+                  )}`,
+                );
+              }
+            }}
+            disabled={!row.transaction_id}
+            title="Edit transaction"
+            aria-label="Edit transaction"
+          >
+            <Pencil size={15} strokeWidth={2} />
+          </button>
+
+          {/* DOWNLOAD EXCEL */}
+          <button
+            type="button"
+            className="molding-download-btn"
+            onClick={(event) => {
+              event.stopPropagation();
+
+              if (row.transaction_id) {
+                handleDownloadExcel(row.transaction_id);
+              }
+            }}
+            disabled={!row.transaction_id}
+            title="Download Excel"
+            aria-label="Download Excel"
+          >
+            <FileSpreadsheet size={15} strokeWidth={2} />
+          </button>
+        </div>
       ),
-      width: "50px",
+      width: "75px",
       center: true,
       ignoreRowClick: true,
     };
@@ -1514,6 +1557,55 @@ export default function MoldingData() {
     return [...columns, openColumn];
   }, [showProcessAssemblyColumns, subCategoryFilter]);
 
+  const handleUpdateCurrentMargin = async () => {
+    try {
+      setMarginUpdateLoading(true);
+      setError("");
+      const response = await fetch(
+        `${API_BASE_URL}/molding/update-current-margin`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            updatedBy:
+              JSON.parse(localStorage.getItem("user") || "null")?.user_name ||
+              null,
+          }),
+        },
+      );
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Failed to update molding margins");
+      }
+      setMarginUpdateResult(result);
+      setShowMarginUpdateModal(false);
+
+      // Refresh molding table
+      await loadData(search, subCategoryFilter);
+
+      // Refresh historical calculation/report
+      if (rows.length > 0) {
+        setHistoricalLoading(true);
+        try {
+          const calculated = await buildHistoricalRows({
+            sourceRows: rows,
+            financialYear: historicalFinancialYear,
+            month: historicalMonth,
+          });
+          setHistoricalRows(calculated);
+        } finally {
+          setHistoricalLoading(false);
+        }
+      }
+    } catch (error) {
+      console.error("Margin update error:", error);
+      setError(error.message || "Failed to update molding margins");
+    } finally {
+      setMarginUpdateLoading(false);
+    }
+  };
   return (
     <div className="molding-data-page">
       <div className="molding-data-header">
@@ -1585,6 +1677,25 @@ export default function MoldingData() {
               }
             >
               {showProcessAssemblyColumns ? "HIDE" : "VIEW"}
+            </button>
+
+            <button
+              type="button"
+              className="molding-margin-update-btn"
+              onClick={() => setShowMarginUpdateModal(true)}
+              disabled={
+                loading ||
+                historicalLoading ||
+                historicalSaveLoading ||
+                marginUpdateLoading
+              }
+              title="Update transactions using current Margin Master"
+            >
+              <RotateCcw
+                size={17}
+                className={marginUpdateLoading ? "spin" : ""}
+              />
+              {marginUpdateLoading ? "Updating..." : "Update"}
             </button>
           </div>
         </div>
@@ -1723,8 +1834,8 @@ export default function MoldingData() {
               </div>
             }
             pagination
-            paginationPerPage={10}
-            paginationRowsPerPageOptions={[10, 20, 50, 100]}
+            paginationPerPage={12}
+            paginationRowsPerPageOptions={[12, 25, 50, 100]}
             highlightOnHover
             dense
             persistTableHead
@@ -1839,6 +1950,101 @@ export default function MoldingData() {
                   </table>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      {showMarginUpdateModal && (
+        <div
+          className="molding-margin-modal-overlay"
+          onClick={() => {
+            if (!marginUpdateLoading) {
+              setShowMarginUpdateModal(false);
+            }
+          }}
+        >
+          <div
+            className="molding-margin-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="molding-margin-modal-header">
+              <div>
+                <h2>Update Current Margin</h2>
+                <p>
+                  Recalculate all molding transactions using the current Margin
+                  Master percentages.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="molding-margin-close-btn"
+                onClick={() => setShowMarginUpdateModal(false)}
+                disabled={marginUpdateLoading}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="molding-margin-modal-body">
+              <div className="molding-margin-info">
+                <div>
+                  <span>ICC</span>
+                  <strong>Current Master</strong>
+                </div>
+
+                <div>
+                  <span>Rejection</span>
+                  <strong>Current Master</strong>
+                </div>
+
+                <div>
+                  <span>O/H</span>
+                  <strong>Current Master</strong>
+                </div>
+
+                <div>
+                  <span>Profit</span>
+                  <strong>Current Master</strong>
+                </div>
+
+                <div>
+                  <span>Packaging</span>
+                  <strong>Current Master</strong>
+                </div>
+
+                <div>
+                  <span>Transport</span>
+                  <strong>Current Master</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="molding-margin-modal-footer">
+              <button
+                type="button"
+                className="molding-margin-cancel-btn"
+                onClick={() => setShowMarginUpdateModal(false)}
+                disabled={marginUpdateLoading}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="molding-margin-confirm-btn"
+                onClick={handleUpdateCurrentMargin}
+                disabled={marginUpdateLoading}
+              >
+                <RotateCcw
+                  size={16}
+                  className={marginUpdateLoading ? "spin" : ""}
+                />
+
+                {marginUpdateLoading
+                  ? "Updating..."
+                  : "Update All Transactions"}
+              </button>
             </div>
           </div>
         </div>

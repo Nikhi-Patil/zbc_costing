@@ -1,4 +1,5 @@
 import zbcDB from "../config/zbcDB.js";
+import adminDB from "../config/adminDB.js";
 
 const getBopMonthlyRate = async ({
     bopErpCode,
@@ -577,4 +578,215 @@ export const submitFinal = async (transactionId) => {
         transactionId,
         status: "FINAL",
     };
+};
+
+export const updateAllMoldingMargins = async (updatedBy = null) => {
+    const connection = await zbcDB.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // 1. GET CURRENT MARGIN MASTER FROM adminDB
+        const [marginRows] = await adminDB.query(`
+            SELECT id, margin_type, percentage
+            FROM margin_master
+            ORDER BY id ASC
+        `);
+
+        if (!marginRows || marginRows.length === 0) {
+            throw new Error(
+                "No margin percentages found in Margin Master"
+            );
+        }
+
+        // 2. CREATE MARGIN MAP
+        const marginMap = {};
+        marginRows.forEach((row) => {
+            const key = String(row.margin_type || "")
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]/g, "");
+            marginMap[key] = Number(row.percentage || 0);
+        });
+
+        // 3. GET CURRENT VALUES FROM MARGIN MASTER
+        const icc = marginMap.icc ?? 0;
+        const rejection = marginMap.rejection ?? 0;
+        const overhead = marginMap.overhead ?? marginMap.overheadoh ?? 0;
+        const profit = marginMap.profit ?? 0;
+        const transport = marginMap.transport ?? 0;
+        const packaging = marginMap.packaging ?? 0;
+
+        // 4. UPDATE ALL MOLDING TRANSACTIONS
+        const [updateResult] = await connection.query(
+            `
+            UPDATE molding_table
+            SET
+                icc_on_rm = ?,
+                rej_on_subtotal = ?,
+                oh_on_subtotal = ?,
+                profit_on_subtotal = ?,
+                packaging_on_subtotal = ?,
+                transport_on_subtotal = ?,
+                
+                icc_on_rm_cost =
+                    COALESCE(final_rm_cost, 0) * ? / 100,
+
+                rej_on_subtotal_cost =
+                    COALESCE(subtotal_a, 0) * ? / 100,
+
+                oh_on_subtotal_cost =
+                    COALESCE(subtotal_a, 0) * ? / 100,
+
+                profit_on_subtotal_cost =
+                    COALESCE(subtotal_a, 0) * ? / 100,
+
+                packaging_on_subtotal_cost =
+                    COALESCE(subtotal_a, 0) * ? / 100,
+
+                transport_on_subtotal_cost =
+                    COALESCE(subtotal_a, 0) * ? / 100,
+
+                subtotal_b =
+                    (COALESCE(final_rm_cost, 0) * ? / 100) +
+                    (COALESCE(subtotal_a, 0) * ? / 100) +
+                    (COALESCE(subtotal_a, 0) * ? / 100) +
+                    (COALESCE(subtotal_a, 0) * ? / 100) +
+                    (COALESCE(subtotal_a, 0) * ? / 100) +
+                    (COALESCE(subtotal_a, 0) * ? / 100),
+
+                part_cost = COALESCE(subtotal_a, 0)+
+                    (
+                        (COALESCE(final_rm_cost, 0) * ? / 100) +
+                        (COALESCE(subtotal_a, 0) * ? / 100) +
+                        (COALESCE(subtotal_a, 0) * ? / 100) +
+                        (COALESCE(subtotal_a, 0) * ? / 100) +
+                        (COALESCE(subtotal_a, 0) * ? / 100) +
+                        (COALESCE(subtotal_a, 0) * ? / 100)
+                    ),
+
+                sales_profit_loss = COALESCE(customer_sales_cost, 0) -
+                    (
+                        COALESCE(subtotal_a, 0) +
+                        (
+                            (COALESCE(final_rm_cost, 0) * ? / 100) +
+                            (COALESCE(subtotal_a, 0) * ? / 100) +
+                            (COALESCE(subtotal_a, 0) * ? / 100) +
+                            (COALESCE(subtotal_a, 0) * ? / 100) +
+                            (COALESCE(subtotal_a, 0) * ? / 100) +
+                            (COALESCE(subtotal_a, 0) * ? / 100)
+                        )
+                    ),
+
+                monthly_profit_loss =(
+                        COALESCE(customer_sales_cost, 0)-
+                        (
+                            COALESCE(subtotal_a, 0) +
+                            (
+                                (COALESCE(final_rm_cost, 0) * ? / 100) +
+                                (COALESCE(subtotal_a, 0) * ? / 100) +
+                                (COALESCE(subtotal_a, 0) * ? / 100) +
+                                (COALESCE(subtotal_a, 0) * ? / 100) +
+                                (COALESCE(subtotal_a, 0) * ? / 100) +
+                                (COALESCE(subtotal_a, 0) * ? / 100)
+                            )
+                        )
+                    )
+                    *
+                    COALESCE(monthly_quantity, 0),
+
+                buying_profit_loss = COALESCE(customer_sales_cost, 0) -
+                    (
+                        COALESCE(subtotal_a, 0)+
+                        (
+                            (COALESCE(final_rm_cost, 0) * ? / 100) +
+                            (COALESCE(subtotal_a, 0) * ? / 100) +
+                            (COALESCE(subtotal_a, 0) * ? / 100) +
+                            (COALESCE(subtotal_a, 0) * ? / 100) +
+                            (COALESCE(subtotal_a, 0) * ? / 100) +
+                            (COALESCE(subtotal_a, 0) * ? / 100)
+                        )
+                    ) -
+                    COALESCE(buying_cost, 0)
+            `,
+            [
+                // Margin percentages
+                icc,
+                rejection,
+                overhead,
+                profit,
+                packaging,
+                transport,
+
+                // Individual margin costs
+                icc,
+                rejection,
+                overhead,
+                profit,
+                packaging,
+                transport,
+
+                // Subtotal B
+                icc,
+                rejection,
+                overhead,
+                profit,
+                packaging,
+                transport,
+
+                // Part Cost
+                icc,
+                rejection,
+                overhead,
+                profit,
+                packaging,
+                transport,
+
+                // Sales P/L
+                icc,
+                rejection,
+                overhead,
+                profit,
+                packaging,
+                transport,
+
+                // Monthly P/L
+                icc,
+                rejection,
+                overhead,
+                profit,
+                packaging,
+                transport,
+
+                // Buying P/L
+                icc,
+                rejection,
+                overhead,
+                profit,
+                packaging,
+                transport,
+            ]
+        );
+
+
+        // 6. COMMIT
+        await connection.commit();
+        return {
+            recordsUpdated: updateResult.affectedRows,
+            margins: {
+                icc,
+                rejection,
+                overhead,
+                profit,
+                packaging,
+                transport,
+            },
+        };
+
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
 };

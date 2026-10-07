@@ -1,12 +1,15 @@
 import {
     createDraft,
     updateDraft,
-    submitFinal
+    submitFinal,
+    updateAllMoldingMargins
 } from "../models/moldingModel.js";
 
 import { bulkCreateMolding, calculateMoldingBulk } from "../models/moldingBulkModel.js";
 import zbcDB from "../config/zbcDB.js";
 import adminDB from "../config/adminDB.js";
+import ExcelJS from "exceljs";
+
 
 // SAVE DRAFT
 export const saveDraft = async (req, res) => {
@@ -187,9 +190,7 @@ export const getMoldingTransactions = async (
             );
 
 
-        // ====================================================
         // 5. SUB CATEGORY IDS
-        // ====================================================
 
         const subCategoryIds = [
             ...new Set(
@@ -222,9 +223,7 @@ export const getMoldingTransactions = async (
             );
 
 
-        // ====================================================
         // 6. COMBINE DATA
-        // ====================================================
 
         const transactions =
             moldingRows.map(row => {
@@ -268,17 +267,13 @@ export const getMoldingTransactions = async (
 
                 return {
 
-                    // ====================================================
                     // TRANSACTION
-                    // ====================================================
 
                     transaction_id:
                         row.transaction_id,
 
 
-                    // ====================================================
                     // DISPLAY DATA
-                    // ====================================================
 
                     customer_name:
                         customerName,
@@ -293,9 +288,7 @@ export const getMoldingTransactions = async (
                         subCategory,
 
 
-                    // ====================================================
                     // ORIGINAL IDS
-                    // ====================================================
 
                     customer_id:
                         row.customer_name,
@@ -310,9 +303,7 @@ export const getMoldingTransactions = async (
                         row.sub_category,
 
 
-                    // ====================================================
                     // MOLDING DATA
-                    // ====================================================
 
                     part_no:
                         row.part_no || "",
@@ -335,9 +326,7 @@ export const getMoldingTransactions = async (
             });
 
 
-        // ====================================================
         // RESPONSE
-        // ====================================================
 
         return res.json({
             success: true,
@@ -1302,5 +1291,498 @@ export const bulkCreateMoldingController = async (req, res) => {
             code: error.code,
             sqlState: error.sqlState,
         });
+    }
+};
+
+// UPDATE ALL MOLDING TRANSACTIONS MARGINS
+export const updateCurrentMoldingMargins = async (req, res) => {
+
+    try {
+
+        const updatedBy =
+            req.body?.updatedBy ||
+            req.user?.email ||
+            req.user?.user_name ||
+            null;
+
+        const result =
+            await updateAllMoldingMargins(updatedBy);
+
+        return res.status(200).json({
+            success: true,
+            message:
+                "Molding margins updated successfully",
+            ...result
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Error updating molding margins:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message:
+                "Failed to update molding margins",
+            error: error.message
+        });
+
+    }
+};
+
+// DOWNLOAD INDIVIDUAL MOLDING COSTING AS EXCEL
+export const downloadMoldingExcel = async (req, res) => {
+    try {
+        const { transactionId } = req.params;
+        if (!transactionId) {
+            return res.status(400).json({
+                success: false,
+                message: "Transaction ID is required"
+            });
+        }
+
+        // 1. GET MOLDING TRANSACTION
+        const [rows] = await zbcDB.query(
+            `
+            SELECT *
+            FROM molding_table
+            WHERE transaction_id = ?
+            LIMIT 1
+            `,
+            [transactionId]
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Molding transaction not found"
+            });
+        }
+        const molding = rows[0];
+
+        // 2. GET BOP DATA
+        const [bops] = await zbcDB.query(
+            `
+            SELECT
+                id,
+                part_no,
+                part_id,
+                part_name,
+                fg_code,
+                bop_id,
+                bop_fg_code,
+                bop_part_no,
+                bop_part_name,
+                commodity,
+                supplier_id,
+                supplier_name,
+                assembly_qty AS bop_assembly_qty,
+                financial_year,
+                bop_month,
+                bop_rate,
+                bop_cost
+            FROM bop_part_details
+            WHERE part_no = ?
+            ORDER BY id ASC
+            `,
+            [molding.part_no]
+        );
+
+        // 3. GET CUSTOMER NAME
+        let customerName = molding.customer_name || "";
+        if (molding.customer_name) {
+            try {
+                const [customers] = await adminDB.query(
+                    `
+                    SELECT customer_name
+                    FROM customer_master
+                    WHERE id = ?
+                    LIMIT 1
+                    `,
+                    [molding.customer_name]
+                );
+                if (customers.length > 0) {
+                    customerName = customers[0].customer_name;
+                }
+            } catch (error) {
+                console.warn(
+                    "Customer lookup failed:",
+                    error.message
+                );
+            }
+        }
+
+        // 4. GET PRODUCTION UNIT
+        let productionUnit =
+            molding.production_unit || "";
+        if (molding.production_unit) {
+            try {
+                const [units] = await adminDB.query(
+                    `
+                    SELECT unit
+                    FROM unit_master
+                    WHERE id = ?
+                    LIMIT 1
+                    `,
+                    [molding.production_unit]
+                );
+                if (units.length > 0) {
+                    productionUnit = units[0].unit;
+                }
+            } catch (error) {
+                console.warn(
+                    "Production unit lookup failed:",
+                    error.message
+                );
+            }
+        }
+
+        // 5. GET BILLING UNIT
+        let billingUnit =
+            molding.billing_unit || "";
+        if (molding.billing_unit) {
+            try {
+                const [units] = await adminDB.query(
+                    `
+                    SELECT unit
+                    FROM unit_master
+                    WHERE id = ?
+                    LIMIT 1
+                    `,
+                    [molding.billing_unit]
+                );
+                if (units.length > 0) {
+                    billingUnit = units[0].unit;
+                }
+            } catch (error) {
+                console.warn(
+                    "Billing unit lookup failed:",
+                    error.message
+                );
+            }
+        }
+
+        // 6. CREATE WORKBOOK
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = "Molding Costing System";
+        workbook.lastModifiedBy = "Molding Costing System";
+        const worksheet =
+            workbook.addWorksheet("Molding Costing");
+        worksheet.showGridLines = false;
+
+        // COLUMN WIDTHS
+        worksheet.getColumn("A").width = 31;
+        worksheet.getColumn("B").width = 16;
+        worksheet.getColumn("C").width = 6;
+        worksheet.getColumn("D").width = 12;
+
+        // COLORS
+        const YELLOW = "FFFF00";
+        const GRAY = "C0C0C0";
+        const LIGHT_ORANGE = "FCE4D6";
+        const RED = "FF0000";
+        const WHITE = "FFFFFF";
+        const BLACK = "000000";
+
+        // BORDER
+        const thinBorder = {
+            top: { style: "thin", color: { argb: BLACK } },
+            left: { style: "thin", color: { argb: BLACK } },
+            bottom: { style: "thin", color: { argb: BLACK } },
+            right: { style: "thin", color: { argb: BLACK } }
+        };
+
+        // HELPERS
+        const setValue = (
+            cellAddress,
+            value,
+            options = {}
+        ) => {
+            const cell = worksheet.getCell(cellAddress);
+
+            let finalValue = value;
+
+            if (value === null || value === undefined) {
+                finalValue = "";
+            } else if (options.numeric) {
+                finalValue = Number(value);
+            }
+
+            cell.value = finalValue;
+
+            cell.border =
+                options.border === false
+                    ? undefined
+                    : thinBorder;
+
+            cell.font = {
+                name: "Arial",
+                size: 10,
+                bold: options.bold || false,
+                color: options.fontColor
+                    ? { argb: options.fontColor }
+                    : BLACK
+            };
+
+            cell.alignment = {
+                vertical: "middle",
+                horizontal: options.align || "left"
+            };
+
+            if (options.fill) {
+                cell.fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: options.fill }
+                };
+            }
+
+            if (options.numFmt) {
+                cell.numFmt = options.numFmt;
+            }
+        };
+        const setRowFill = (row, color) => {
+            for (let col = 1; col <= 4; col++) {
+                worksheet.getCell(row, col).fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: {
+                        argb: color
+                    }
+                };
+            }
+        };
+
+        // ROW HEIGHT
+        for (let i = 1; i <= 40; i++) {
+            worksheet.getRow(i).height = 20;
+        }
+
+        // HEADER
+        worksheet.mergeCells("A1:D1");
+        setValue("A1", molding.part_no, { align: "center", fontColor: RED });
+        worksheet.getCell("D1").font = { name: "Arial", size: 16, color: { argb: RED } };
+
+        // RAW MATERIAL
+        setValue("A2", "RAW MATERIAL", { bold: true, fill: YELLOW });
+        setValue("B2", molding.compound_code || molding.polymer_name || "");
+        setValue("C2", "");
+        setValue("D2", "EPDM", { bold: true, fill: YELLOW, align: "center" });
+
+        setValue("A3", "RAW MATERIAL RATE");
+        setValue("B3", "");
+        setValue("C3", "");
+        setValue("D3", molding.compound_rate, { numFmt: "0.00", align: "center" });
+
+        setValue("A4", "NET WEIGHT");
+        setValue("B4", "GMS.");
+        setValue("C4", "");
+        setValue("D4", molding.net_weight, { numFmt: "0.00", align: "center" });
+
+        setValue("A5", "GROSS WEIGHT OF RUBBER");
+        setValue("B5", "GMS.");
+        setValue("C5", "");
+        setValue("D5", molding.gross_weight, { numFmt: "0.00", align: "center" });
+
+        setValue("A6", "RAW MATERIAL COST OF RUBBER");
+        setValue("B6", "");
+        setValue("C6", "");
+        setValue("D6", molding.total_rm_cost, { numFmt: "0.00", align: "center" });
+
+        setValue("A7", "TAPE", { fill: LIGHT_ORANGE });
+        setValue("B7", "", { fill: LIGHT_ORANGE });
+        setValue("C7", "", { fill: LIGHT_ORANGE });
+        setValue("D7", "", { fill: LIGHT_ORANGE });
+
+        // TOTAL RAW MATERIAL
+        setValue("A8", "TOTAL RAW MATERIAL COST", { bold: true, fill: GRAY });
+        setValue("B8", "", { fill: GRAY });
+        setValue("C8", "", { fill: GRAY });
+        setValue("D8", molding.final_rm_cost, { bold: true, fill: GRAY, numFmt: "0.00", align: "center" });
+
+        // PROCESS
+        setValue("A9", "TYPES OF PROCESS", { bold: true });
+        setValue("B9", "", { bold: true });
+        setValue("C9", "", { bold: true });
+        setValue("D9", molding.process_type || "", { bold: true, fill: YELLOW, align: "center" });
+
+        setValue("A10", "NO. OF CAVITY");
+        setValue("B10", "NOS.");
+        setValue("C10", "");
+        setValue("D10", molding.total_cavity, { numFmt: "0", align: "center" });
+
+        setValue("A11", "SHIFT TIME @ 85% EFFICIENCY");
+        setValue("B11", "NOS.");
+        setValue("C11", molding.shift_time_efficiency, { numFmt: "0%", align: "center" });
+        setValue("D11", molding.efficiency, { numFmt: "0.00", align: "center" });
+
+        setValue("A12", "CYCLE TIME");
+        setValue("B12", "");
+        setValue("C12", "");
+        setValue("D12", molding.cycle_time, { numFmt: "0.00", align: "center" });
+
+        setValue("A13", "TOTAL SHOTS / SHIFT");
+        setValue("B13", "NOS.");
+        setValue("C13", "");
+        setValue("D13", molding.total_shots, { numFmt: "0", align: "center" });
+
+        setValue("A14", "SHIFT RATE");
+        setValue("B14", "RS.");
+        setValue("C14", molding.machine_tonnage, { numFmt: "0.00", align: "center" });
+        setValue("D14", molding.shift_rate, { numFmt: "0.00", align: "center" });
+
+        setValue("A15", "TOTAL PRODUCTION PER SHIFT");
+        setValue("B15", "");
+        setValue("C15", "");
+        setValue("D15", molding.total_production_per_shift, { numFmt: "0", align: "center" });
+
+        // PROCESS COST
+        setValue("A16", "PROCESS COST /PART", { bold: true, fill: GRAY });
+        setValue("B16", "RS.", { bold: true, fill: GRAY });
+        setValue("C16", "", { fill: GRAY });
+        setValue("D16", molding.process_cost_a, { bold: true, fill: GRAY, numFmt: "0.00", align: "center" });
+
+        // PROCESS COST DETAILS
+        setValue("A17", "Post curing");
+        setValue("B17", "");
+        setValue("C17", "");
+        setValue("D17", molding.post_curing, { numFmt: "0.00", align: "center" });
+
+        setValue("A18", "FINISHING");
+        setValue("B18", "");
+        setValue("C18", "");
+        setValue("D18", molding.finishing, { numFmt: "0.00", align: "center" });
+
+        setValue("A19", "ASSY COST");
+        setValue("B19", "");
+        setValue("C19", "");
+        setValue("D19", molding.total_assembly_cost, { numFmt: "0.00", align: "center" });
+
+        setValue("A20", "INSPECTION");
+        setValue("B20", "");
+        setValue("C20", "");
+        setValue("D20", molding.inspection, { numFmt: "0.00", align: "center" });
+
+        // TOTAL CONVERSION COST
+        setValue("A21", "TOTAL CONVERSION COST", { bold: true, fill: GRAY });
+        setValue("B21", "", { fill: GRAY });
+        setValue("C21", "", { fill: GRAY });
+        setValue("D21", molding.conversion_cost, { bold: true, fill: GRAY, numFmt: "0.00", align: "center" });
+
+        // SUB TOTAL A
+        setValue("A22", "SUB TOTAL A", { bold: true, fill: GRAY });
+        setValue("B22", "RS.", { bold: true, fill: GRAY });
+        setValue("C22", "", { fill: GRAY });
+        setValue("D22", molding.subtotal_a, { bold: true, fill: GRAY, numFmt: "0.00", align: "center" });
+
+        // MARGINS
+        const marginRows = [
+            [23, "ICC", "icc_on_rm", "icc_on_rm_cost"],
+            [24, "REJ. ON SUB TOTAL A", "rej_on_subtotal", "rej_on_subtotal_cost"],
+            [25, "O/HEAD ON SUB TOTAL A", "oh_on_subtotal", "oh_on_subtotal_cost"],
+            [26, "PROFIT ON SUB TOTAL A", "profit_on_subtotal", "profit_on_subtotal_cost"],
+            [27, "PACKING", "packaging_on_subtotal", "packaging_on_subtotal_cost"],
+            [28, "FORWARDING", "transport_on_subtotal", "transport_on_subtotal_cost"]
+        ];
+
+        marginRows.forEach(([row, label, percentField, costField]) => {
+            setValue(`A${row}`, label);
+            setValue(`B${row}`, molding[percentField] / 100, { numFmt: "0%", align: "center" });
+            setValue(`C${row}`, "", { align: "center" });
+            setValue(`D${row}`, molding[costField], { numFmt: "0.00", align: "center" });
+        }
+        );
+
+        // SUB TOTAL B
+        setValue("A29", "SUB TOTAL B", { bold: true, fill: YELLOW });
+        setValue("B29", "RS.", { bold: true, fill: YELLOW });
+        setValue("C29", "", { fill: YELLOW });
+        setValue("D29", molding.subtotal_b, { bold: true, fill: YELLOW, numFmt: "0.00", align: "center" });
+
+        // PART COST
+        setValue("A30", "PART COST / PC", { bold: true, fill: YELLOW });
+        setValue("B30", "RS.", { bold: true, fill: YELLOW });
+        setValue("C30", "", { fill: YELLOW });
+        setValue("D30", molding.part_cost, { bold: true, fill: YELLOW, numFmt: "0.00", align: "center" });
+
+        // SALES COST
+        worksheet.mergeCells("A31:C31");
+        setValue("A31", "SALES COST", { fill: LIGHT_ORANGE });
+        setValue("D31", molding.customer_sales_cost, { fill: LIGHT_ORANGE, numFmt: "0.00", align: "center" });
+
+        // MFG WITHOUT PROFIT
+        const mfgWithoutProfit = Number(molding.sales_profit_loss || 0);
+        worksheet.mergeCells("A32:C32");
+        setValue("A32", "MFG W/O PROFIT", { bold: true });
+        setValue("D32", mfgWithoutProfit, { bold: true, numFmt: "0.00", align: "center" });
+
+        // MFG WITH PROFIT
+        const mfgWithProfit = Number(molding.sales_profit_loss || 0) + Number(molding.subtotal_b || 0);
+        worksheet.mergeCells("A33:C33");
+        setValue("A33", "MFG WITH PROFIT", { bold: true });
+        setValue("D33", mfgWithProfit, { bold: true, numFmt: "0.00", align: "center" });
+
+        // QTY
+        worksheet.mergeCells("A34:C34");
+        setValue("A34", "QTY", { bold: true, fill: YELLOW });
+        setValue("D34", Math.floor(Number(molding.monthly_quantity || 0)), { bold: true, fill: YELLOW, numFmt: "#,##0", align: "center" });
+
+        const extraProfit = Number(molding.sales_profit_loss || 0) * (molding.monthly_quantity || 0);
+        worksheet.mergeCells("A35:C35");
+        setValue("A35", "EXTRA PROFIT", { bold: true });
+        setValue("D35", extraProfit, { bold: true, numFmt: "#,##0", align: "center", });
+
+        // TOTAL MFG PROFIT
+        const totalMfgProfit = mfgWithProfit * Number(molding.monthly_quantity || 0);
+        worksheet.mergeCells("A36:C36");
+        setValue("A36", "TOTAL MFG PROFIT", { bold: true });
+        setValue("D36", totalMfgProfit, { bold: true, numFmt: "#,##0", align: "center", });
+
+        // ADDITIONAL TRANSACTION INFORMATION
+        // setValue("A38", "CUSTOMER", { bold: true });
+        // setValue("D38", customerName);
+        // setValue("A39", "PRODUCTION UNIT", { bold: true });
+        // setValue("D39", productionUnit);
+        // setValue("A40", "BILLING UNIT", { bold: true });
+        // setValue("D40", billingUnit);
+
+        // PAGE SETTINGS
+        worksheet.pageSetup = {
+            paperSize: worksheet.PAPERSIZE_A4,
+            orientation: "portrait",
+            fitToPage: true,
+            fitToWidth: 1,
+            fitToHeight: 1,
+            margins: {
+                left: 0.2, right: 0.2, top: 0.3, bottom: 0.3, header: 0, footer: 0
+            }
+        };
+
+        // DOWNLOAD
+        const filename = `${molding.transaction_id}_Costing.xlsx`;
+
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${filename}"`
+        );
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error) {
+        console.error(
+            "Molding Excel download error:",
+            error
+        );
+        if (!res.headersSent) {
+            return res.status(500).json({
+                success: false,
+                message: "Failed to generate molding Excel",
+                error: error.message
+            });
+        }
     }
 };

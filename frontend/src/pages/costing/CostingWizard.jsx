@@ -186,8 +186,8 @@ function CostingWizard() {
               : prev.rejOnSubtotal,
 
           ohOnSubtotal:
-            marginMap["over heads (o/h)"] !== undefined
-              ? String(marginMap["over heads (o/h)"])
+            marginMap["over head (o/h)"] !== undefined
+              ? String(marginMap["over head (o/h)"])
               : prev.ohOnSubtotal,
 
           profitOnSubtotal:
