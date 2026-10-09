@@ -113,7 +113,7 @@ function BottomLineForm({
                 <th className="percentage-column">Applied on Cost</th>
                 <th className="percentage-column">Percentage</th>
                 <th className="percentage-column">Cost</th>
-                <th className="action-column">Action</th>
+                {/* <th className="action-column">Action</th> */}
               </tr>
             </thead>
 
@@ -164,7 +164,7 @@ function BottomLineForm({
                       })}
                     </td>
 
-                    <td className="action-cell">
+                    {/* <td className="action-cell">
                       {!isEditing ? (
                         <button
                           type="button"
@@ -182,7 +182,7 @@ function BottomLineForm({
                           <Check size={16} strokeWidth={2} />
                         </button>
                       )}
-                    </td>
+                    </td> */}
                   </tr>
                 );
               })}

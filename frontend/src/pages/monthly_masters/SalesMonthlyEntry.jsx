@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { X, Save, Loader2 } from "lucide-react";
 import "../../assets/css/SalesMonthly.css";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import TomSelect from "tom-select";
@@ -49,7 +50,6 @@ const getUnitName = (unit) => {
   if (typeof unit === "string") {
     return unit;
   }
-
   return unit?.unit ?? "";
 };
 
@@ -117,16 +117,13 @@ const SalesMonthlyEntry = () => {
   /* LOAD PART MASTER */
   const fetchParts = async () => {
     setPartsLoading(true);
-
     try {
       const response = await fetch(`${API_BASE_URL}/parts`);
-
       if (!response.ok) {
         throw new Error(
           `Unable to load Part Master. Status: ${response.status}`,
         );
       }
-
       const result = await response.json();
       const data = extractArray(result)
         .map((part) => ({
@@ -135,7 +132,6 @@ const SalesMonthlyEntry = () => {
           partName: getPartName(part),
         }))
         .filter((part) => part.partNo);
-
       setParts(data);
     } catch (error) {
       console.error("Part Master error:", error);
@@ -149,7 +145,6 @@ const SalesMonthlyEntry = () => {
   /* LOAD UNIT MASTER */
   const fetchUnits = async () => {
     setUnitsLoading(true);
-
     try {
       const response = await fetch(`${API_BASE_URL}/units`);
       if (!response.ok) {
@@ -157,7 +152,6 @@ const SalesMonthlyEntry = () => {
           `Unable to load Unit Master. Status: ${response.status}`,
         );
       }
-
       const result = await response.json();
       const data = extractArray(result).filter((unit) => getUnitName(unit));
       setUnits(data);
@@ -236,9 +230,7 @@ const SalesMonthlyEntry = () => {
     if (!partSelectRef.current || partsLoading) {
       return;
     }
-
     const select = partSelectRef.current;
-
     if (partTomSelectRef.current) {
       partTomSelectRef.current.destroy();
       partTomSelectRef.current = null;
@@ -259,7 +251,7 @@ const SalesMonthlyEntry = () => {
     });
 
     partTomSelectRef.current = new TomSelect(select, {
-      placeholder: "Search or select Part No.",
+      placeholder: "Select Part No.",
       allowEmptyOption: true,
       create: false,
       maxOptions: 1000,
@@ -269,6 +261,15 @@ const SalesMonthlyEntry = () => {
         direction: "asc",
       },
       closeAfterSelect: true,
+      onFocus() {
+        const input = this.control_input;
+        if (!input) return;
+        requestAnimationFrame(() => {
+          input.focus();
+          const length = input.value.length;
+          input.setSelectionRange(length, length);
+        });
+      },
       onChange: (value) => {
         if (!value) {
           setFormData((previous) => ({
@@ -373,7 +374,6 @@ const SalesMonthlyEntry = () => {
       setErrors({
         partNo: "Selected Part No. does not exist in Part Master.",
       });
-
       return;
     }
     setSaving(true);
@@ -436,7 +436,7 @@ const SalesMonthlyEntry = () => {
 
   /* RENDER */
   return (
-    <div className="sales-monthly-page">
+    <div className="sales-monthly-page sales-monthly-entry-page">
       {/* TOAST */}
       {toast.show && (
         <div className={`sales-toast ${toast.type}`}>
@@ -459,215 +459,251 @@ const SalesMonthlyEntry = () => {
         </div>
       )}
 
-      {/* HEADER */}
-      <div className="sales-monthly-header">
-        <div className="sales-monthly-title">
-          <h2>
+      {/* BOP-STYLE FORM CARD */}
+      <div className="bop-style-sales-form-card">
+        <div className="bop-style-sales-header">
+          <h5>
             {editingEntry
               ? "Edit Monthly Sales Entry"
               : "Add Monthly Sales Entry"}
-          </h2>
-          <p>Enter monthly Qty and Sales Rate for a Part Master item.</p>
+          </h5>
+          <button
+            type="button"
+            className="bop-style-sales-close-btn"
+            onClick={handleCancel}
+            disabled={saving}
+            title="Close"
+            aria-label="Close"
+          >
+            <X size={18} strokeWidth={2} />
+          </button>
         </div>
-        {editingEntry && (
-          <div className="editing-badge">Editing Existing Entry</div>
-        )}
-      </div>
 
-      {/* FORM CARD */}
-      <div className="sales-entry-card">
-        {loadingEntry ? (
-          <div className="entry-loading">
-            <div className="loading-spinner" />
-            <h4>Loading entry...</h4>
-          </div>
-        ) : (
-          <>
-            <div className="sales-entry-form">
-              {/* PART NO */}
-              <div className="entry-form-group">
-                <label>
-                  Part No.
-                  <span>*</span>
-                </label>
-                <select ref={partSelectRef} disabled={partsLoading || saving} />
-                {partsLoading && (
-                  <small className="field-loading">
-                    Loading Part Master...
-                  </small>
-                )}
-                {!partsLoading && parts.length === 0 && (
-                  <small className="field-error">
-                    No Part Master records found.
-                  </small>
-                )}
-                {errors.partNo && (
-                  <div className="field-error">{errors.partNo}</div>
-                )}
-              </div>
-
-              {/* PART NAME */}
-              <div className="entry-form-group">
-                <label>Part Name</label>
-                <input
-                  type="text"
-                  value={formData.partName}
-                  readOnly
-                  placeholder="Part Name"
-                />
-              </div>
-
-              {/* UNIT */}
-              <div className="entry-form-group">
-                <label>
-                  Unit
-                  <span>*</span>
-                </label>
-                <select
-                  value={formData.unit}
-                  disabled={unitsLoading || saving}
-                  onChange={(e) => handleFormChange("unit", e.target.value)}
-                  className={errors.unit ? "input-error" : ""}
-                >
-                  <option value="">
-                    {unitsLoading ? "Loading Units..." : "Select Unit"}
-                  </option>
-                  {units.map((unit) => {
-                    const unitName = getUnitName(unit);
-                    if (!unitName) {
-                      return null;
-                    }
-                    const unitId = unit?.id ?? unit?._id ?? unitName;
-                    return (
-                      <option key={unitId} value={unitName}>
-                        {unitName}
-                      </option>
-                    );
-                  })}
-                </select>
-                {errors.unit && (
-                  <div className="field-error">{errors.unit}</div>
-                )}
-              </div>
-
-              {/* MONTH */}
-              <div className="entry-form-group">
-                <label>
-                  Month
-                  <span>*</span>
-                </label>
-                <select
-                  value={formData.month}
-                  disabled={saving}
-                  onChange={(e) => handleFormChange("month", e.target.value)}
-                  className={errors.month ? "input-error" : ""}
-                >
-                  <option value="">Select Month</option>
-                  {months.map((month) => (
-                    <option key={month.value} value={month.value}>
-                      {month.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.month && (
-                  <div className="field-error">{errors.month}</div>
-                )}
-              </div>
-
-              {/* FINANCIAL YEAR */}
-              <div className="entry-form-group">
-                <label>
-                  Financial Year
-                  <span>*</span>
-                </label>
-                <select
-                  value={formData.financialYear}
-                  disabled={saving}
-                  onChange={(e) =>
-                    handleFormChange("financialYear", e.target.value)
-                  }
-                  className={errors.financialYear ? "input-error" : ""}
-                >
-                  {financialYearOptions.map((year) => (
-                    <option key={year.value} value={year.value}>
-                      {year.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.financialYear && (
-                  <div className="field-error">{errors.financialYear}</div>
-                )}
-              </div>
-
-              {/* QTY */}
-              <div className="entry-form-group">
-                <label>Qty</label>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={formData.qty}
-                  disabled={saving}
-                  placeholder="Enter Qty"
-                  onChange={(e) => handleFormChange("qty", e.target.value)}
-                  className={errors.qty ? "input-error" : ""}
-                />
-
-                {errors.qty && <div className="field-error">{errors.qty}</div>}
-              </div>
-
-              {/* SELL RATE */}
-              <div className="entry-form-group">
-                <label>Sales Rate</label>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={formData.sellRate}
-                  disabled={saving}
-                  placeholder="Enter Sales Rate"
-                  onChange={(e) => handleFormChange("sellRate", e.target.value)}
-                  className={errors.sellRate ? "input-error" : ""}
-                />
-                {errors.sellRate && (
-                  <div className="field-error">{errors.sellRate}</div>
-                )}
-              </div>
+        <div className="bop-style-sales-body">
+          {loadingEntry ? (
+            <div className="entry-loading">
+              <div className="loading-spinner" />
+              <h4>Loading entry...</h4>
             </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSave();
+              }}
+            >
+              <div className="row g-3">
+                {/* PART NO */}
+                <div className="col-md-3">
+                  <label className="form-label">
+                    <b>Part No.</b> <span>*</span>
+                  </label>
+                  <select
+                    ref={partSelectRef}
+                    disabled={partsLoading || saving}
+                  />
+                  {partsLoading && (
+                    <small className="field-loading">
+                      Loading Part Master...
+                    </small>
+                  )}
+                  {!partsLoading && parts.length === 0 && (
+                    <small className="field-error">
+                      No Part Master records found.
+                    </small>
+                  )}
+                  {errors.partNo && (
+                    <div className="field-error">{errors.partNo}</div>
+                  )}
+                </div>
 
-            {/* GENERAL ERROR */}
-            {errors.general && (
-              <div className="general-error">{errors.general}</div>
-            )}
+                {/* PART NAME */}
+                <div className="col-md-3">
+                  <label className="form-label">
+                    <b>Part Name</b>
+                  </label>
+                  <input
+                    type="text"
+                    className={`form-control ${
+                      formData.partName ? "field-filled" : ""
+                    }`}
+                    value={formData.partName}
+                    readOnly
+                    placeholder="Part Name"
+                  />
+                </div>
 
-            {/* FOOTER */}
-            <div className="sales-entry-footer">
-              <div className="form-help">
-                * Required fields. Enter at least Qty or Sales Rate.
+                {/* UNIT */}
+                <div className="col-md-3">
+                  <label className="form-label">
+                    <b>Unit</b> <span>*</span>
+                  </label>
+                  <select
+                    value={formData.unit}
+                    disabled={unitsLoading || saving}
+                    onChange={(e) => handleFormChange("unit", e.target.value)}
+                    className={`form-control ${
+                      formData.unit ? "field-filled" : ""
+                    } ${errors.unit ? "input-error" : ""}`}
+                  >
+                    <option value="">
+                      {unitsLoading ? "Loading Units..." : "Select Unit"}
+                    </option>
+                    {units.map((unit) => {
+                      const unitName = getUnitName(unit);
+                      if (!unitName) {
+                        return null;
+                      }
+                      const unitId = unit?.id ?? unit?._id ?? unitName;
+                      return (
+                        <option key={unitId} value={unitName}>
+                          {unitName}
+                        </option>
+                      );
+                    })}
+                  </select>
+
+                  {errors.unit && (
+                    <div className="field-error">{errors.unit}</div>
+                  )}
+                </div>
+
+                {/* MONTH */}
+                <div className="col-md-3">
+                  <label className="form-label">
+                    <b>Month</b> <span>*</span>
+                  </label>
+                  <select
+                    value={formData.month}
+                    disabled={saving}
+                    onChange={(e) => handleFormChange("month", e.target.value)}
+                    className={`form-control ${
+                      formData.month ? "field-filled" : ""
+                    } ${errors.month ? "input-error" : ""}`}
+                  >
+                    <option value="">Select Month</option>
+                    {months.map((month) => (
+                      <option key={month.value} value={month.value}>
+                        {month.label}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.month && (
+                    <div className="field-error">{errors.month}</div>
+                  )}
+                </div>
+
+                {/* FINANCIAL YEAR */}
+                <div className="col-md-3">
+                  <label className="form-label">
+                    <b>Financial Year</b> <span>*</span>
+                  </label>
+                  <select
+                    value={formData.financialYear}
+                    disabled={saving}
+                    onChange={(e) =>
+                      handleFormChange("financialYear", e.target.value)
+                    }
+                    className={`form-control ${
+                      formData.financialYear ? "field-filled" : ""
+                    } ${errors.financialYear ? "input-error" : ""}`}
+                  >
+                    {financialYearOptions.map((year) => (
+                      <option key={year.value} value={year.value}>
+                        {year.label}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.financialYear && (
+                    <div className="field-error">{errors.financialYear}</div>
+                  )}
+                </div>
+
+                {/* QTY */}
+                <div className="col-md-3">
+                  <label className="form-label">
+                    <b>Qty</b>
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className={`form-control ${
+                      formData.qty !== "" ? "field-filled" : ""
+                    } ${errors.qty ? "input-error" : ""}`}
+                    value={formData.qty}
+                    disabled={saving}
+                    placeholder="Enter Qty"
+                    onChange={(e) => handleFormChange("qty", e.target.value)}
+                  />
+                  {errors.qty && (
+                    <div className="field-error">{errors.qty}</div>
+                  )}
+                </div>
+
+                {/* SALES RATE */}
+                <div className="col-md-3">
+                  <label className="form-label">
+                    <b>Sales Rate</b>
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className={`form-control ${
+                      formData.sellRate !== "" ? "field-filled" : ""
+                    } ${errors.sellRate ? "input-error" : ""}`}
+                    value={formData.sellRate}
+                    disabled={saving}
+                    placeholder="Enter Sales Rate"
+                    onChange={(e) =>
+                      handleFormChange("sellRate", e.target.value)
+                    }
+                  />
+                  {errors.sellRate && (
+                    <div className="field-error">{errors.sellRate}</div>
+                  )}
+                </div>
               </div>
-              <div className="entry-form-actions">
+
+              {errors.general && (
+                <div className="general-error">{errors.general}</div>
+              )}
+
+              {/* BOP-STYLE ACTIONS */}
+              <div className="bop-style-sales-actions">
                 <button
                   type="button"
-                  className="btn-form-cancel"
+                  className="bop-style-sales-cancel-btn"
                   disabled={saving}
                   onClick={handleCancel}
                 >
-                  Cancel
+                  <X size={16} strokeWidth={2} />
+                  <span>Cancel</span>
                 </button>
                 <button
-                  type="button"
-                  className="btn-form-save"
+                  type="submit"
+                  className="bop-style-sales-save-btn"
                   disabled={saving || partsLoading}
-                  onClick={handleSave}
                 >
-                  {saving
-                    ? "Saving..."
-                    : editingEntry
-                      ? "Update Entry"
-                      : "Save Entry"}
+                  {saving ? (
+                    <>
+                      <Loader2
+                        size={16}
+                        strokeWidth={2}
+                        className="bop-style-sales-loading-icon"
+                      />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={16} strokeWidth={2} />
+                      <span>{editingEntry ? "Update" : "Save"}</span>
+                    </>
+                  )}
                 </button>
               </div>
-            </div>
-          </>
-        )}
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

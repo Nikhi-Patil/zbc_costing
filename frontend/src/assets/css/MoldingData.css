@@ -1136,3 +1136,7 @@
     transform: rotate(360deg);
   }
 }
+/* HIDE SORTING ARROW */
+.molding-datatable-wrapper .rdt_TableCol_Sortable svg {
+  display: none !important;
+}

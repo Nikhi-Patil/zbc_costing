@@ -1,16 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 import DataTable from "react-data-table-component";
+import { Search, X, Plus, FileSpreadsheet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "../../assets/css/SalesMonthly.css";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 
-const SALES_MONTHLY_API = `${API_BASE_URL}/sales-monthly`;
-
 const financialYearOptions = generateFinancialYears();
-
 const getMonthYearLabel = (monthValue, financialYearValue) => {
   const monthNumber = Number(monthValue);
+
   const match = String(financialYearValue || "").match(/^(\d{4})-(\d{2})$/);
 
   if (!match || monthNumber < 1 || monthNumber > 12) {
@@ -20,22 +19,13 @@ const getMonthYearLabel = (monthValue, financialYearValue) => {
   const startYear = Number(match[1]);
   const year = monthNumber >= 4 ? startYear : startYear + 1;
 
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
+  const month = months.find((item) => Number(item.value) === monthNumber);
 
-  return `${monthNames[monthNumber - 1]} ${year}`;
+  if (!month) {
+    return "";
+  }
+
+  return `${String(month.label).slice(0, 3)} ${String(year).slice(-2)}`;
 };
 
 const defaultFinancialYear =
@@ -184,16 +174,17 @@ const salesMonthlyColumns = (
 const salesMonthlyDataTableStyles = {
   table: {
     style: {
-      minWidth: "1000px",
-      width: "max-content", 
+      width: "100%",
+      minWidth: "0",
+      maxWidth: "100%",
     },
   },
 
   headRow: {
     style: {
       fontSize: "11px",
-      minHeight: "42px",
-      backgroundColor: "#eaf2fb",
+      minHeight: "45px",
+      backgroundColor: "#19224a",
       borderBottom: "1px solid #cbd8e8",
     },
   },
@@ -202,17 +193,21 @@ const salesMonthlyDataTableStyles = {
     style: {
       paddingLeft: "8px",
       paddingRight: "8px",
-      color: "#173d70",
+      color: "#ffffff",
       fontSize: "11px",
       fontWeight: 700,
-      whiteSpace: "nowrap",
+      whiteSpace: "normal",
+      wordBreak: "normal",
+      overflowWrap: "break-word",
+      lineHeight: "1.15",
+      textAlign: "center",
       borderRight: "1px solid #dce5f0",
     },
   },
 
   rows: {
     style: {
-      minHeight: "42px",
+      minHeight: "35px",
       fontSize: "12px",
       color: "#475569",
       borderBottom: "1px solid #edf1f5",
@@ -279,7 +274,7 @@ const SalesMonthly = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `${SALES_MONTHLY_API}?financialYear=${encodeURIComponent(
+        `${API_BASE_URL}/sales-monthly?financialYear=${encodeURIComponent(
           selectedYear,
         )}`,
       );
@@ -396,7 +391,9 @@ const SalesMonthly = () => {
           <span className="toast-icon">
             {toast.type === "success" ? "✓" : "!"}
           </span>
+
           <span>{toast.message}</span>
+
           <button
             type="button"
             onClick={() =>
@@ -406,140 +403,148 @@ const SalesMonthly = () => {
                 type: "success",
               })
             }
+            aria-label="Close"
           >
-            ×
+            <X size={16} />
           </button>
         </div>
       )}
 
-      {/* HEADER */}
-      <div className="sales-monthly-header">
-        <div className="sales-monthly-title">
-          <h2>Sales Monthly Qty & Sales Rate</h2>
-          <p>Monthly quantity and Sales rate records by part.</p>
-        </div>
-        <div className="sales-monthly-actions">
-          <button
-            type="button"
-            className="btn-add-rate"
-            onClick={handleAddRate}
-          >
-            <span>+</span>
-            Add Rate
-          </button>
-          <button
-            type="button"
-            className="btn-bulk-upload"
-            onClick={() => navigate("/sales-monthly/bulk")}
-          >
-            <span className="upload-icon">⇧</span>
-            Bulk Upload
-          </button>
-        </div>
-      </div>
+      {/* TOOLBAR - same structure as Compound Monthly Master */}
+      <div className="sales-report-toolbar">
+        <div className="sales-report-filters">
+          <div className="sales-filter-field">
+            <label className="form-label">
+              <b>Financial Year</b>
+            </label>
 
-      {/* FILTERS */}
-      <div className="sales-filter-card">
-        <div className="sales-filter-group">
-          <label>Financial Year</label>
-          <select
-            value={financialYear}
-            onChange={(e) => setFinancialYear(e.target.value)}
-          >
-            {financialYearOptions.map((year) => (
-              <option key={year.value} value={year.value}>
-                {year.label}
-              </option>
-            ))}
-          </select>
-        </div>
+            <select
+              className="form-control"
+              value={financialYear}
+              onChange={(e) => setFinancialYear(e.target.value)}
+            >
+              {financialYearOptions.map((year) => (
+                <option key={year.value} value={year.value}>
+                  {year.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="sales-filter-group">
-          <label>View</label>
-          <select value={view} onChange={(e) => setView(e.target.value)}>
-            <option value="Qty">Qty</option>
-            <option value="Rate">Rate</option>
-          </select>
-        </div>
+          <div className="sales-filter-field">
+            <label className="form-label">
+              <b>View</b>
+            </label>
 
-        <div className="sales-search-group">
-          <label>Search Part No.</label>
-          <div className="sales-search-wrapper">
-            <span className="search-icon">⌕</span>
-            <input
-              type="text"
-              value={search}
-              placeholder="Search Part No..."
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            {search && (
-              <button
-                type="button"
-                className="clear-search"
-                onClick={() => setSearch("")}
-              >
-                ×
-              </button>
-            )}
+            <select
+              className="form-control"
+              value={view}
+              onChange={(e) => setView(e.target.value)}
+            >
+              <option value="Qty">Qty</option>
+              <option value="Rate">Rate</option>
+            </select>
           </div>
         </div>
+
+        {/* ACTION BUTTONS */}
+        <div className="sales-report-actions">
+          <button
+            type="button"
+            className="sales-add-rate-btn"
+            onClick={handleAddRate}
+          >
+            <Plus size={16} strokeWidth={2} />
+            <span>Add Rate</span>
+          </button>
+
+          <button
+            type="button"
+            className="sales-bulk-upload-btn"
+            onClick={() => navigate("/sales-monthly/bulk")}
+          >
+            <FileSpreadsheet size={16} strokeWidth={2} />
+            <span>Bulk Upload</span>
+          </button>
+        </div>
       </div>
 
-      {/* TABLE */}
-      <div className="sales-table-card">
+      {/* REPORT */}
+      <div className="sales-report-container">
         <div className="sales-table-header">
-          <div>
+          <div className="sales-table-header-left">
             <h3>
               {view === "Qty" ? "Monthly Sales Qty" : "Monthly Sales Rate"}
             </h3>
 
-            <span>{filteredRows.length} Parts</span>
+            <div className="sales-search-box">
+              <Search size={16} className="sales-search-icon" />
+
+              <input
+                type="text"
+                placeholder="Search part..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+
+              {search && (
+                <button
+                  type="button"
+                  className="sales-search-clear"
+                  onClick={() => setSearch("")}
+                  aria-label="Clear search"
+                >
+                  <X size={15} />
+                </button>
+              )}
+            </div>
           </div>
+          <div className="sales-table-count">{filteredRows.length} Parts</div>
         </div>
 
-        <DataTable
-          columns={salesMonthlyColumns(
-            months,
-            financialYear,
-            view,
-            handleEditEntry,
-            1,
-            10,
-          )}
-          data={filteredRows}
-          customStyles={salesMonthlyDataTableStyles}
-          progressPending={loading}
-          progressComponent={
-            <div className="sales-loading">
-              <div className="loading-spinner" />
-              <h4>Loading data...</h4>
-            </div>
-          }
-          noDataComponent={
-            <div className="sales-no-data">
-              <div className="empty-icon">◌</div>
-
-              <h4>No Sales Monthly Records</h4>
-
-              <p>
-                No monthly sales records have been entered for this financial
-                year.
-              </p>
-            </div>
-          }
-          pagination
-          paginationPerPage={10}
-          paginationRowsPerPageOptions={[10, 25, 50, 100]}
-          paginationComponentOptions={{
-            rowsPerPageText: "Show",
-            rangeSeparatorText: "of",
-            noRowsPerPage: false,
-          }}
-          highlightOnHover
-          pointerOnHover
-          responsive
-          persistTableHead
-        />
+        <div className="sales-table-scroll">
+          <DataTable
+            className="sales-data-table"
+            columns={salesMonthlyColumns(
+              months,
+              financialYear,
+              view,
+              handleEditEntry,
+              1,
+              10,
+            )}
+            data={filteredRows}
+            customStyles={salesMonthlyDataTableStyles}
+            progressPending={loading}
+            progressComponent={
+              <div className="sales-loading">
+                <div className="loading-spinner" />
+                <span>Loading sales data...</span>
+              </div>
+            }
+            noDataComponent={
+              <div className="sales-no-data">
+                <h4>No Sales Monthly Records</h4>
+                <p>
+                  No monthly sales records have been entered for this financial
+                  year.
+                </p>
+              </div>
+            }
+            pagination
+            paginationPerPage={10}
+            paginationRowsPerPageOptions={[10, 25, 50, 100]}
+            paginationComponentOptions={{
+              rowsPerPageText: "Rows:",
+              rangeSeparatorText: "of",
+              noRowsPerPage: false,
+              selectAllRowsItem: false,
+            }}
+            persistTableHead
+            highlightOnHover
+            responsive={false}
+          />
+        </div>
       </div>
     </div>
   );

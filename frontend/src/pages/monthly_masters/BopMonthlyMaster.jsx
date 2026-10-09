@@ -1,10 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import DataTable from "react-data-table-component";
+import { Plus, FileSpreadsheet, Search, X } from "lucide-react";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
+import "../../assets/css/BopMonthlyMaster.css";
 
 const getMonthYearLabel = (monthValue, financialYearValue) => {
   const monthNumber = Number(monthValue);
+
   const match = String(financialYearValue || "").match(/^(\d{4})-(\d{2})$/);
 
   if (!match || monthNumber < 1 || monthNumber > 12) {
@@ -12,6 +16,7 @@ const getMonthYearLabel = (monthValue, financialYearValue) => {
   }
 
   const startYear = Number(match[1]);
+
   const year = monthNumber >= 4 ? startYear : startYear + 1;
 
   const monthNames = [
@@ -29,136 +34,288 @@ const getMonthYearLabel = (monthValue, financialYearValue) => {
     "Dec",
   ];
 
-  return `${monthNames[monthNumber - 1]} ${year}`;
+  return `${monthNames[monthNumber - 1]} ${String(year).slice(-2)}`;
 };
 
 const BopMonthlyMaster = () => {
   const navigate = useNavigate();
 
-  // Financial Years
+  /* FINANCIAL YEARS */
   const financialYears = generateFinancialYears();
-
   const currentFinancialYear =
     financialYears.find((fy) => fy.selected)?.value ||
     financialYears[0]?.value ||
     "";
-
-  // State
-
+  /* STATE */
   const [financialYear, setFinancialYear] = useState(currentFinancialYear);
   const [viewType, setViewType] = useState("qty");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-
-  // Fetch Report
   useEffect(() => {
     fetchReport();
   }, [financialYear]);
 
-  // Reset Page
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [financialYear, rowsPerPage]);
-
-  // Fetch BOP Monthly Report
   const fetchReport = async () => {
     try {
       setLoading(true);
+
       const response = await fetch(
         `${API_BASE_URL}/monthly-bop-rate?financial_year=${encodeURIComponent(
           financialYear,
         )}`,
       );
+
       const result = await response.json();
+
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Failed to fetch report");
       }
+
       setData(result.data || []);
-      setCurrentPage(1);
     } catch (error) {
       console.error("Error fetching BOP report:", error);
+
       setData([]);
-      setCurrentPage(1);
     } finally {
       setLoading(false);
     }
   };
 
-  // Group Data
-  const groupedData = useMemo(
-    () =>
-      Object.values(
-        data.reduce((acc, row) => {
-          const key = `${row.bop_id}-${row.supplier_id}-${row.financial_year}`;
-          if (!acc[key]) {
-            acc[key] = {
-              bop_id: row.bop_id,
-              part_no: row.part_no,
-              fg_code: row.fg_code,
-              bop_part_name: row.bop_part_name,
-              bop_part_no: row.bop_part_no,
-              bop_erp_code: row.bop_erp_code,
-              supplier_id: row.supplier_id,
-              supplier_name: row.supplier_name,
-              financial_year: row.financial_year,
-              months: {},
-            };
-          }
+  /* GROUP DATA */
+  const groupedData = useMemo(() => {
+    const grouped = data.reduce((acc, row) => {
+      const key = `${row.bop_id}-${row.supplier_id}-${row.financial_year}`;
 
-          acc[key].months[row.month] = {
-            qty: Number(row.qty) || 0,
-            rate: Number(row.rate) || 0,
-          };
-          return acc;
-        }, {}),
-      ),
-    [data],
-  );
+      if (!acc[key]) {
+        acc[key] = {
+          rowKey: key,
 
-  // Pagination
+          bop_id: row.bop_id,
 
-  const totalEntries = groupedData.length;
-  const totalPages = Math.max(1, Math.ceil(totalEntries / rowsPerPage));
-  const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    return groupedData.slice(startIndex, startIndex + rowsPerPage);
-  }, [groupedData, currentPage, rowsPerPage]);
+          part_no: row.part_no,
 
-  // Pagination Handlers
-  const handleRowsPerPageChange = (e) => {
-    const value = Number(e.target.value);
-    setRowsPerPage(value);
-    setCurrentPage(1);
+          fg_code: row.fg_code,
+
+          bop_part_name: row.bop_part_name,
+
+          bop_part_no: row.bop_part_no,
+          bop_erp_code: row.bop_erp_code,
+          supplier_id: row.supplier_id,
+
+          supplier_name: row.supplier_name,
+
+          financial_year: row.financial_year,
+
+          months: {},
+        };
+      }
+
+      acc[key].months[row.month] = {
+        qty: Number(row.qty) || 0,
+        rate: Number(row.rate) || 0,
+      };
+
+      return acc;
+    }, {});
+
+    return Object.values(grouped);
+  }, [data]);
+
+  /* SEARCH */
+  const filteredData = useMemo(() => {
+    const search = searchText.trim().toLowerCase();
+
+    if (!search) {
+      return groupedData;
+    }
+
+    return groupedData.filter((row) => {
+      return [
+        row.part_no,
+        row.fg_code,
+        row.bop_part_name,
+        row.bop_part_no,
+        row.bop_erp_code,
+        row.supplier_name,
+      ].some((value) =>
+        String(value || "")
+          .toLowerCase()
+          .includes(search),
+      );
+    });
+  }, [groupedData, searchText]);
+
+  /* TABLE COLUMNS */
+  const columns = useMemo(() => {
+    const baseColumns = [
+      {
+        name: "Sr. No.",
+        width: "50px",
+        center: true,
+        cell: (_, index) => index + 1,
+      },
+      {
+        name: "Part No",
+        selector: (row) => row.part_no || "",
+        sortable: true,
+        width: "120px",
+        cell: (row) => (
+          <div className="bop-wrap-cell">{row.part_no || "-"}</div>
+        ),
+      },
+      {
+        name: "FG Code",
+        selector: (row) => row.fg_code || "",
+        sortable: true,
+        width: "75px",
+        wrap: true,
+        cell: (row) => row.fg_code || "-",
+      },
+      {
+        name: "BOP Part Name",
+        selector: (row) => row.bop_part_name || "",
+        sortable: true,
+        width: "120px",
+        cell: (row) => (
+          <div className="bop-wrap-cell">{row.bop_part_name || "-"}</div>
+        ),
+      },
+
+      {
+        name: "BOP Part No",
+        selector: (row) => row.bop_part_no || "",
+        sortable: true,
+        width: "90px",
+        cell: (row) => (
+          <div className="bop-wrap-cell">{row.bop_part_no || "-"}</div>
+        ),
+      },
+      {
+        name: "BOP ERP Code",
+        selector: (row) => row.bop_erp_code || "",
+        sortable: true,
+        width: "70px",
+        cell: (row) => row.bop_erp_code || "-",
+      },
+      {
+        name: "Supplier Name",
+        selector: (row) => row.supplier_name || "",
+        sortable: true,
+        width: "120px",
+        cell: (row) => (
+          <div className="bop-wrap-cell">{row.supplier_name || "-"}</div>
+        ),
+      },
+    ];
+
+    /* MONTH COLUMNS */
+    const monthColumns = months.map((month) => ({
+      name: getMonthYearLabel(month.value, financialYear),
+      selector: (row) => {
+        const monthData = row.months[month.value];
+        if (!monthData) {
+          return 0;
+        }
+        return viewType === "qty"
+          ? Number(monthData.qty) || 0
+          : Number(monthData.rate) || 0;
+      },
+      sortable: true,
+      width: "55px",
+      center: true,
+      cell: (row) => {
+        const monthData = row.months[month.value] || {
+          qty: null,
+          rate: null,
+        };
+
+        if (viewType === "qty") {
+          return monthData.qty === null
+            ? "-"
+            : Number(monthData.qty).toLocaleString("en-IN");
+        }
+        return monthData.rate === null
+          ? "-"
+          : Number(monthData.rate).toLocaleString("en-IN", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            });
+      },
+    }));
+
+    return [...baseColumns, ...monthColumns];
+  }, [financialYear, viewType]);
+
+  /* TABLE STYLES */
+  const customStyles = {
+    table: {
+      style: {
+        width: "100%",
+      },
+    },
+
+    headRow: {
+      style: {
+        minHeight: "44px",
+        backgroundColor: "#19224a",
+        borderBottom: "1px solid #d9dee5",
+      },
+    },
+
+    headCells: {
+      style: {
+        fontSize: "11px",
+        fontWeight: "700",
+        color: "#ffffff",
+        paddingLeft: "4px",
+        paddingRight: "4px",
+        textAlign: "center",
+        whiteSpace: "normal",
+        wordBreak: "normal",
+        overflowWrap: "break-word",
+        lineHeight: "1.15",
+      },
+    },
+
+    rows: {
+      style: {
+        minHeight: "38px",
+        fontSize: "12px",
+        borderBottom: "1px solid #d9dee5",
+      },
+
+      highlightOnHoverStyle: {
+        backgroundColor: "#f5f8fc",
+        transitionDuration: "0.15s",
+      },
+    },
+
+    cells: {
+      style: {
+        paddingLeft: "4px",
+        paddingRight: "4px",
+      },
+    },
+
+    pagination: {
+      style: {
+        minHeight: "40px",
+        borderTop: "1px solid #d9dee5",
+        fontSize: "11px",
+      },
+    },
   };
 
-  const goToFirstPage = () => {
-    setCurrentPage(1);
-  };
-
-  const goToPreviousPage = () => {
-    setCurrentPage((page) => Math.max(1, page - 1));
-  };
-
-  const goToNextPage = () => {
-    setCurrentPage((page) => Math.min(totalPages, page + 1));
-  };
-
-  const goToLastPage = () => {
-    setCurrentPage(totalPages);
-  };
-
-  // Render
+  /* RENDER */
   return (
     <div className="bop-report-page">
-      {/* Toolbar */}
+      {/* TOOLBAR */}
       <div className="report-toolbar">
+        {/* FILTERS */}
         <div className="report-filters">
-          {/* Financial Year */}
-
+          {/* FINANCIAL YEAR */}
           <div className="filter-field">
             <label className="form-label">
               <b>Financial Year</b>
@@ -177,7 +334,7 @@ const BopMonthlyMaster = () => {
             </select>
           </div>
 
-          {/* View */}
+          {/* VIEW */}
           <div className="filter-field">
             <label className="form-label">
               <b>View</b>
@@ -189,203 +346,100 @@ const BopMonthlyMaster = () => {
               onChange={(e) => setViewType(e.target.value)}
             >
               <option value="qty">Qty</option>
-
               <option value="rate">Rate</option>
             </select>
           </div>
         </div>
 
-        {/* Buttons */}
-        <div className="d-flex gap-2">
-
-          {/* Add Rate */}
+        {/* ACTION BUTTONS */}
+        <div className="bop-monthly-actions">
           <button
             type="button"
-            className="btn btn-success add-rate-btn"
+            className="bop-add-rate-btn"
             onClick={() => navigate("/monthly-master/bop/add-rate")}
           >
-            <i className="fas fa-plus me-2"></i>
-            Add Rate
+            <Plus size={16} strokeWidth={2} />
+            <span>Add Rate</span>
           </button>
 
-          {/* Bulk Upload */}
           <button
             type="button"
-            className="btn btn-primary add-rate-btn"
+            className="bop-bulk-upload-btn"
             onClick={() => navigate("/monthly-master/bop/bulk-upload")}
           >
-            <i className="fas fa-file-excel me-2"></i>
-            Bulk Upload
+            <FileSpreadsheet size={16} strokeWidth={2} />
+            <span>Bulk Upload</span>
           </button>
         </div>
       </div>
 
-      {/* TABLE CONTAINER */}
-      <div className="bop-report-container mt-3">
-        {loading ? (
-          <div className="text-center p-4">Loading...</div>
-        ) : (
-          <>
+      {/* REPORT */}
+      <div className="bop-report-container">
+        {/* TABLE HEADER */}
+        <div className="bop-table-header">
+          <div className="bop-table-header-left">
+            <h3>BOP Monthly Report</h3>
 
-            {/* TABLE SCROLL AREA */}
-            <div className="bop-table-scroll">
-              <table className="table table-bordered bop-report-table">
-                <thead>
-                  <tr>
-                    <th>Sr. No.</th>
-                    <th>Part No</th>
-                    <th>FG Code</th>
-                    <th>BOP Part Name</th>
-                    <th>BOP Part No</th>
-                    <th>BOP ERP Code</th>
-                    <th>Supplier Name</th>
-                    {months.map((month) => (
-                      <th key={month.value} className="month-col">
-                        {getMonthYearLabel(month.value, financialYear)}
-                      </th>
-                    ))}
-                    {/* {months.map((month) => (
-                      <th key={month.value}>
-                        {month.label} {viewType === "qty" ? "Qty" : "Rate"}
-                      </th>
-                    ))} */}
-                  </tr>
-                </thead>
+            {/* SEARCH */}
+            <div className="bop-search-box">
+              <Search size={16} className="bop-search-icon" />
+              <input
+                type="text"
+                placeholder="Search BOP..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
 
-                <tbody>
-                  {groupedData.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={7 + months.length}
-                        className="text-center text-muted"
-                      >
-                        No data found
-                      </td>
-                    </tr>
-                  ) : (
-                    paginatedData.map((bop, index) => {
-                      const serialNumber =
-                        (currentPage - 1) * rowsPerPage + index + 1;
-
-                      return (
-                        <tr
-                          key={`${bop.bop_id}-${bop.supplier_id}-${bop.financial_year}`}
-                        >
-                          <td>{serialNumber}</td>
-                          <td>{bop.part_no || "-"}</td>
-                          <td>{bop.fg_code || "-"}</td>
-                          <td>{bop.bop_part_name || "-"}</td>
-                          <td>{bop.bop_part_no || "-"}</td>
-                          <td>{bop.bop_erp_code || "-"}</td>
-                          <td>{bop.supplier_name || "-"}</td>
-                          {months.map((month) => {
-                            const monthData = bop.months[month.value] || {
-                              qty: null,
-                              rate: null,
-                            };
-
-                            return (
-                              <td
-                                key={month.value}
-                                style={{ textAlign: "center" }}
-                              >
-                                {viewType === "qty"
-                                  ? monthData.qty === null
-                                    ? "-"
-                                    : monthData.qty.toLocaleString("en-IN")
-                                  : monthData.rate === null
-                                    ? "-"
-                                    : monthData.rate.toLocaleString("en-IN", {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
-                                      })}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+              {searchText && (
+                <button
+                  type="button"
+                  className="bop-search-clear"
+                  onClick={() => setSearchText("")}
+                  aria-label="Clear search"
+                >
+                  <X size={15} />
+                </button>
+              )}
             </div>
+          </div>
 
-            {/* PAGINATION */}
-            {groupedData.length > 0 && (
-              <div className="bop-pagination">
-                <div className="bop-pagination-left">
-                  <span>Show</span>
-                  <select
-                    className="form-select"
-                    value={rowsPerPage}
-                    onChange={handleRowsPerPageChange}
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                </div>
+          {/* COUNT */}
+          <div className="bop-table-count">{filteredData.length} BOPs</div>
+        </div>
 
-                <div className="bop-pagination-right">
-                  {/* First */}
-
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-light"
-                    disabled={currentPage === 1}
-                    onClick={goToFirstPage}
-                    title="First Page"
-                  >
-                    <i className="fas fa-angle-double-left"></i>
-                  </button>
-
-                  {/* Previous */}
-
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-light"
-                    disabled={currentPage === 1}
-                    onClick={goToPreviousPage}
-                    title="Previous Page"
-                  >
-                    <i className="fas fa-angle-left"></i>
-                  </button>
-
-                  {/* Page */}
-
-                  <span className="bop-page-info">
-                    Page {currentPage} of {totalPages}
-                  </span>
-
-                  {/* Next */}
-
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-light"
-                    disabled={currentPage === totalPages}
-                    onClick={goToNextPage}
-                    title="Next Page"
-                  >
-                    <i className="fas fa-angle-right"></i>
-                  </button>
-
-                  {/* Last */}
-
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-light"
-                    disabled={currentPage === totalPages}
-                    onClick={goToLastPage}
-                    title="Last Page"
-                  >
-                    <i className="fas fa-angle-double-right"></i>
-                  </button>
-                </div>
+        {/* TABLE */}
+        <div className="bop-table-scroll">
+          <DataTable
+            className="bop-data-table"
+            columns={columns}
+            data={filteredData}
+            keyField="rowKey"
+            customStyles={customStyles}
+            pagination
+            paginationPerPage={10}
+            paginationRowsPerPageOptions={[10, 25, 50, 100]}
+            paginationComponentOptions={{
+              rowsPerPageText: "Rows:",
+              rangeSeparatorText: "of",
+              noRowsPerPage: false,
+              selectAllRowsItem: false,
+            }}
+            highlightOnHover
+            persistTableHead
+            responsive={false}
+            progressPending={loading}
+            progressComponent={
+              <div className="bop-loading">Loading BOP data...</div>
+            }
+            noDataComponent={
+              <div className="bop-no-data">
+                {searchText
+                  ? "No matching BOP records found"
+                  : "No BOP data found"}
               </div>
-            )}
-          </>
-        )}
+            }
+          />
+        </div>
       </div>
     </div>
   );

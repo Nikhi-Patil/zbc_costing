@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
+import { X, Save, Loader2 } from "lucide-react";
 
 const BopMonthlyRateForm = () => {
   const navigate = useNavigate();
@@ -159,21 +160,22 @@ const BopMonthlyRateForm = () => {
     (bop) => String(bop.id) === String(formData.bopId),
   );
   return (
-    <div className="card mt-4">
+    <div className="bop-monthly-form-card">
       <div className="bop-monthly-header">
-        <h5 className="mb-0">
-          <b>Add BOP Monthly Rate</b>
-        </h5>
+        <h5>Add BOP Monthly Rate</h5>
+
         <button
           type="button"
-          className="btn btn-danger btn-sm"
+          className="bop-form-close-btn"
           onClick={() => navigate("/monthly-master/bop")}
           title="Close"
+          aria-label="Close"
         >
-          <i className="fas fa-times"></i>
+          <X size={18} strokeWidth={2} />
         </button>
       </div>
-      <div className="card-body">
+
+      <div className="bop-monthly-form-body">
         <form onSubmit={handleSubmit}>
           <div className="row g-3">
             {/* BOP */}
@@ -380,25 +382,35 @@ const BopMonthlyRateForm = () => {
               />
             </div>
           </div>
-          <div className="d-flex justify-content-end gap-2 mt-4">
+          <div className="bop-form-actions">
             <button
               type="button"
-              className="btn btn-secondary"
+              className="bop-form-cancel-btn"
               onClick={() => navigate("/monthly-master/bop")}
+              disabled={loading}
             >
-              Cancel
+              <X size={16} strokeWidth={2} />
+              <span>Cancel</span>
             </button>
+
             <button
               type="submit"
-              className="btn btn-success"
+              className="bop-form-save-btn"
               disabled={loading}
             >
               {loading ? (
-                "Saving..."
+                <>
+                  <Loader2
+                    size={16}
+                    strokeWidth={2}
+                    className="bop-loading-icon"
+                  />
+                  <span>Saving...</span>
+                </>
               ) : (
                 <>
-                  <i className="fas fa-save me-2"></i>
-                  Save
+                  <Save size={16} strokeWidth={2} />
+                  <span>Save</span>
                 </>
               )}
             </button>

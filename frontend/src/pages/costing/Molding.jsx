@@ -505,15 +505,6 @@ const Molding = () => {
 
       const response = await fetch(`${API_BASE_URL}/molding`);
       const result = await response.json();
-      console.log("========== MOLDING API CHECK ==========");
-      console.log("API URL:", `${API_BASE_URL}/molding`);
-      console.log("Success:", result.success);
-      console.log(
-        "Records returned:",
-        Array.isArray(result.data) ? result.data.length : "NOT ARRAY",
-      );
-      console.log("Full API response:", result);
-      console.log("=======================================");
       if (result.success) {
         setTransactions(result.data);
       } else {
@@ -600,21 +591,6 @@ const Molding = () => {
         }
 
         const result = await response.json();
-        console.log("========== MOLDING MONTHLY REPORT API CHECK ==========");
-        console.log(
-          "API URL:",
-          `${API_BASE_URL}/molding-monthly-report?financialYear=${encodeURIComponent(
-            salesFinancialYear,
-          )}`,
-        );
-        console.log("Financial Year:", salesFinancialYear);
-        console.log(
-          "Records returned:",
-          Array.isArray(result?.data) ? result.data.length : "NOT ARRAY",
-        );
-        console.log("Full API response:", result);
-        console.log("======================================================");
-
         if (!result?.success) {
           throw new Error(
             result?.message || "Unable to load saved molding monthly report.",

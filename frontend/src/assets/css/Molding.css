@@ -1679,3 +1679,6 @@
   background: #198754;
   color: #fff;
 }
+.molding-data-table .rdt_TableCol_Sortable svg {
+  display: none !important;
+}

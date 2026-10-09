@@ -1517,7 +1517,7 @@ export const downloadMoldingExcel = async (req, res) => {
                     : thinBorder;
 
             cell.font = {
-                name: "Arial",
+                name: "Aptos Display",
                 size: 10,
                 bold: options.bold || false,
                 color: options.fontColor
@@ -1562,7 +1562,7 @@ export const downloadMoldingExcel = async (req, res) => {
         // HEADER
         worksheet.mergeCells("A1:D1");
         setValue("A1", molding.part_no, { align: "center", fontColor: RED });
-        worksheet.getCell("D1").font = { name: "Arial", size: 16, color: { argb: RED } };
+        worksheet.getCell("A1").font = { name: "Aptos Display", size: 16, color: { argb: RED } };
 
         // RAW MATERIAL
         setValue("A2", "RAW MATERIAL", { bold: true, fill: YELLOW });

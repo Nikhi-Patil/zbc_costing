@@ -1,0 +1,543 @@
+/* =========================================================
+   COMPOUND POLYMER MONTHLY REPORT
+   PAGE-SPECIFIC CSS
+========================================================= */
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.compound-report-page {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* =========================================================
+   REPORT TITLE
+========================================================= */
+
+.compound-report-page h5 {
+  margin-bottom: 0;
+}
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+
+.compound-report-page .report-toolbar {
+  width: 100%;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  margin-bottom: 15px;
+}
+
+.compound-report-page .report-filters {
+  display: flex;
+  align-items: flex-end;
+
+  gap: 15px;
+}
+
+.compound-report-page .filter-field {
+  width: 160px;
+}
+
+.compound-report-page .filter-field .form-label {
+  display: block;
+
+  margin-bottom: 4px;
+}
+
+/* =========================================================
+   TABLE WRAPPER
+========================================================= */
+
+.compound-monthly-wrapper {
+  width: 100%;
+  max-width: 100%;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  box-sizing: border-box;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+/* =========================================================
+   REACT DATA TABLE
+========================================================= */
+
+/*
+   55px  = No.
+   170px = Polymer Name
+   Months = remaining available width
+
+   Minimum table width:
+   55 + 170 + (12 × 75) = 1125px
+*/
+
+.compound-monthly-wrapper .rdt_Table {
+  width: 100% !important;
+  min-width: 1125px !important;
+
+  font-size: 12px;
+}
+
+/* =========================================================
+   TABLE HEADER
+========================================================= */
+
+.compound-monthly-wrapper .rdt_TableHead {
+  background: #19224a !important;
+}
+
+.compound-monthly-wrapper .rdt_TableHeadRow {
+  min-height: 42px !important;
+
+  background: #19224a !important;
+
+  border: none !important;
+}
+
+.compound-monthly-wrapper .rdt_TableCol {
+  padding: 0 6px !important;
+
+  background: #19224a !important;
+
+  color: #ffffff !important;
+
+  border-right: 1px solid #d9dee5 !important;
+
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   HEADER SORTABLE AREA
+========================================================= */
+
+.compound-monthly-wrapper .rdt_TableCol_Sortable {
+  width: 100% !important;
+
+  display: flex !important;
+
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 0 !important;
+
+  color: #ffffff !important;
+
+  cursor: pointer !important;
+
+  user-select: none;
+}
+
+.compound-monthly-wrapper .rdt_TableCol_Sortable > div {
+  width: 100% !important;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center !important;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  line-height: 1.15;
+
+  white-space: nowrap;
+}
+
+/* Hide sorting arrow but keep sorting */
+
+.compound-monthly-wrapper .rdt_TableCol_Sortable svg {
+  display: none !important;
+}
+
+/* =========================================================
+   TABLE BODY
+========================================================= */
+
+.compound-monthly-wrapper .rdt_TableBody {
+  width: 100% !important;
+}
+
+.compound-monthly-wrapper .rdt_TableRow {
+  min-height: 35px !important;
+
+  background: #ffffff !important;
+
+  border-bottom: 1px solid #d9dee5 !important;
+
+  font-size: 12px;
+
+  box-sizing: border-box;
+}
+
+.compound-monthly-wrapper .rdt_TableRow:hover {
+  background: #f5f8fc !important;
+}
+
+/* =========================================================
+   TABLE CELLS
+========================================================= */
+
+.compound-monthly-wrapper .rdt_TableCell {
+  padding: 0 7px !important;
+
+  border-right: 1px solid #d9dee5 !important;
+
+  display: flex;
+
+  align-items: center;
+
+  box-sizing: border-box;
+
+  font-size: 12px;
+
+  overflow: hidden;
+}
+
+/* =========================================================
+   NO. COLUMN
+========================================================= */
+
+.compound-monthly-wrapper .rdt_TableCol:nth-child(1),
+.compound-monthly-wrapper .rdt_TableCell:nth-child(1) {
+  flex: 0 0 55px !important;
+
+  width: 55px !important;
+  min-width: 55px !important;
+  max-width: 55px !important;
+
+  justify-content: center !important;
+}
+
+/* =========================================================
+   POLYMER NAME COLUMN
+========================================================= */
+
+.compound-monthly-wrapper .rdt_TableCol:nth-child(2),
+.compound-monthly-wrapper .rdt_TableCell:nth-child(2) {
+  flex: 0 0 170px !important;
+
+  width: 170px !important;
+  min-width: 170px !important;
+  max-width: 170px !important;
+}
+
+.compound-monthly-wrapper .rdt_TableCell:nth-child(2) {
+  justify-content: flex-start !important;
+
+  text-align: left !important;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+.compound-monthly-wrapper .rdt_TableCell:nth-child(2) b {
+  width: 100%;
+
+  text-align: left;
+
+  font-weight: 600;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+/* =========================================================
+   MONTH COLUMNS
+========================================================= */
+
+/*
+   Each month expands to fill the remaining
+   available table width.
+
+   On smaller screens:
+   75px minimum per month.
+*/
+
+.compound-monthly-wrapper .rdt_TableCol:nth-child(n + 3),
+.compound-monthly-wrapper .rdt_TableCell:nth-child(n + 3) {
+  flex: 1 1 0 !important;
+
+  min-width: 75px !important;
+}
+
+/* =========================================================
+   MONTH VALUES
+========================================================= */
+
+.compound-monthly-wrapper .rdt_TableCell:nth-child(n + 3) {
+  justify-content: flex-end !important;
+
+  text-align: right !important;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.compound-monthly-wrapper .rdt_TableCell:nth-child(n + 3) span {
+  width: 100%;
+
+  text-align: right;
+
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================
+   GRAND TOTAL
+========================================================= */
+
+.compound-grand-total-row {
+  width: 100% !important;
+  min-width: 1125px;
+
+  height: 38px;
+
+  display: flex;
+
+  align-items: center;
+
+  background: #f8f9fa;
+
+  border: 1px solid #d9dee5;
+  border-top: none;
+
+  box-sizing: border-box;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   GRAND TOTAL LABEL
+========================================================= */
+
+/*
+   55px No. + 170px Polymer = 225px
+*/
+
+.compound-grand-total-row .grand-total-label {
+  flex: 0 0 225px;
+
+  width: 225px;
+  min-width: 225px;
+  max-width: 225px;
+
+  height: 38px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: flex-end;
+
+  padding: 0 10px;
+
+  border-right: 1px solid #d9dee5;
+
+  box-sizing: border-box;
+
+  text-align: right;
+}
+
+/* =========================================================
+   GRAND TOTAL MONTH VALUES
+========================================================= */
+
+.compound-grand-total-row .grand-total-value {
+  flex: 1 1 0;
+
+  min-width: 75px;
+
+  height: 38px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: flex-end;
+
+  padding: 0 7px;
+
+  border-right: 1px solid #d9dee5;
+
+  box-sizing: border-box;
+
+  text-align: right;
+
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.compound-loading {
+  width: 100%;
+
+  padding: 25px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  color: #6c757d;
+}
+
+.compound-loading-icon {
+  animation: compound-spin 1s linear infinite;
+}
+
+@keyframes compound-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   NO DATA
+========================================================= */
+
+.compound-no-data {
+  width: 100%;
+
+  padding: 25px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #6c757d;
+}
+
+/* =========================================================
+   EMPTY VALUE
+========================================================= */
+
+.compound-empty-value {
+  width: 100%;
+
+  text-align: right;
+}
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.compound-monthly-wrapper::-webkit-scrollbar {
+  height: 9px;
+}
+
+.compound-monthly-wrapper::-webkit-scrollbar-track {
+  background: #eeeeee;
+}
+
+.compound-monthly-wrapper::-webkit-scrollbar-thumb {
+  background: #999999;
+
+  border-radius: 4px;
+}
+
+.compound-monthly-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #777777;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 768px) {
+  .compound-report-page .report-toolbar {
+    flex-wrap: wrap;
+
+    gap: 10px;
+  }
+
+  .compound-report-page .report-filters {
+    flex-wrap: wrap;
+
+    gap: 10px;
+  }
+
+  .compound-report-page .filter-field {
+    width: 150px;
+  }
+}
+/* REFRESH BUTTON */
+.compound-report-page .btn-primary {
+  min-height: 30px !important;
+  min-width: 105px;
+  padding: 5px 10px !important;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap !important;
+}
+
+/* HOVER */
+.compound-report-page .btn-primary:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+/* DISABLED */
+.compound-report-page .btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* ICON */
+.compound-report-page .btn-primary svg {
+  flex: 0 0 auto !important;
+  width: 16px;
+  height: 16px;
+}
+
+/* TEXT */
+.compound-report-page .btn-primary span {
+  display: inline-block !important;
+  white-space: nowrap !important;
+}
+
+.compound-loading-icon {
+  animation: compound-spin 1s linear infinite;
+}
+
+@keyframes compound-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

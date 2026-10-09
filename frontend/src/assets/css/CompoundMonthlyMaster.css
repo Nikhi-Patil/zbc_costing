@@ -1,0 +1,849 @@
+/* COMPOUND MONTHLY MASTER */
+.compound-report-page {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* TOOLBAR */
+.report-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+  margin-bottom: 15px;
+}
+.report-filters {
+  display: flex;
+  gap: 15px;
+}
+
+.filter-field {
+  width: 160px;
+}
+
+/* REPORT CONTAINER */
+.compound-report-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* TABLE HEADER */
+.compound-table-header {
+  width: 100%;
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: #ffffff;
+  border: 1px solid #d9dee5;
+  border-bottom: none;
+  box-sizing: border-box;
+}
+
+.compound-table-header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+}
+
+.compound-table-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #19224a;
+  white-space: nowrap;
+}
+
+.compound-table-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* SEARCH */
+.compound-search-box {
+  position: relative;
+  width: 220px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #000000;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.compound-search-icon {
+  flex-shrink: 0;
+  margin-left: 9px;
+  color: #000000;
+}
+
+.compound-search-box input {
+  width: 100%;
+  height: 100%;
+  padding: 0 30px 0 8px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+  color: #212529;
+  box-sizing: border-box;
+}
+
+.compound-search-box input::placeholder {
+  color: #8a94a6;
+}
+
+.compound-search-clear {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #6c757d;
+  cursor: pointer;
+}
+
+.compound-search-clear:hover {
+  color: #212529;
+}
+
+/* TABLE COUNT */
+.compound-table-count {
+  white-space: nowrap;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* TABLE SCROLL */
+.compound-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  background: #fff;
+}
+
+/* Horizontal scrollbar */
+.compound-table-scroll::-webkit-scrollbar {
+  height: 9px;
+}
+
+.compound-table-scroll::-webkit-scrollbar-track {
+  background: #eeeeee;
+}
+
+.compound-table-scroll::-webkit-scrollbar-thumb {
+  background: #aeb4bb;
+  border-radius: 5px;
+}
+
+.compound-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #858b92;
+}
+
+.compound-table-scroll {
+  scrollbar-width: auto;
+}
+
+/* REACT DATA TABLE */
+.compound-data-table {
+  width: 100%;
+}
+
+/* LOADING */
+.compound-loading {
+  width: 100%;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* NO DATA */
+.compound-no-data {
+  width: 100%;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  font-size: 13px;
+}
+
+/* DATA TABLE HEADER */
+.compound-data-table .rdt_TableHeadRow {
+  min-height: 45px;
+  background: #19224a;
+  border-bottom: 1px solid #cbd8e8;
+}
+
+.compound-data-table .rdt_TableCol {
+  border-right: 1px solid #dce5f0;
+}
+
+.compound-data-table .rdt_TableCol_Sortable {
+  min-width: 0;
+}
+
+.compound-data-table .rdt_TableCol_Sortable:hover {
+  background: transparent;
+}
+
+/* DATA TABLE HEADER TEXT */
+.compound-data-table .rdt_TableCol_Sortable > div {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  line-height: 1.15;
+  text-align: center;
+}
+
+/* DATA TABLE ROW */
+.compound-data-table .rdt_TableRow {
+  min-height: 35px;
+  font-size: 12px;
+  color: #475569;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.compound-data-table .rdt_TableRow:hover {
+  background-color: #f5f9ff;
+}
+
+/* DATA TABLE CELLS */
+.compound-data-table .rdt_TableCell {
+  padding-left: 8px;
+  padding-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-right: 1px solid #edf1f5;
+}
+
+/* DATA TABLE PAGINATION */
+.compound-data-table .rdt_Pagination {
+  min-height: 42px;
+  border-top: 1px solid #e7ebf0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* Pagination select */
+.compound-data-table .rdt_Pagination select {
+  font-size: 12px;
+}
+
+/* Pagination buttons */
+.compound-data-table .rdt_Pagination button {
+  width: auto !important;
+}
+
+/* MONTH COLUMNS */
+.compound-data-table .rdt_TableCell {
+  box-sizing: border-box;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .report-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .report-filters {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .filter-field {
+    width: 150px;
+  }
+  .compound-table-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .compound-table-header-left {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .compound-search-box {
+    width: 200px;
+  }
+  .compound-table-count {
+    align-self: flex-end;
+  }
+}
+
+/* HIDE SORTING ARROWS */
+.compound-data-table .rdt_TableCol_Sortable svg {
+  display: none !important;
+}
+
+/* COMPOUND ACTION BUTTONS */
+.compound-report-page .add-rate-btn,
+.compound-report-page .bulk-upload-btn {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+
+/* ADD RATE */
+.compound-report-page .add-rate-btn {
+  border: 1px solid #2563eb;
+  background: #fff;
+  color: #2563eb;
+}
+
+.compound-report-page .add-rate-btn:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+/* BULK UPLOAD */
+.compound-report-page .bulk-upload-btn {
+  border: 1px solid #198754;
+  background: #fff;
+  color: #198754;
+}
+
+.compound-report-page .bulk-upload-btn:hover {
+  background: #198754;
+  color: #fff;
+}
+
+/* LUCIDE ICONS */
+.compound-report-page .add-rate-btn svg,
+.compound-report-page .bulk-upload-btn svg {
+  flex-shrink: 0;
+}
+
+/* COMPOUND MONTHLY RATE FORM */
+.compound-monthly-form {
+  width: 100%;
+  margin-top: 15px;
+}
+
+/* FORM CARD */
+.compound-monthly-form-card {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #d9dee5;
+  border-radius: 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* FORM HEADER */
+.compound-monthly-form .compound-form-header {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #19224a;
+  border-bottom: 1px solid #d9dee5;
+  box-sizing: border-box;
+}
+
+.compound-monthly-form .compound-form-header h5 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* CLOSE BUTTON */
+.compound-monthly-form .compound-form-close-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dc3545;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #dc3545;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.compound-monthly-form .compound-form-close-btn:hover {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: #ffffff;
+}
+
+.compound-monthly-form .compound-form-close-btn svg {
+  flex-shrink: 0;
+}
+
+/* FORM BODY */
+.compound-monthly-form .compound-form-body {
+  width: 100%;
+  padding: 18px;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+/* FORM LABEL */
+.compound-monthly-form .form-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #212529;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* INPUT / SELECT */
+.compound-monthly-form .form-control,
+.compound-monthly-form .form-select {
+  width: 100%;
+  height: 30px;
+  padding: 5px 10px;
+  border: 1px solid #a6a7a8 !important;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #212529;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+  box-sizing: border-box;
+  box-shadow: none !important;
+  outline: none;
+}
+
+.compound-monthly-form .form-control:focus,
+.compound-monthly-form .form-select:focus {
+  border-color: #86b7fe !important;
+  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15) !important;
+  font-weight: 400;
+  color: #212529;
+}
+
+/* FILLED FIELD */
+.compound-monthly-form .field-filled {
+  background-color: #cbffd0 !important;
+  color: #1e00ff;
+  font-weight: 600;
+}
+
+/* READ ONLY */
+.compound-monthly-form .form-control[readonly] {
+  background-color: #f5f6f8;
+  color: #495057;
+  cursor: default;
+}
+
+.compound-monthly-form .form-control[readonly].field-filled {
+  background-color: #cbffd0 !important;
+  color: #1e00ff;
+}
+
+/* DISABLED */
+.compound-monthly-form .form-control:disabled,
+.compound-monthly-form .form-select:disabled {
+  background-color: #f1f3f5;
+  color: #6c757d;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+/* SELECT */
+.compound-monthly-form select.form-control {
+  cursor: pointer;
+}
+
+/* FORM ACTIONS */
+.compound-monthly-form .compound-form-actions {
+  width: 100%;
+  margin-top: 20px;
+  padding-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* CANCEL BUTTON */
+.compound-monthly-form .compound-cancel-btn {
+  height: 36px;
+  min-width: 80px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #ffffff;
+  color: #6c757d;
+  border: 1px solid #6c757d;
+  border-radius: 6px;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.compound-monthly-form .compound-cancel-btn:hover:not(:disabled) {
+  background: #6c757d;
+  color: #ffffff;
+  border-color: #6c757d;
+}
+
+.compound-monthly-form .compound-cancel-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.compound-monthly-form .compound-cancel-btn svg {
+  flex-shrink: 0;
+}
+
+/* SAVE BUTTON */
+.compound-monthly-form .compound-save-btn {
+  height: 36px;
+  min-width: 80px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #ffffff;
+  color: #198754;
+  border: 1px solid #198754;
+  border-radius: 6px;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.compound-monthly-form .compound-save-btn:hover:not(:disabled) {
+  background: #198754;
+  color: #ffffff;
+  border-color: #198754;
+}
+
+.compound-monthly-form .compound-save-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.compound-monthly-form .compound-save-btn svg {
+  flex-shrink: 0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .compound-monthly-form .compound-form-body {
+    padding: 12px;
+  }
+  .compound-monthly-form .compound-form-actions {
+    justify-content: flex-end;
+  }
+  .compound-monthly-form .compound-cancel-btn,
+  .compound-monthly-form .compound-save-btn {
+    height: 36px;
+  }
+}
+
+/* COMPOUND BULK UPLOAD */
+.compound-bulk-upload-page {
+  width: 100%;
+}
+
+/* HEADER */
+.compound-bulk-header {
+  width: 100%;
+  min-height: 40px;
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: lightgray;
+  border-bottom: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.compound-bulk-header h5 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.compound-bulk-header .compound-close-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* ACTIONS */
+.compound-bulk-actions {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* DOWNLOAD */
+.compound-download-btn {
+  height: 38px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fff;
+  color: #198754;
+  border: 1px solid #198754;
+  border-radius: 4px;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.compound-download-btn:hover:not(:disabled) {
+  background: #198754;
+  color: #fff;
+}
+
+/* UPLOAD */
+.compound-upload-btn {
+  height: 38px;
+  padding: 0 12px;
+  display: inline-fle;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fff;
+  color: hsl(243, 100%, 67%);
+  border: 1px solid hsl(243, 100%, 67%);
+  border-radius: 6px;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.compound-upload-btn:hover:not(:disabled) {
+  background: hsl(243, 100%, 67%);
+  color: #fff;
+}
+
+/* CANCEL */
+.compound-cancel-btn {
+  height: 38px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fff;
+  color: #6c757d;
+  border: 1px solid #6c757d;
+  border-radius: 6px;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.compound-cancel-btn:hover:not(:disabled) {
+  background: #6c757d;
+  color: #fff;
+}
+
+/* REMOVE FILE */
+.compound-remove-btn {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: #fff;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.compound-remove-btn:hover:not(:disabled) {
+  background: #dc3545;
+  color: #fff;
+}
+
+/* CLOSE */
+.compound-close-btn {
+  width: 38px;
+  height: 32px;
+  flex: 0 0 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: #dc3545;
+  color: #fff;
+  border: 1px solid #dc3545;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.compound-close-btn:hover:not(:disabled) {
+  background: #bb2d3b;
+  border-color: #bb2d3b;
+}
+
+/* SELECTED FILE */
+.compound-file-info {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #e2e3e5;
+  border: 1px solid #cfd1d3;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.compound-file-details {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.compound-file-icon {
+  flex: 0 0 auto;
+  color: #343a40;
+}
+
+.compound-file-name {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compound-file-count {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: #495057;
+  white-space: nowrap;
+}
+
+/* STATUS */
+.compound-status-valid,
+.compound-status-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.compound-status-valid {
+  color: #198754;
+}
+
+.compound-status-error {
+  color: #dc3545;
+}
+
+/* LUCIDE ICONS */
+.compound-bulk-header svg,
+.compound-bulk-actions svg,
+.compound-file-details svg,
+.compound-remove-btn svg,
+.compound-status-valid svg,
+.compound-status-error svg {
+  flex: 0 0 auto;
+}
+
+/* LOADING */
+.compound-spin {
+  animation: compound-spin 1s linear infinite;
+}
+
+@keyframes compound-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* DISABLED */
+.compound-download-btn:disabled,
+.compound-upload-btn:disabled,
+.compound-cancel-btn:disabled,
+.compound-remove-btn:disabled,
+.compound-close-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* MOBILE */
+@media (max-width: 576px) {
+  .compound-bulk-actions {
+    flex-wrap: wrap;
+  }
+
+  .compound-file-name {
+    max-width: 55vw;
+  }
+}

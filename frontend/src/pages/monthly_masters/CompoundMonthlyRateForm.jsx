@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
+import "../../assets/css/CompoundMonthlyMaster.css";
+import { X, Save } from "lucide-react";
 
 const CompoundMonthlyRateForm = () => {
   const navigate = useNavigate();
@@ -217,232 +219,235 @@ const CompoundMonthlyRateForm = () => {
   };
 
   return (
-    <div className="card mt-4">
-      {/* Header */}
-      <div className="bop-monthly-header">
-        <h5 className="mb-0">
-          <b>Add Compound Monthly Rate</b>
-        </h5>
+    <div className="compound-monthly-form">
+      <div className="compound-monthly-form-card">
+        <div className="compound-form-header">
+          <h5>
+            <b>Add Compound Monthly Rate</b>
+          </h5>
 
-        <button
-          type="button"
-          className="btn btn-danger btn-sm"
-          onClick={() => navigate("/monthly-master/compound")}
-          title="Close"
-        >
-          <i className="fas fa-times"></i>
-        </button>
-      </div>
+          <button
+            type="button"
+            className="compound-form-close-btn"
+            onClick={() => navigate("/monthly-master/compound")}
+            title="Close"
+          >
+            <X size={16} strokeWidth={2} />
+          </button>
+        </div>
 
-      <div className="card-body">
-        <form onSubmit={handleSubmit}>
-          <div className="row g-3">
-            {/* Polymer */}
-            <div className="col-md-3">
-              <label className="form-label">
-                <b>Polymer Name</b>
-              </label>
+        <div className="compound-form-body">
+          <form onSubmit={handleSubmit}>
+            <div className="row g-3">
+              {/* Polymer */}
+              <div className="col-md-3">
+                <label className="form-label">
+                  <b>Polymer Name</b>
+                </label>
 
-              <select
-                className={`form-control ${
-                  formData.polymer ? "field-filled" : ""
-                }`}
-                value={formData.polymer}
-                onChange={handlePolymerChange}
+                <select
+                  className={`form-control ${
+                    formData.polymer ? "field-filled" : ""
+                  }`}
+                  value={formData.polymer}
+                  onChange={handlePolymerChange}
+                >
+                  <option value="">Select Polymer</option>
+
+                  {polymers.map((polymer) => (
+                    <option key={polymer} value={polymer}>
+                      {polymer}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* COMPOUND CODE - SEARCHABLE DATALIST*/}
+
+              <div className="col-md-3">
+                <label className="form-label">
+                  <b>Compound Code</b>
+                </label>
+
+                <input
+                  type="text"
+                  className={`form-control ${
+                    formData.compoundId ? "field-filled" : ""
+                  }`}
+                  list="compound-code-list"
+                  value={formData.compoundCode}
+                  onChange={handleCompoundCodeChange}
+                  disabled={!formData.polymer}
+                  placeholder="Search Compound Code"
+                  autoComplete="off"
+                />
+
+                <datalist id="compound-code-list">
+                  {filteredCompounds.map((compound) => (
+                    <option key={compound.id} value={compound.compound_code} />
+                  ))}
+                </datalist>
+              </div>
+
+              {/* IM Code */}
+              <div className="col-md-3">
+                <label className="form-label">
+                  <b>IM Code</b>
+                </label>
+
+                <input
+                  type="text"
+                  className={`form-control ${
+                    formData.imCode ? "field-filled" : ""
+                  }`}
+                  value={formData.imCode}
+                  readOnly
+                  placeholder="Auto Filled"
+                />
+              </div>
+
+              {/* Unit */}
+              <div className="col-md-3">
+                <label className="form-label">
+                  <b>Unit</b>
+                </label>
+
+                <select
+                  className={`form-control ${
+                    formData.unitId ? "field-filled" : ""
+                  }`}
+                  name="unitId"
+                  value={formData.unitId}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select Unit</option>
+
+                  {units.map((unit) => (
+                    <option key={unit.id} value={unit.id}>
+                      {unit.unit}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Financial Year */}
+              <div className="col-md-3">
+                <label className="form-label">
+                  <b>Financial Year</b>
+                </label>
+
+                <select
+                  className={`form-control ${
+                    formData.financialYear ? "field-filled" : ""
+                  }`}
+                  name="financialYear"
+                  value={formData.financialYear}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select Financial Year</option>
+
+                  {financialYears.map((fy) => (
+                    <option key={fy.value} value={fy.value}>
+                      {fy.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Month */}
+              <div className="col-md-3">
+                <label className="form-label">
+                  <b>Month</b>
+                </label>
+
+                <select
+                  className={`form-control ${
+                    formData.month ? "field-filled" : ""
+                  }`}
+                  name="month"
+                  value={formData.month}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select Month</option>
+
+                  {months.map((month) => (
+                    <option key={month.value} value={month.value}>
+                      {month.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Qty */}
+              <div className="col-md-3">
+                <label className="form-label">
+                  <b>Qty</b>
+                </label>
+
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className={`form-control ${
+                    formData.qty !== "" ? "field-filled" : ""
+                  }`}
+                  name="qty"
+                  value={formData.qty}
+                  onChange={handleInputChange}
+                  placeholder="Enter Qty"
+                />
+              </div>
+
+              {/* Rate */}
+              <div className="col-md-3">
+                <label className="form-label">
+                  <b>Rate</b>
+                </label>
+
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className={`form-control ${
+                    formData.rate !== "" ? "field-filled" : ""
+                  }`}
+                  name="rate"
+                  value={formData.rate}
+                  onChange={handleInputChange}
+                  placeholder="Enter Rate"
+                />
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="compound-form-actions">
+              <button
+                type="button"
+                className="compound-cancel-btn"
+                onClick={() => navigate("/monthly-master/compound")}
+                disabled={loading}
               >
-                <option value="">Select Polymer</option>
+                <X size={16} strokeWidth={2} />
+                <span>Cancel</span>
+              </button>
 
-                {polymers.map((polymer) => (
-                  <option key={polymer} value={polymer}>
-                    {polymer}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* COMPOUND CODE - SEARCHABLE DATALIST*/}
-
-            <div className="col-md-3">
-              <label className="form-label">
-                <b>Compound Code</b>
-              </label>
-
-              <input
-                type="text"
-                className={`form-control ${
-                  formData.compoundId ? "field-filled" : ""
-                }`}
-                list="compound-code-list"
-                value={formData.compoundCode}
-                onChange={handleCompoundCodeChange}
-                disabled={!formData.polymer}
-                placeholder="Search Compound Code"
-                autoComplete="off"
-              />
-
-              <datalist id="compound-code-list">
-                {filteredCompounds.map((compound) => (
-                  <option key={compound.id} value={compound.compound_code} />
-                ))}
-              </datalist>
-            </div>
-
-            {/* IM Code */}
-            <div className="col-md-3">
-              <label className="form-label">
-                <b>IM Code</b>
-              </label>
-
-              <input
-                type="text"
-                className={`form-control ${
-                  formData.imCode ? "field-filled" : ""
-                }`}
-                value={formData.imCode}
-                readOnly
-                placeholder="Auto Filled"
-              />
-            </div>
-
-            {/* Unit */}
-            <div className="col-md-3">
-              <label className="form-label">
-                <b>Unit</b>
-              </label>
-
-              <select
-                className={`form-control ${
-                  formData.unitId ? "field-filled" : ""
-                }`}
-                name="unitId"
-                value={formData.unitId}
-                onChange={handleInputChange}
+              <button
+                type="submit"
+                className="compound-save-btn"
+                disabled={loading}
               >
-                <option value="">Select Unit</option>
-
-                {units.map((unit) => (
-                  <option key={unit.id} value={unit.id}>
-                    {unit.unit}
-                  </option>
-                ))}
-              </select>
+                {loading ? (
+                  <span>Saving...</span>
+                ) : (
+                  <>
+                    <Save size={16} strokeWidth={2} />
+                    <span>Save</span>
+                  </>
+                )}
+              </button>
             </div>
-
-            {/* Financial Year */}
-            <div className="col-md-3">
-              <label className="form-label">
-                <b>Financial Year</b>
-              </label>
-
-              <select
-                className={`form-control ${
-                  formData.financialYear ? "field-filled" : ""
-                }`}
-                name="financialYear"
-                value={formData.financialYear}
-                onChange={handleInputChange}
-              >
-                <option value="">Select Financial Year</option>
-
-                {financialYears.map((fy) => (
-                  <option key={fy.value} value={fy.value}>
-                    {fy.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Month */}
-            <div className="col-md-3">
-              <label className="form-label">
-                <b>Month</b>
-              </label>
-
-              <select
-                className={`form-control ${
-                  formData.month ? "field-filled" : ""
-                }`}
-                name="month"
-                value={formData.month}
-                onChange={handleInputChange}
-              >
-                <option value="">Select Month</option>
-
-                {months.map((month) => (
-                  <option key={month.value} value={month.value}>
-                    {month.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Qty */}
-            <div className="col-md-3">
-              <label className="form-label">
-                <b>Qty</b>
-              </label>
-
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                className={`form-control ${
-                  formData.qty !== "" ? "field-filled" : ""
-                }`}
-                name="qty"
-                value={formData.qty}
-                onChange={handleInputChange}
-                placeholder="Enter Qty"
-              />
-            </div>
-
-            {/* Rate */}
-            <div className="col-md-3">
-              <label className="form-label">
-                <b>Rate</b>
-              </label>
-
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                className={`form-control ${
-                  formData.rate !== "" ? "field-filled" : ""
-                }`}
-                name="rate"
-                value={formData.rate}
-                onChange={handleInputChange}
-                placeholder="Enter Rate"
-              />
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="d-flex justify-content-end gap-2 mt-4">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => navigate("/monthly-master/compound")}
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              className="btn btn-success"
-              disabled={loading}
-            >
-              {loading ? (
-                "Saving..."
-              ) : (
-                <>
-                  <i className="fas fa-save me-2"></i>
-                  Save
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

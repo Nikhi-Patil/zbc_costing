@@ -1,13 +1,19 @@
 import React, { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
+import {
+  ArrowLeft,
+  Download,
+  Upload,
+  Trash2,
+  X,
+  CheckCircle2,
+  AlertCircle,
+  Save,
+} from "lucide-react";
 import "../../assets/css/SalesMonthly.css";
-import { generateFinancialYears } from "../../utils/costingUtils";
+import { generateFinancialYears, months } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
-
-const PARTS_API = `${API_BASE_URL}/parts`;
-const UNITS_API = `${API_BASE_URL}/units`;
-const SALES_MONTHLY_API = `${API_BASE_URL}/sales-monthly`;
 
 const financialYearOptions = generateFinancialYears();
 const defaultFinancialYear =
@@ -15,27 +21,11 @@ const defaultFinancialYear =
   financialYearOptions[financialYearOptions.length - 1]?.value ||
   "";
 
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
 const normalize = (value) =>
   String(value ?? "")
     .trim()
     .toLowerCase();
 const normalizeHeader = (value) => normalize(value).replace(/\s+/g, " ");
-
 const extractArray = (response) => {
   if (Array.isArray(response)) return response;
   if (!response || typeof response !== "object") return [];
@@ -55,7 +45,6 @@ const extractArray = (response) => {
 
   return [];
 };
-
 const getPartNo = (part) =>
   part?.part_no ??
   part?.partNo ??
@@ -63,10 +52,8 @@ const getPartNo = (part) =>
   part?.part_code ??
   part?.partCode ??
   "";
-
 const getPartName = (part) =>
   part?.part_name ?? part?.partName ?? part?.name ?? part?.description ?? "";
-
 const getUnitName = (unit) => {
   if (typeof unit === "string") return unit;
   return (
@@ -78,17 +65,14 @@ const getUnitName = (unit) => {
     ""
   );
 };
-
 const getId = (item) =>
   item?.id ?? item?._id ?? item?.partId ?? item?.unitId ?? null;
-
 const parseNumber = (value) => {
   if (value === null || value === undefined || String(value).trim() === "")
     return null;
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 };
-
 const parseFinancialYear = (value) => {
   if (value === null || value === undefined || String(value).trim() === "")
     return "";
@@ -104,31 +88,45 @@ const isValidFinancialYear = (value) =>
   /^\d{4}-\d{2}$/.test(String(value || "").trim());
 
 const parseMonth = (value) => {
-  if (value === null || value === undefined || String(value).trim() === "")
+  if (value === null || value === undefined || String(value).trim() === "") {
     return null;
+  }
 
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
     return value.getMonth() + 1;
   }
 
   const text = String(value).trim();
+
   const numeric = Number(text);
-  if (Number.isInteger(numeric) && numeric >= 1 && numeric <= 12)
+
+  if (Number.isInteger(numeric) && numeric >= 1 && numeric <= 12) {
     return numeric;
+  }
 
   const normalized = normalize(text).replace(/\.$/, "");
-  const fullIndex = MONTHS.map(normalize).indexOf(normalized);
-  if (fullIndex >= 0) return fullIndex + 1;
 
-  const shortIndex = MONTHS.map((month) =>
-    normalize(month.slice(0, 3)),
-  ).indexOf(normalized);
-  if (shortIndex >= 0) return shortIndex + 1;
+  const fullMonth = months.find(
+    (month) => normalize(month.label) === normalized,
+  );
+
+  if (fullMonth) {
+    return Number(fullMonth.value);
+  }
+
+  const shortMonth = months.find(
+    (month) => normalize(month.label.slice(0, 3)) === normalized,
+  );
+
+  if (shortMonth) {
+    return Number(shortMonth.value);
+  }
 
   return null;
 };
 
-const monthName = (month) => MONTHS[Number(month) - 1] || "-";
+const monthName = (month) =>
+  months.find((item) => Number(item.value) === Number(month))?.label || "-";
 
 function validateUploadedRows(rows, parts, units, selectedFinancialYear = "") {
   const partMap = new Map();
@@ -280,7 +278,6 @@ function validateUploadedRows(rows, parts, units, selectedFinancialYear = "") {
     };
   });
 }
-
 const SalesMonthlyBulk = () => {
   const navigate = useNavigate();
   const [financialYear, setFinancialYear] = useState(defaultFinancialYear);
@@ -290,7 +287,6 @@ const SalesMonthlyBulk = () => {
   const [masterLoading, setMasterLoading] = useState(false);
   const [partMaster, setPartMaster] = useState([]);
   const [unitMaster, setUnitMaster] = useState([]);
-
   const [currentInvalidIndex, setCurrentInvalidIndex] = useState(-1);
   const invalidRowRefs = useRef({});
   const [toast, setToast] = useState({
@@ -311,10 +307,9 @@ const SalesMonthlyBulk = () => {
     try {
       setMasterLoading(true);
       const [partsResponse, unitsResponse] = await Promise.all([
-        fetch(PARTS_API),
-        fetch(UNITS_API),
+        fetch(`${API_BASE_URL}/parts`),
+        fetch(`${API_BASE_URL}/units`),
       ]);
-
       if (!partsResponse.ok)
         throw new Error(
           `Unable to load Part Master. Status: ${partsResponse.status}`,
@@ -323,7 +318,6 @@ const SalesMonthlyBulk = () => {
         throw new Error(
           `Unable to load Unit Master. Status: ${unitsResponse.status}`,
         );
-
       const [partsResult, unitsResult] = await Promise.all([
         partsResponse.json(),
         unitsResponse.json(),
@@ -368,7 +362,6 @@ const SalesMonthlyBulk = () => {
   const handleFileUpload = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     const extension = file.name
       .substring(file.name.lastIndexOf("."))
       .toLowerCase();
@@ -377,22 +370,17 @@ const SalesMonthlyBulk = () => {
       event.target.value = "";
       return;
     }
-
     try {
       setLoading(true);
       setFileName(file.name);
-
       let masters = { parts: partMaster, units: unitMaster };
       if (!masters.parts.length || !masters.units.length) {
         masters = await loadMasterData();
       }
-
       const data = new Uint8Array(await file.arrayBuffer());
       const workbook = XLSX.read(data, { type: "array", cellDates: true });
-
       if (!workbook.SheetNames.length)
         throw new Error("No worksheet found in the Excel file.");
-
       const sheetName = workbook.SheetNames.includes("Sales Monthly")
         ? "Sales Monthly"
         : workbook.SheetNames[0];
@@ -403,7 +391,6 @@ const SalesMonthlyBulk = () => {
         raw: true,
       });
       if (!sheetRows.length) throw new Error("The Excel file is empty.");
-
       const requiredHeaders = [
         "Part No.",
         "Part Name",
@@ -422,15 +409,12 @@ const SalesMonthlyBulk = () => {
           `Invalid template. Missing: ${missingHeaders.join(", ")}`,
         );
       }
-
       const headerIndex = new Map();
       sheetRows[0].forEach((header, index) =>
         headerIndex.set(normalizeHeader(header), index),
       );
-
       const getCell = (row, header) =>
         row[headerIndex.get(normalizeHeader(header))] ?? "";
-
       const convertedRows = sheetRows
         .slice(1)
         .map((excelRow, index) => {
@@ -441,7 +425,6 @@ const SalesMonthlyBulk = () => {
           const monthValue = getCell(excelRow, "Month");
           const qtyValue = getCell(excelRow, "Qty");
           const sellRateValue = getCell(excelRow, "Sells Rate");
-
           return {
             id: `${Date.now()}-${index}`,
             excelRow: index + 2,
@@ -463,10 +446,8 @@ const SalesMonthlyBulk = () => {
             row.qty !== null ||
             row.sellRate !== null,
         );
-
       if (!convertedRows.length)
         throw new Error("No data rows found in the Excel file.");
-
       const validated = validateUploadedRows(
         convertedRows,
         masters.parts,
@@ -474,7 +455,6 @@ const SalesMonthlyBulk = () => {
         financialYear,
       );
       setRows(validated);
-
       const invalidCount = validated.filter(
         (row) => row.errors.length > 0,
       ).length;
@@ -501,7 +481,6 @@ const SalesMonthlyBulk = () => {
     if (field === "qty" || field === "sellRate")
       finalValue = value === "" ? null : parseNumber(value);
     if (field === "month") finalValue = parseMonth(value);
-
     setRows((current) =>
       current.map((row, rowIndex) =>
         rowIndex === index ? { ...row, [field]: finalValue } : row,
@@ -534,7 +513,6 @@ const SalesMonthlyBulk = () => {
         `Please fix ${invalidRows.length} invalid row(s) before saving.`,
         "error",
       );
-
     const entries = validRows.map((row) => ({
       excelRow: row.excelRow,
       financialYear: row.financialYear || financialYear,
@@ -545,15 +523,13 @@ const SalesMonthlyBulk = () => {
       qty: row.qty,
       sellRate: row.sellRate,
     }));
-
     try {
       setLoading(true);
-      const response = await fetch(`${SALES_MONTHLY_API}/bulk`, {
+      const response = await fetch(`${API_BASE_URL}/sales-monthly/bulk`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ financialYear, entries }),
       });
-
       const result = await response.json();
       if (!response.ok) {
         if (Array.isArray(result?.errors)) {
@@ -565,7 +541,6 @@ const SalesMonthlyBulk = () => {
         }
         throw new Error(result?.message || "Bulk save failed.");
       }
-
       showToast(
         result?.message || `${entries.length} records saved successfully.`,
         "success",
@@ -590,16 +565,13 @@ const SalesMonthlyBulk = () => {
 
   const goToNextInvalidRow = () => {
     if (invalidRows.length === 0) return;
-
     const nextIndex =
       currentInvalidIndex >= invalidRows.length - 1
         ? 0
         : currentInvalidIndex + 1;
 
     setCurrentInvalidIndex(nextIndex);
-
     const row = invalidRows[nextIndex];
-
     setTimeout(() => {
       invalidRowRefs.current[row.id]?.scrollIntoView({
         behavior: "smooth",
@@ -613,7 +585,11 @@ const SalesMonthlyBulk = () => {
       {toast.show && (
         <div className={`sales-bulk-toast ${toast.type}`}>
           <span className="toast-icon">
-            {toast.type === "success" ? "✓" : "!"}
+            {toast.type === "success" ? (
+              <CheckCircle2 size={16} />
+            ) : (
+              <AlertCircle size={16} />
+            )}
           </span>
           <span style={{ whiteSpace: "pre-line" }}>{toast.message}</span>
           <button
@@ -621,8 +597,9 @@ const SalesMonthlyBulk = () => {
             onClick={() =>
               setToast({ show: false, message: "", type: "success" })
             }
+            aria-label="Close notification"
           >
-            ×
+            <X size={16} />
           </button>
         </div>
       )}
@@ -637,7 +614,8 @@ const SalesMonthlyBulk = () => {
           className="bulk-back-btn"
           onClick={() => navigate("/sales-monthly")}
         >
-          ← Back
+          <ArrowLeft size={16} />
+          Back
         </button>
       </div>
 
@@ -664,10 +642,12 @@ const SalesMonthlyBulk = () => {
             onClick={handleDownloadTemplate}
             disabled={loading}
           >
-            ↓ Download Template
+            <Download size={16} />
+            Download Template
           </button>
           <label className="choose-file-btn">
-            ⇧ Choose Excel File
+            <Upload size={16} />
+            Choose Excel File
             <input
               type="file"
               accept=".xlsx,.xls"
@@ -839,9 +819,9 @@ const SalesMonthlyBulk = () => {
                         disabled={loading}
                       >
                         <option value="">Select</option>
-                        {MONTHS.map((month, monthIndex) => (
-                          <option key={month} value={monthIndex + 1}>
-                            {month}
+                        {months.map((month) => (
+                          <option key={month.value} value={month.value}>
+                            {month.label}
                           </option>
                         ))}
                       </select>
@@ -880,7 +860,10 @@ const SalesMonthlyBulk = () => {
                           ))}
                         </div>
                       ) : (
-                        <span className="valid-badge">✓ Valid</span>
+                        <span className="valid-badge">
+                          <CheckCircle2 size={14} />
+                          Valid
+                        </span>
                       )}
                     </td>
                     <td className="bulk-action-cell">
@@ -891,7 +874,7 @@ const SalesMonthlyBulk = () => {
                         disabled={loading}
                         title="Remove row"
                       >
-                        ×
+                        <Trash2 size={15} />
                       </button>
                     </td>
                   </tr>
@@ -900,7 +883,9 @@ const SalesMonthlyBulk = () => {
             </table>
           ) : (
             <div className="bulk-empty-state">
-              <div className="bulk-empty-icon">⇧</div>
+              <div className="bulk-empty-icon">
+                <Upload size={32} />
+              </div>
               <h4>No Excel File Uploaded</h4>
               <p>
                 Download the template, enter your monthly records and upload the
@@ -918,6 +903,7 @@ const SalesMonthlyBulk = () => {
           onClick={() => navigate("/sales-monthly")}
           disabled={loading}
         >
+          <X size={16} />
           Cancel
         </button>
         <button
@@ -926,6 +912,7 @@ const SalesMonthlyBulk = () => {
           onClick={handleSave}
           disabled={loading || rows.length === 0 || invalidRows.length > 0}
         >
+          <Save size={15} />
           {loading ? "Saving..." : `Save ${validRows.length} Records`}
         </button>
       </div>

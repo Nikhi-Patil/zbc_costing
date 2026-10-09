@@ -7,10 +7,7 @@
   font-family: "Times New Roman", Times, serif;
 }
 
-/* ============================================================
-HEADER
-============================================================ */
-
+/* HEADER */
 .sales-monthly-header {
   display: flex;
   align-items: center;
@@ -18,30 +15,24 @@ HEADER
   gap: 20px;
   margin-bottom: 20px;
 }
-
 .sales-monthly-title h2 {
   margin: 0;
   color: #172033;
   font-size: 25px;
   font-weight: 700;
 }
-
 .sales-monthly-title p {
   margin: 5px 0 0;
   color: #6b7280;
   font-size: 15px;
 }
-
 .sales-monthly-actions {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-/* ============================================================
-BUTTONS
-============================================================ */
-
+/* BUTTONS */
 .btn-add-rate,
 .btn-bulk-upload {
   height: 42px;
@@ -58,40 +49,31 @@ BUTTONS
   font-weight: 700;
   transition: all 0.2s ease;
 }
-
 .btn-add-rate {
   background: #16823b;
   color: #fff;
 }
-
 .btn-add-rate:hover {
   background: #126d31;
   transform: translateY(-1px);
 }
-
 .btn-add-rate span {
   font-size: 20px;
   line-height: 1;
 }
-
 .btn-bulk-upload {
   background: #172b4d;
   color: #fff;
 }
-
 .btn-bulk-upload:hover {
   background: #10213b;
   transform: translateY(-1px);
 }
-
 .upload-icon {
   font-size: 18px;
 }
 
-/* ============================================================
-FILTER CARD
-============================================================ */
-
+/* FILTER CARD */
 .sales-filter-card {
   display: grid;
   grid-template-columns: 220px 160px minmax(260px, 1fr);
@@ -104,12 +86,10 @@ FILTER CARD
   border-radius: 10px;
   box-shadow: 0 2px 7px rgba(24, 39, 75, 0.04);
 }
-
 .sales-filter-group,
 .sales-search-group {
   min-width: 0;
 }
-
 .sales-filter-group label,
 .sales-search-group label {
   display: block;
@@ -118,7 +98,6 @@ FILTER CARD
   font-size: 14px;
   font-weight: 700;
 }
-
 .sales-filter-group select,
 .sales-search-group input {
   width: 100%;
@@ -133,22 +112,18 @@ FILTER CARD
   font-family: inherit;
   font-size: 14px;
 }
-
 .sales-filter-group select:focus,
 .sales-search-group input:focus {
   border-color: #315f9d;
   box-shadow: 0 0 0 2px rgba(49, 95, 157, 0.1);
 }
-
 .sales-search-wrapper {
   position: relative;
 }
-
 .sales-search-wrapper input {
   padding-left: 38px;
   padding-right: 35px;
 }
-
 .search-icon {
   position: absolute;
   top: 50%;
@@ -159,7 +134,6 @@ FILTER CARD
   font-size: 19px;
   pointer-events: none;
 }
-
 .clear-search {
   position: absolute;
   top: 50%;
@@ -175,16 +149,12 @@ FILTER CARD
   font-family: inherit;
   font-size: 18px;
 }
-
 .clear-search:hover {
   background: #eef1f5;
   color: #1f2937;
 }
 
-/* ============================================================
-TABLE CARD
-============================================================ */
-
+/* TABLE CARD */
 .sales-table-card {
   overflow: hidden;
   background: #fff;
@@ -192,7 +162,6 @@ TABLE CARD
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(24, 39, 75, 0.05);
 }
-
 .sales-table-header {
   min-height: 64px;
   padding: 14px 18px;
@@ -202,50 +171,38 @@ TABLE CARD
   justify-content: space-between;
   border-bottom: 1px solid #e6eaf0;
 }
-
 .sales-table-header h3 {
   margin: 0 0 3px;
   color: #172033;
   font-size: 17px;
   font-weight: 700;
 }
-
 .sales-table-header span {
   color: #7a8494;
   font-size: 13px;
 }
 
-/* ============================================================
-TABLE SCROLL
-============================================================ */
-
+/* TABLE SCROLL */
 .sales-table-scroll {
   width: 100%;
   overflow-x: auto;
   overflow-y: visible;
 }
-
 .sales-table-scroll::-webkit-scrollbar {
   height: 8px;
 }
-
 .sales-table-scroll::-webkit-scrollbar-track {
   background: #f1f3f6;
 }
-
 .sales-table-scroll::-webkit-scrollbar-thumb {
   background: #b7c0cd;
   border-radius: 10px;
 }
-
 .sales-table-scroll::-webkit-scrollbar-thumb:hover {
   background: #909aaa;
 }
 
-/* ============================================================
-TABLE
-============================================================ */
-
+/* TABLE */
 .sales-monthly-table {
   width: 100%;
   min-width: 1450px;
@@ -254,7 +211,6 @@ TABLE
   table-layout: fixed;
   font-size: 14px;
 }
-
 .sales-monthly-table th {
   height: 45px;
   padding: 8px 10px;
@@ -270,7 +226,6 @@ TABLE
   top: 0;
   z-index: 5;
 }
-
 .sales-monthly-table td {
   height: 43px;
   padding: 8px 10px;
@@ -283,68 +238,51 @@ TABLE
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .sales-monthly-table tbody tr:hover td {
   background: #f8fafc;
 }
-
 .sales-monthly-table th:last-child,
 .sales-monthly-table td:last-child {
   border-right: none;
 }
 
-/* ============================================================
-COLUMN WIDTHS
-============================================================ */
-
+/* COLUMN WIDTHS */
 .sales-monthly-table .sr-col {
   width: 70px;
 }
-
 .sales-monthly-table .part-no-col {
   width: 150px;
 }
-
 .sales-monthly-table .part-name-col {
   width: 220px;
 }
-
 .sales-monthly-table .unit-col {
   width: 95px;
 }
-
 .sales-monthly-table .month-col {
   width: 105px;
 }
 
-/* ============================================================
-CELLS
-============================================================ */
-
+/* CELLS */
 .sr-cell {
   text-align: center;
   color: #667085 !important;
 }
-
 .part-no-cell {
   color: #1c4e89 !important;
   font-weight: 700;
 }
-
 .numeric-cell {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-
 .editable-cell {
   cursor: pointer;
 }
-
 .editable-cell:hover {
   background: #eef6ff !important;
   color: #174a82;
 }
-
 .unit-badge {
   display: inline-flex;
   align-items: center;
@@ -357,15 +295,11 @@ CELLS
   font-weight: 700;
 }
 
-/* ============================================================
-EMPTY / LOADING
-============================================================ */
-
+/* EMPTY / LOADING */
 .empty-state-cell {
   height: 230px !important;
   text-align: center;
 }
-
 .empty-state {
   display: flex;
   align-items: center;
@@ -373,24 +307,20 @@ EMPTY / LOADING
   flex-direction: column;
   gap: 5px;
 }
-
 .empty-state h4 {
   margin: 4px 0 0;
   color: #344054;
   font-size: 16px;
 }
-
 .empty-state p {
   margin: 0;
   color: #8a94a6;
   font-size: 13px;
 }
-
 .empty-icon {
   color: #aab3c1;
   font-size: 36px;
 }
-
 .loading-spinner {
   width: 30px;
   height: 30px;
@@ -399,17 +329,13 @@ EMPTY / LOADING
   border-radius: 50%;
   animation: sales-spin 0.8s linear infinite;
 }
-
 @keyframes sales-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* ============================================================
-PAGINATION
-============================================================ */
-
+/* PAGINATION */
 .sales-pagination {
   min-height: 64px;
   padding: 12px 18px;
@@ -420,7 +346,6 @@ PAGINATION
   gap: 18px;
   border-top: 1px solid #e6eaf0;
 }
-
 .page-size-control {
   display: flex;
   align-items: center;
@@ -428,7 +353,6 @@ PAGINATION
   color: #667085;
   font-size: 14px;
 }
-
 .page-size-control select {
   width: 65px;
   height: 34px;
@@ -438,22 +362,18 @@ PAGINATION
   background: #fff;
   font-family: inherit;
 }
-
 .page-info {
   color: #667085;
   font-size: 14px;
 }
-
 .page-info strong {
   color: #344054;
 }
-
 .pagination-buttons {
   display: flex;
   align-items: center;
   gap: 5px;
 }
-
 .pagination-buttons button {
   width: 34px;
   height: 34px;
@@ -465,27 +385,21 @@ PAGINATION
   font-family: inherit;
   font-size: 15px;
 }
-
 .pagination-buttons button:hover:not(:disabled) {
   background: #f2f5f9;
   border-color: #b8c2d0;
 }
-
 .pagination-buttons button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
-
 .pagination-buttons .page-number.active {
   background: #172b4d;
   color: #fff;
   border-color: #172b4d;
 }
 
-/* ============================================================
-TOAST
-============================================================ */
-
+/* TOAST */
 .sales-toast {
   position: fixed;
   top: 20px;
@@ -507,7 +421,6 @@ TOAST
   font-size: 14px;
   font-weight: 700;
 }
-
 .sales-toast .toast-icon {
   width: 25px;
   height: 25px;
@@ -519,17 +432,14 @@ TOAST
   color: #16823b;
   font-size: 14px;
 }
-
 .sales-toast.error .toast-icon {
   background: #fdecec;
   color: #c62828;
 }
-
 .sales-toast.info .toast-icon {
   background: #eaf2ff;
   color: #315f9d;
 }
-
 .sales-toast button {
   margin-left: auto;
   border: none;
@@ -540,10 +450,7 @@ TOAST
   font-size: 20px;
 }
 
-/* ============================================================
-ENTRY PAGE
-============================================================ */
-
+/* ENTRY PAGE */
 .sales-entry-card {
   width: 100%;
   background: #fff;
@@ -551,18 +458,15 @@ ENTRY PAGE
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(24, 39, 75, 0.05);
 }
-
 .sales-entry-form {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
   padding: 24px;
 }
-
 .entry-form-group {
   min-width: 0;
 }
-
 .entry-form-group label {
   display: block;
   margin-bottom: 7px;
@@ -570,12 +474,10 @@ ENTRY PAGE
   font-size: 14px;
   font-weight: 700;
 }
-
 .entry-form-group label span {
   margin-left: 3px;
   color: #d92d20;
 }
-
 .entry-form-group input,
 .entry-form-group select,
 .sales-entry-form .ts-control {
@@ -589,44 +491,36 @@ ENTRY PAGE
   font-family: inherit;
   font-size: 14px;
 }
-
 .entry-form-group input {
   padding: 0 12px;
   outline: none;
 }
-
 .entry-form-group select {
   padding: 0 12px;
   outline: none;
 }
-
 .entry-form-group input:focus,
 .entry-form-group select:focus {
   border-color: #315f9d;
   box-shadow: 0 0 0 2px rgba(49, 95, 157, 0.1);
 }
-
 .entry-form-group input[readonly] {
   background: #f7f8fa;
   color: #667085;
 }
-
 .entry-form-group input:disabled,
 .entry-form-group select:disabled {
   background: #f2f4f7;
   cursor: not-allowed;
 }
-
 .input-error {
   border-color: #d92d20 !important;
 }
-
 .field-error {
   margin-top: 5px;
   color: #d92d20;
   font-size: 12px;
 }
-
 .field-loading {
   display: block;
   margin-top: 5px;
@@ -634,47 +528,36 @@ ENTRY PAGE
   font-size: 12px;
 }
 
-/* ============================================================
-TOM SELECT
-============================================================ */
-
+/* TOM SELECT */
 .sales-entry-form .ts-wrapper {
   width: 100%;
 }
-
 .sales-entry-form .ts-control {
   min-height: 42px;
   padding: 7px 12px;
   border-color: #cfd6e1;
   box-shadow: none;
 }
-
 .sales-entry-form .ts-control:focus,
 .sales-entry-form .ts-wrapper.focus .ts-control {
   border-color: #315f9d;
   box-shadow: 0 0 0 2px rgba(49, 95, 157, 0.1);
 }
-
 .sales-entry-form .ts-dropdown {
   border-color: #cfd6e1;
   font-family: "Times New Roman", Times, serif;
   font-size: 14px;
   z-index: 10000;
 }
-
 .sales-entry-form .ts-dropdown .option {
   padding: 9px 12px;
 }
-
 .sales-entry-form .ts-dropdown .active {
   background: #eef4fb;
   color: #172b4d;
 }
 
-/* ============================================================
-ENTRY FOOTER
-============================================================ */
-
+/* ENTRY FOOTER */
 .sales-entry-footer {
   min-height: 70px;
   padding: 14px 24px;
@@ -685,18 +568,15 @@ ENTRY FOOTER
   gap: 20px;
   border-top: 1px solid #e6eaf0;
 }
-
 .form-help {
   color: #7a8494;
   font-size: 13px;
 }
-
 .entry-form-actions {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-
 .btn-form-cancel,
 .btn-form-save {
   min-width: 115px;
@@ -708,33 +588,27 @@ ENTRY FOOTER
   font-size: 14px;
   font-weight: 700;
 }
-
 .btn-form-cancel {
   border: 1px solid #ccd3dd;
   background: #fff;
   color: #475467;
 }
-
 .btn-form-cancel:hover:not(:disabled) {
   background: #f7f8fa;
 }
-
 .btn-form-save {
   border: 1px solid #172b4d;
   background: #172b4d;
   color: #fff;
 }
-
 .btn-form-save:hover:not(:disabled) {
   background: #10213b;
 }
-
 .btn-form-cancel:disabled,
 .btn-form-save:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
-
 .general-error {
   margin: 0 24px 15px;
   padding: 10px 12px;
@@ -745,10 +619,7 @@ ENTRY FOOTER
   font-size: 13px;
 }
 
-/* ============================================================
-ENTRY LOADING
-============================================================ */
-
+/* ENTRY LOADING */
 .entry-loading {
   min-height: 360px;
   display: flex;
@@ -757,17 +628,13 @@ ENTRY LOADING
   flex-direction: column;
   gap: 12px;
 }
-
 .entry-loading h4 {
   margin: 0;
   color: #475467;
   font-size: 16px;
 }
 
-/* ============================================================
-EDITING BADGE
-============================================================ */
-
+/* EDITING BADGE */
 .editing-badge {
   padding: 7px 12px;
   border: 1px solid #c9d9ef;
@@ -778,80 +645,62 @@ EDITING BADGE
   font-weight: 700;
 }
 
-/* ============================================================
-RESPONSIVE
-============================================================ */
-
+/* RESPONSIVE */
 @media (max-width: 1000px) {
   .sales-monthly-header {
     align-items: flex-start;
     flex-direction: column;
   }
-
   .sales-monthly-actions {
     width: 100%;
   }
-
   .btn-add-rate,
   .btn-bulk-upload {
     flex: 1;
   }
-
   .sales-filter-card {
     grid-template-columns: 1fr 1fr;
   }
-
   .sales-search-group {
     grid-column: 1 / -1;
   }
-
   .sales-entry-form {
     grid-template-columns: 1fr 1fr;
   }
 }
-
 @media (max-width: 650px) {
   .sales-monthly-page {
     padding: 14px;
   }
-
   .sales-filter-card {
     grid-template-columns: 1fr;
   }
-
   .sales-search-group {
     grid-column: auto;
   }
-
   .sales-monthly-actions {
     flex-direction: column;
   }
-
   .btn-add-rate,
   .btn-bulk-upload {
     width: 100%;
   }
-
   .sales-entry-form {
     grid-template-columns: 1fr;
     padding: 18px;
   }
-
   .sales-entry-footer {
     align-items: stretch;
     flex-direction: column;
     padding: 14px 18px;
   }
-
   .entry-form-actions {
     width: 100%;
   }
-
   .btn-form-cancel,
   .btn-form-save {
     flex: 1;
   }
-
   .sales-pagination {
     align-items: flex-start;
     flex-direction: column;
@@ -866,30 +715,24 @@ RESPONSIVE
   font-family: "Times New Roman", Times, serif;
 }
 
-/* =========================================================
-   HEADER
-========================================================= */
-
+/* HEADER */
 .sales-bulk-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 14px;
 }
-
 .sales-bulk-header h2 {
   margin: 0;
   color: #172033;
   font-size: 22px;
   font-weight: 700;
 }
-
 .sales-bulk-header p {
   margin: 4px 0 0;
   color: #6b7280;
   font-size: 13px;
 }
-
 .bulk-back-btn {
   height: 36px;
   padding: 0 16px;
@@ -902,15 +745,11 @@ RESPONSIVE
   font-weight: 600;
   cursor: pointer;
 }
-
 .bulk-back-btn:hover {
   background: #f8fafc;
 }
 
-/* =========================================================
-   CONTROL CARD
-========================================================= */
-
+/* CONTROL CARD */
 .sales-bulk-control-card {
   display: flex;
   align-items: flex-end;
@@ -921,19 +760,16 @@ RESPONSIVE
   border: 1px solid #e2e8f0;
   border-radius: 7px;
 }
-
 .bulk-control-group {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
-
 .bulk-control-group label {
   color: #475569;
   font-size: 12px;
   font-weight: 700;
 }
-
 .bulk-control-group select {
   width: 140px;
   height: 35px;
@@ -946,22 +782,17 @@ RESPONSIVE
   font-family: inherit;
   font-size: 13px;
 }
-
 .bulk-control-group select:focus {
   border-color: #2563eb;
 }
 
-/* =========================================================
-   ACTIONS
-========================================================= */
-
+/* ACTIONS */
 .bulk-control-actions {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
-
 .download-template-btn,
 .choose-file-btn {
   height: 35px;
@@ -976,31 +807,25 @@ RESPONSIVE
   font-weight: 700;
   cursor: pointer;
 }
-
 .download-template-btn {
   border: 1px solid #0f766e;
   background: #ffffff;
   color: #0f766e;
 }
-
 .download-template-btn:hover {
   background: #f0fdfa;
 }
-
 .choose-file-btn {
   border: 1px solid #1e3a5f;
   background: #1e3a5f;
   color: #ffffff;
 }
-
 .choose-file-btn:hover {
   background: #172f4d;
 }
-
 .choose-file-btn input {
   display: none;
 }
-
 .selected-file {
   max-width: 260px;
   overflow: hidden;
@@ -1010,10 +835,7 @@ RESPONSIVE
   font-size: 12px;
 }
 
-/* =========================================================
-   INFORMATION
-========================================================= */
-
+/* INFORMATION */
 .sales-bulk-info {
   display: flex;
   align-items: center;
@@ -1026,21 +848,16 @@ RESPONSIVE
   color: #475569;
   font-size: 12px;
 }
-
 .sales-bulk-info strong {
   color: #1e40af;
 }
 
-/* =========================================================
-   SUMMARY
-========================================================= */
-
+/* SUMMARY */
 .bulk-summary {
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
 }
-
 .summary-box {
   min-width: 125px;
   padding: 9px 13px;
@@ -1049,46 +866,36 @@ RESPONSIVE
   border-radius: 6px;
   background: #ffffff;
 }
-
 .summary-box span {
   display: block;
   margin-bottom: 2px;
   color: #64748b;
   font-size: 11px;
 }
-
 .summary-box strong {
   color: #172033;
   font-size: 18px;
 }
-
 .summary-box.valid {
   border-color: #bbf7d0;
 }
-
 .summary-box.valid strong {
   color: #15803d;
 }
-
 .summary-box.invalid {
   border-color: #fecaca;
 }
-
 .summary-box.invalid strong {
   color: #dc2626;
 }
 
-/* =========================================================
-   TABLE CARD
-========================================================= */
-
+/* TABLE CARD */
 .sales-bulk-table-card {
   overflow: hidden;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 7px;
 }
-
 .bulk-table-header {
   display: flex;
   align-items: center;
@@ -1096,20 +903,17 @@ RESPONSIVE
   padding: 11px 14px;
   border-bottom: 1px solid #e5e7eb;
 }
-
 .bulk-table-header h3 {
   margin: 0;
   color: #1f2937;
   font-size: 15px;
 }
-
 .bulk-table-header span {
   display: block;
   margin-top: 2px;
   color: #64748b;
   font-size: 11px;
 }
-
 .clear-bulk-btn {
   height: 30px;
   padding: 0 12px;
@@ -1122,22 +926,17 @@ RESPONSIVE
   font-weight: 700;
   cursor: pointer;
 }
-
 .clear-bulk-btn:hover {
   background: #fef2f2;
 }
 
-/* =========================================================
-   TABLE
-========================================================= */
-
+/* TABLE */
 .bulk-table-scroll {
   width: 100%;
   max-height: 62vh;
   overflow-x: auto;
   overflow-y: auto;
 }
-
 .sales-bulk-table {
   width: 100%;
   min-width: 1000px;
@@ -1147,111 +946,88 @@ RESPONSIVE
 }
 
 /* HEADER */
-
 .sales-bulk-table th {
   position: sticky;
   top: 0;
   z-index: 5;
-
   height: 40px;
   padding: 5px 8px;
-
   border-right: 1px solid #dbe2ea;
   border-bottom: 1px solid #cbd5e1;
-
   background: #eef2f7;
   color: #334155;
-
   font-size: 12px;
   font-weight: 700;
   text-align: center;
-
   white-space: nowrap;
 }
 
 /* BODY */
-
 .sales-bulk-table td {
   height: 40px;
   padding: 5px 7px;
-
   border-right: 1px solid #e5e7eb;
   border-bottom: 1px solid #e5e7eb;
-
   background: #ffffff;
   color: #374151;
-
   font-size: 12px;
 }
-
 .sales-bulk-table tbody tr:hover td {
   background: #f8fafc;
 }
-
 .sales-bulk-table tbody tr.bulk-invalid-row td {
   background: #fff7f7;
 }
 
-/* =========================================================
-   COLUMN WIDTHS
-========================================================= */
-
+/* COLUMN WIDTHS */
 .sales-bulk-table th:nth-child(1),
 .sales-bulk-table td:nth-child(1) {
   width: 45px;
   min-width: 45px;
   max-width: 45px;
 }
-
 .sales-bulk-table th:nth-child(2),
 .sales-bulk-table td:nth-child(2) {
   width: 145px;
   min-width: 145px;
   max-width: 145px;
 }
-
 .sales-bulk-table th:nth-child(3),
 .sales-bulk-table td:nth-child(3) {
   width: 220px;
   min-width: 220px;
   max-width: 220px;
 }
-
 .sales-bulk-table th:nth-child(4),
 .sales-bulk-table td:nth-child(4) {
   width: 90px;
   min-width: 90px;
   max-width: 90px;
 }
-
 .sales-bulk-table th:nth-child(5),
 .sales-bulk-table td:nth-child(5) {
   width: 125px;
   min-width: 125px;
   max-width: 125px;
 }
-
 .sales-bulk-table th:nth-child(6),
 .sales-bulk-table td:nth-child(6) {
   width: 110px;
   min-width: 110px;
   max-width: 110px;
 }
-
 .sales-bulk-table th:nth-child(7),
 .sales-bulk-table td:nth-child(7) {
   width: 120px;
   min-width: 120px;
   max-width: 120px;
 }
-
 .sales-bulk-table th:nth-child(8),
 .sales-bulk-table td:nth-child(8) {
   width: 220px;
   min-width: 220px;
   max-width: 220px;
 }
-
 .sales-bulk-table th:nth-child(9),
 .sales-bulk-table td:nth-child(9) {
   width: 65px;
@@ -1259,102 +1035,75 @@ RESPONSIVE
   max-width: 65px;
 }
 
-/* =========================================================
-   EDITABLE INPUTS
-========================================================= */
-
+/* EDITABLE INPUTS */
 .bulk-edit-input {
   width: 100%;
   height: 30px;
   padding: 4px 7px;
   box-sizing: border-box;
-
   border: 1px solid transparent;
   border-radius: 4px;
-
   outline: none;
   background: transparent;
-
   color: #1f2937;
-
   font-family: "Times New Roman", Times, serif;
   font-size: 12px;
 }
-
 .bulk-edit-input:hover {
   border-color: #cbd5e1;
   background: #ffffff;
 }
-
 .bulk-edit-input:focus {
   border-color: #2563eb;
   background: #ffffff;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.08);
 }
-
 .bulk-text-input {
   text-align: left;
 }
-
 .bulk-edit-input[type="number"] {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-/* =========================================================
-   MONTH SELECT
-========================================================= */
-
+/* MONTH SELECT */
 .bulk-month-select {
   width: 100%;
   height: 30px;
   padding: 3px 6px;
-
   border: 1px solid transparent;
   border-radius: 4px;
-
   outline: none;
   background: transparent;
-
   color: #1f2937;
-
   font-family: "Times New Roman", Times, serif;
   font-size: 12px;
-
   cursor: pointer;
 }
-
 .bulk-month-select:hover {
   border-color: #cbd5e1;
   background: #ffffff;
 }
-
 .bulk-month-select:focus {
   border-color: #2563eb;
   background: #ffffff;
 }
 
-/* =========================================================
-   VALIDATION
-========================================================= */
-
+/* VALIDATION */
 .bulk-error-cell {
   vertical-align: middle;
 }
-
 .bulk-errors {
   display: flex;
   flex-direction: column;
   gap: 2px;
   white-space: normal;
 }
-
 .bulk-errors span {
   color: #dc2626;
   font-size: 10px;
   line-height: 1.25;
 }
-
 .valid-badge {
   display: inline-block;
   padding: 3px 8px;
@@ -1365,76 +1114,53 @@ RESPONSIVE
   font-weight: 700;
 }
 
-/* =========================================================
-   ACTION
-========================================================= */
-
+/* ACTION */
 .bulk-action-cell {
   text-align: center;
 }
-
 .remove-row-btn {
   width: 28px;
   height: 28px;
-
   border: 1px solid #fecaca;
   border-radius: 5px;
-
   background: #ffffff;
   color: #dc2626;
-
   font-family: inherit;
   font-size: 17px;
   line-height: 1;
-
   cursor: pointer;
 }
-
 .remove-row-btn:hover {
   background: #fef2f2;
 }
 
-/* =========================================================
-   EMPTY STATE
-========================================================= */
-
+/* EMPTY STATE */
 .bulk-empty-state {
   min-height: 300px;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
   padding: 30px;
-
   text-align: center;
 }
-
 .bulk-empty-icon {
   width: 50px;
   height: 50px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   margin-bottom: 10px;
-
   border-radius: 50%;
-
   background: #eff6ff;
   color: #2563eb;
-
   font-size: 25px;
 }
-
 .bulk-empty-state h4 {
   margin: 0 0 5px;
   color: #334155;
   font-size: 15px;
 }
-
 .bulk-empty-state p {
   max-width: 400px;
   margin: 0;
@@ -1442,51 +1168,39 @@ RESPONSIVE
   font-size: 12px;
 }
 
-/* =========================================================
-   FOOTER
-========================================================= */
-
+/* FOOTER */
 .sales-bulk-footer {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
   padding: 12px 0;
 }
-
 .bulk-cancel-btn,
 .bulk-save-btn {
   height: 36px;
   padding: 0 18px;
-
   border-radius: 5px;
-
   font-family: inherit;
   font-size: 13px;
   font-weight: 700;
-
   cursor: pointer;
 }
-
 .bulk-cancel-btn {
   border: 1px solid #cbd5e1;
   background: #ffffff;
   color: #475569;
 }
-
 .bulk-cancel-btn:hover {
   background: #f8fafc;
 }
-
 .bulk-save-btn {
   border: 1px solid #15803d;
   background: #15803d;
   color: #ffffff;
 }
-
 .bulk-save-btn:hover:not(:disabled) {
   background: #166534;
 }
-
 .bulk-save-btn:disabled,
 .bulk-cancel-btn:disabled,
 .clear-bulk-btn:disabled,
@@ -1496,129 +1210,95 @@ RESPONSIVE
   cursor: not-allowed;
 }
 
-/* =========================================================
-   TOAST
-========================================================= */
-
+/* TOAST */
 .sales-bulk-toast {
   position: fixed;
   top: 20px;
   right: 20px;
-
   z-index: 9999;
-
   min-width: 280px;
   max-width: 500px;
-
   display: flex;
   align-items: center;
   gap: 9px;
-
   padding: 11px 13px;
-
   border-radius: 6px;
-
   box-shadow: 0 6px 22px rgba(15, 23, 42, 0.15);
-
   font-size: 13px;
   font-weight: 600;
 }
-
 .sales-bulk-toast.success {
   border: 1px solid #bbf7d0;
   background: #f0fdf4;
   color: #166534;
 }
-
 .sales-bulk-toast.error {
   border: 1px solid #fecaca;
   background: #fef2f2;
   color: #b91c1c;
 }
-
 .sales-bulk-toast .toast-icon {
   font-weight: 800;
 }
-
 .sales-bulk-toast button {
   margin-left: auto;
-
   border: 0;
   background: transparent;
-
   color: inherit;
-
   font-size: 18px;
-
   cursor: pointer;
 }
 
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
+/* RESPONSIVE */
 @media (max-width: 900px) {
   .sales-bulk-control-card {
     flex-wrap: wrap;
     align-items: flex-end;
   }
-
   .bulk-summary {
     flex-wrap: wrap;
   }
 }
-
 @media (max-width: 768px) {
   .sales-bulk-page {
     padding: 8px;
   }
-
   .sales-bulk-header {
     align-items: flex-start;
     gap: 10px;
   }
-
   .sales-bulk-header h2 {
     font-size: 19px;
   }
-
   .sales-bulk-control-card {
     flex-direction: column;
     align-items: stretch;
   }
-
   .bulk-control-group select {
     width: 100%;
   }
-
   .bulk-control-actions {
     align-items: stretch;
     flex-direction: column;
   }
-
   .download-template-btn,
   .choose-file-btn {
     width: 100%;
   }
-
   .selected-file {
     max-width: 100%;
   }
-
   .summary-box {
     flex: 1;
     min-width: 110px;
   }
-
   .sales-bulk-footer {
     flex-direction: column;
   }
-
   .bulk-cancel-btn,
   .bulk-save-btn {
     width: 100%;
   }
-
   .sales-bulk-toast {
     left: 10px;
     right: 10px;
@@ -1626,4 +1306,1264 @@ RESPONSIVE
     min-width: 0;
     max-width: none;
   }
+}
+
+/* LIKE COMPOUND MONTHLY MASTER STYLE */
+.sales-monthly-page {
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background: transparent;
+  font-family: "Times New Roman", Times, serif;
+}
+
+/* TOOLBAR */
+.sales-report-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+  margin-bottom: 15px;
+}
+.sales-report-filters {
+  display: flex;
+  gap: 15px;
+}
+.sales-filter-field {
+  width: 160px;
+}
+.sales-filter-field .form-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #212529;
+  font-size: 12px;
+  font-weight: 600;
+}
+.sales-filter-field .form-control {
+  width: 100%;
+  height: 32px;
+  padding: 4px 10px;
+  border: 1px solid #a6a7a8;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #212529;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+  box-sizing: border-box;
+  outline: none;
+}
+.sales-filter-field .form-control:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+}
+
+/* BUTTONS - same size/shape as Compound */
+.sales-report-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sales-add-rate-btn,
+.sales-bulk-upload-btn {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+.sales-add-rate-btn {
+  border: 1px solid #2563eb;
+  background: #ffffff;
+  color: #2563eb;
+}
+.sales-add-rate-btn:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+.sales-bulk-upload-btn {
+  border: 1px solid #198754;
+  background: #ffffff;
+  color: #198754;
+}
+.sales-bulk-upload-btn:hover {
+  background: #198754;
+  color: #ffffff;
+}
+.sales-add-rate-btn svg,
+.sales-bulk-upload-btn svg {
+  flex-shrink: 0;
+}
+
+/* TABLE CONTAINER */
+.sales-report-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* TABLE HEADER - same as Compound */
+.sales-monthly-page .sales-table-header {
+  width: 100%;
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: #ffffff;
+  border: 1px solid #d9dee5;
+  border-bottom: none;
+  box-sizing: border-box;
+  box-shadow: none;
+  border-radius: 0;
+}
+.sales-table-header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+}
+.sales-monthly-page .sales-table-header h3 {
+  margin: 0;
+  color: #19224a;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sales-table-count {
+  white-space: nowrap;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* SEARCH - moved into table header like Compound */
+.sales-search-box {
+  position: relative;
+  width: 220px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #000000;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+.sales-search-icon {
+  flex-shrink: 0;
+  margin-left: 9px;
+  color: #000000;
+}
+.sales-search-box input {
+  width: 100%;
+  height: 100%;
+  padding: 0 30px 0 8px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+  color: #212529;
+  box-sizing: border-box;
+}
+.sales-search-box input::placeholder {
+  color: #8a94a6;
+}
+.sales-search-clear {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #6c757d;
+  cursor: pointer;
+}
+.sales-search-clear:hover {
+  color: #212529;
+}
+
+/* TABLE SCROLL */
+.sales-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  background: #ffffff;
+}
+.sales-table-scroll::-webkit-scrollbar {
+  height: 9px;
+}
+.sales-table-scroll::-webkit-scrollbar-track {
+  background: #eeeeee;
+}
+.sales-table-scroll::-webkit-scrollbar-thumb {
+  background: #aeb4bb;
+  border-radius: 5px;
+}
+.sales-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #858b92;
+}
+
+/* DATA TABLE */
+.sales-data-table {
+  width: 100%;
+}
+.sales-data-table .rdt_TableHeadRow {
+  min-height: 45px;
+  background: #19224a;
+  border-bottom: 1px solid #cbd8e8;
+}
+.sales-data-table .rdt_TableCol {
+  border-right: 1px solid #dce5f0;
+}
+.sales-data-table .rdt_TableCol_Sortable > div {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  line-height: 1.15;
+  text-align: center;
+}
+.sales-data-table .rdt_TableRow {
+  min-height: 35px;
+  font-size: 12px;
+  color: #475569;
+  border-bottom: 1px solid #edf1f5;
+}
+.sales-data-table .rdt_TableRow:hover {
+  background-color: #f5f9ff;
+}
+.sales-data-table .rdt_TableCell {
+  padding-left: 8px;
+  padding-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-right: 1px solid #edf1f5;
+  box-sizing: border-box;
+}
+.sales-data-table .rdt_Pagination {
+  min-height: 42px;
+  border-top: 1px solid #e7ebf0;
+  color: #64748b;
+  font-size: 12px;
+}
+.sales-data-table .rdt_Pagination select {
+  font-size: 12px;
+}
+.sales-data-table .rdt_Pagination button {
+  width: auto !important;
+}
+
+/* Same as Compound: hide sorting arrows */
+.sales-data-table .rdt_TableCol_Sortable svg {
+  display: none !important;
+}
+
+/* LOADING / EMPTY */
+.sales-loading {
+  width: 100%;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+}
+.sales-no-data {
+  width: 100%;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  color: #6c757d;
+}
+.sales-no-data h4 {
+  margin: 0;
+  color: #344054;
+  font-size: 15px;
+}
+.sales-no-data p {
+  margin: 0;
+  color: #8a94a6;
+  font-size: 13px;
+}
+
+/* TOAST CLOSE BUTTON */
+.sales-toast button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .sales-report-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .sales-report-filters {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .sales-filter-field {
+    width: 150px;
+  }
+  .sales-report-actions {
+    justify-content: flex-end;
+  }
+  .sales-monthly-page .sales-table-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .sales-table-header-left {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .sales-search-box {
+    width: 200px;
+  }
+  .sales-table-count {
+    align-self: flex-end;
+  }
+}
+
+/*   SALES MONTHLY ENTRY FORM
+   BOP MONTHLY MASTER */
+.sales-monthly-form-card {
+  width: 100%;
+  margin-top: 15px;
+  background: #ffffff;
+  border: 1px solid #d9dee5;
+  border-radius: 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.sales-monthly-form-header {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #19224a;
+  border-bottom: 1px solid #d9dee5;
+  box-sizing: border-box;
+}
+.sales-monthly-form-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.sales-monthly-form-header h5 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+.sales-editing-badge {
+  padding: 3px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sales-form-close-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dc3545;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #dc3545;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+.sales-form-close-btn:hover:not(:disabled) {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: #ffffff;
+}
+.sales-form-close-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.sales-form-close-btn svg {
+  flex-shrink: 0;
+}
+.sales-monthly-form-body {
+  width: 100%;
+  padding: 18px;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+/* FORM GRID */
+.sales-monthly-form-body .sales-entry-form {
+  width: 100%;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  padding: 0;
+  margin: 0;
+}
+
+/* FIELDS */
+.sales-monthly-form-body .entry-form-group {
+  min-width: 0;
+}
+.sales-monthly-form-body .entry-form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #212529;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+.sales-monthly-form-body .entry-form-group input,
+.sales-monthly-form-body .entry-form-group select {
+  width: 100%;
+  height: 38px;
+  padding: 6px 10px;
+  border: 1px solid #a6a7a8 !important;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #212529;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+  box-sizing: border-box;
+  outline: none;
+  box-shadow: none !important;
+}
+.sales-monthly-form-body .entry-form-group input:focus,
+.sales-monthly-form-body .entry-form-group select:focus {
+  border-color: #86b7fe !important;
+  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15) !important;
+}
+.sales-monthly-form-body .entry-form-group input[readonly] {
+  background: #f5f6f8;
+  color: #495057;
+  cursor: default;
+}
+.sales-monthly-form-body .entry-form-group input:disabled,
+.sales-monthly-form-body .entry-form-group select:disabled {
+  background: #f1f3f5;
+  color: #6c757d;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+/* ERRORS */
+.sales-monthly-form-body .input-error {
+  border-color: #dc3545 !important;
+}
+.sales-monthly-form-body .field-error {
+  margin-top: 4px;
+  color: #dc3545;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 11px;
+}
+.sales-monthly-form-body .general-error {
+  margin: 15px 0 0;
+  padding: 9px 11px;
+  border: 1px solid #f3c1bd;
+  border-radius: 6px;
+  background: #fff4f2;
+  color: #b42318;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+}
+
+/* FOOTER BUTTONS */
+.sales-form-actions {
+  width: 100%;
+  margin-top: 20px;
+  padding-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+.sales-form-cancel-btn,
+.sales-form-save-btn {
+  height: 36px;
+  min-width: 80px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 6px;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+.sales-form-cancel-btn {
+  background: #ffffff;
+  color: #6c757d;
+  border: 1px solid #6c757d;
+}
+.sales-form-cancel-btn:hover:not(:disabled) {
+  background: #6c757d;
+  color: #ffffff;
+  border-color: #6c757d;
+}
+.sales-form-save-btn {
+  background: #ffffff;
+  color: #198754;
+  border: 1px solid #198754;
+}
+.sales-form-save-btn:hover:not(:disabled) {
+  background: #198754;
+  color: #ffffff;
+  border-color: #198754;
+}
+.sales-form-cancel-btn:disabled,
+.sales-form-save-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.sales-form-cancel-btn svg,
+.sales-form-save-btn svg {
+  flex-shrink: 0;
+}
+.sales-loading-icon {
+  animation: sales-form-spin 0.8s linear infinite;
+}
+@keyframes sales-form-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* LOADING */
+.sales-monthly-form-body .entry-loading {
+  min-height: 260px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1000px) {
+  .sales-monthly-form-body .sales-entry-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 650px) {
+  .sales-monthly-form-card {
+    margin-top: 10px;
+  }
+  .sales-monthly-form-body {
+    padding: 12px;
+  }
+  .sales-monthly-form-body .sales-entry-form {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .sales-form-actions {
+    justify-content: flex-end;
+  }
+}
+
+/*   SALES MONTHLY ENTRY
+   EXACT BOP MONTHLY RATE FORM STYLE
+   This block intentionally overrides the older Sales Entry CSS */
+.sales-monthly-entry-page {
+  width: 100%;
+  min-height: auto;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  box-sizing: border-box;
+  font-family: "Times New Roman", Times, serif;
+}
+
+/* CARD */
+.bop-style-sales-form-card {
+  width: 100%;
+  margin-top: 15px;
+  background: #ffffff;
+  border: 1px solid #d9dee5;
+  border-radius: 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* HEADER */
+.bop-style-sales-header {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #19224a;
+  border-bottom: 1px solid #d9dee5;
+  box-sizing: border-box;
+}
+.bop-style-sales-header h5 {
+  margin: 0;
+  color: #ffffff;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* CLOSE */
+.bop-style-sales-close-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dc3545;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #dc3545;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+.bop-style-sales-close-btn:hover:not(:disabled) {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: #ffffff;
+}
+.bop-style-sales-close-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.bop-style-sales-close-btn svg {
+  flex-shrink: 0;
+}
+
+/* BODY */
+.bop-style-sales-body {
+  width: 100%;
+  padding: 18px;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+/* BOOTSTRAP ROW - SAME DENSITY AS BOP */
+.bop-style-sales-body .row {
+  --bs-gutter-x: 1rem;
+  --bs-gutter-y: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: calc(-1 * var(--bs-gutter-y));
+  margin-right: calc(-0.5 * var(--bs-gutter-x));
+  margin-left: calc(-0.5 * var(--bs-gutter-x));
+}
+.bop-style-sales-body .row > * {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
+  padding-right: calc(var(--bs-gutter-x) * 0.5);
+  padding-left: calc(var(--bs-gutter-x) * 0.5);
+  margin-top: var(--bs-gutter-y);
+}
+@media (min-width: 768px) {
+  .bop-style-sales-body .col-md-3 {
+    flex: 0 0 auto;
+    width: 25%;
+  }
+}
+
+/* LABELS */
+.bop-style-sales-body .form-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #212529;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+.bop-style-sales-body .form-label span {
+  color: #dc3545;
+  margin-left: 2px;
+}
+
+/* INPUTS / SELECTS */
+.bop-style-sales-body .form-control,
+.bop-style-sales-body select.form-control,
+.bop-style-sales-body input.form-control {
+  width: 100%;
+  height: 30px;
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid #a6a7a8 !important;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #212529;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+  box-sizing: border-box;
+  box-shadow: none !important;
+  outline: none;
+}
+.bop-style-sales-body .form-control:focus {
+  border-color: #86b7fe !important;
+  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15) !important;
+  font-weight: 400;
+  color: #212529;
+}
+.bop-style-sales-body .form-control[readonly] {
+  background: #f5f6f8;
+  color: #495057;
+  cursor: default;
+}
+.bop-style-sales-body .form-control.field-filled {
+  background-color: #cbffd0 !important;
+  color: #1e00ff;
+  font-weight: 600;
+}
+.bop-style-sales-body .form-control:disabled {
+  background-color: #f1f3f5;
+  color: #6c757d;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+/* TOM SELECT */
+.bop-style-sales-body .ts-wrapper {
+  width: 100%;
+}
+.bop-style-sales-body .ts-control {
+  min-height: 38px;
+  height: 38px;
+  padding: 6px 10px;
+  border: 1px solid #a6a7a8 !important;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: none !important;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+}
+.bop-style-sales-body .ts-wrapper.focus .ts-control {
+  border-color: #86b7fe !important;
+  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15) !important;
+}
+
+/* ERRORS */
+.bop-style-sales-body .input-error {
+  border-color: #dc3545 !important;
+}
+.bop-style-sales-body .field-error {
+  margin-top: 5px;
+  color: #dc3545;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 11px;
+}
+.bop-style-sales-body .field-loading {
+  display: block;
+  margin-top: 5px;
+  color: #6c757d;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 11px;
+}
+.bop-style-sales-body .general-error {
+  margin: 20px 0 0;
+  padding: 8px 10px;
+  border: 1px solid #f3c1bd;
+  border-radius: 6px;
+  background: #fff4f2;
+  color: #b42318;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 12px;
+}
+
+/* ACTIONS - SAME AS BOP */
+.bop-style-sales-actions {
+  width: 100%;
+  margin-top: 20px;
+  padding-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+.bop-style-sales-cancel-btn,
+.bop-style-sales-save-btn {
+  height: 36px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 6px;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+.bop-style-sales-cancel-btn {
+  background: #ffffff;
+  color: #6c757d;
+  border: 1px solid #6c757d;
+}
+.bop-style-sales-cancel-btn:hover:not(:disabled) {
+  background: #6c757d;
+  color: #ffffff;
+  border-color: #6c757d;
+}
+.bop-style-sales-save-btn {
+  padding: 0 14px;
+  background: #ffffff;
+  color: #198754;
+  border: 1px solid #198754;
+}
+.bop-style-sales-save-btn:hover:not(:disabled) {
+  background: #198754;
+  color: #ffffff;
+  border-color: #198754;
+}
+.bop-style-sales-cancel-btn:disabled,
+.bop-style-sales-save-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.bop-style-sales-cancel-btn svg,
+.bop-style-sales-save-btn svg {
+  flex-shrink: 0;
+}
+.bop-style-sales-loading-icon {
+  animation: sales-bop-form-spin 0.8s linear infinite;
+}
+@keyframes sales-bop-form-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* LOADING */
+.bop-style-sales-body .entry-loading {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+}
+.bop-style-sales-body .entry-loading h4 {
+  margin: 0;
+  color: #475467;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 14px;
+}
+@media (max-width: 767.98px) {
+  .bop-style-sales-body {
+    padding: 12px;
+  }
+  .bop-style-sales-body .row {
+    --bs-gutter-x: 0.75rem;
+    --bs-gutter-y: 0.75rem;
+  }
+  .bop-style-sales-body .col-md-3 {
+    width: 100%;
+  }
+  .bop-style-sales-actions {
+    margin-top: 15px;
+  }
+}
+
+/* NO */
+.bop-style-sales-body .ts-wrapper {
+  width: 100% !important;
+  position: relative !important;
+}
+
+/* Main TomSelect control */
+.bop-style-sales-body .ts-control {
+  width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  box-sizing: border-box !important;
+  padding: 0 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  border: 1px solid #a6a7a8 !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  font-family: "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+}
+
+/* Focus */
+.bop-style-sales-body .ts-wrapper.focus .ts-control {
+  border-color: #86b7fe !important;
+  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15) !important;
+}
+
+/* */
+.bop-style-sales-body .ts-control > .item {
+  display: block !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  color: #1e00ff !important;
+  font-weight: 600 !important;
+}
+
+/* */
+.bop-style-sales-body .ts-control > input {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 28px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  align-self: center !important;
+  border: 0 !important;
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  color: #212529 !important;
+}
+
+/* SEARCHING
+   Hide selected Part No so search input gets full */ /* Keep selected Part No visible while focused */
+.bop-style-sales-body .ts-control > .item {
+  display: block !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  color: #1e00ff !important;
+  font-weight: 600 !important;
+}
+
+/* Search input stays beside the selected value */
+.bop-style-sales-body .ts-control > input {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 2px !important;
+  height: 28px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  align-self: center !important;
+  border: 0 !important;
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  color: #212529 !important;
+}
+/* Search placeholder */
+.bop-style-sales-body .ts-control > input::placeholder {
+  color: #6c757d !important;
+  opacity: 1 !important;
+}
+
+/* */
+.bop-style-sales-body .ts-dropdown {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  width: 100% !important;
+  margin-top: 2px !important;
+  box-sizing: border-box !important;
+  border: 1px solid #a6a7a8 !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12) !important;
+  z-index: 99999 !important;
+  font-family: "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+}
+
+/* Options */
+.bop-style-sales-body .ts-dropdown .option {
+  padding: 8px 10px !important;
+  color: #212529 !important;
+  white-space: normal !important;
+  cursor: pointer !important;
+}
+
+/* Hover */
+.bop-style-sales-body .ts-dropdown .option.active {
+  background: #f1f3f5 !important;
+  color: #212529 !important;
+}
+.ts-wrapper .ts-control {
+  height: 38px !important;
+}
+
+/* BUTTONS - MOLDING / COMPOUND */
+.download-template-btn,
+.choose-file-btn,
+.bulk-back-btn,
+.bulk-cancel-btn,
+.bulk-save-btn {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Lucide icons stay in front of text */
+.download-template-btn svg,
+.choose-file-btn svg,
+.bulk-back-btn svg,
+.bulk-cancel-btn svg,
+.bulk-save-btn svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  display: inline-block !important;
+  vertical-align: middle;
+}
+
+/* BULK */
+.download-template-btn,
+.choose-file-btn {
+  height: 30px !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+  font-family: "Segoe UI", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+/* Download Template */
+.download-template-btn {
+  border: 1px solid #2563eb !important;
+  background: #ffffff !important;
+  color: #2563eb !important;
+}
+.download-template-btn:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* Choose Excel */
+.choose-file-btn {
+  border: 1px solid #198754 !important;
+  background: #ffffff !important;
+  color: #198754 !important;
+}
+.choose-file-btn:hover {
+  background: #198754 !important;
+  color: #ffffff !important;
+}
+
+/* */
+.bulk-back-btn {
+  height: 30px !important;
+  padding: 0 12px !important;
+  border: 1px solid #2563eb !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  color: #2563eb !important;
+  font-family: "Segoe UI", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+.bulk-back-btn:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* */
+.bulk-cancel-btn,
+.bulk-save-btn {
+  height: 30px !important;
+  min-width: auto !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+  font-family: "Segoe UI", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+/* Cancel */
+.bulk-cancel-btn {
+  border: 1px solid #6c757d !important;
+  background: #ffffff !important;
+  color: #495057 !important;
+}
+.bulk-cancel-btn:hover:not(:disabled) {
+  background: #6c757d !important;
+  color: #ffffff !important;
+}
+
+/* Save */
+.bulk-save-btn {
+  border: 1px solid #198754 !important;
+  background: #198754 !important;
+  color: #ffffff !important;
+}
+.bulk-save-btn:hover:not(:disabled) {
+  background: #157347 !important;
+}
+
+/* Disabled */
+.bulk-save-btn:disabled,
+.bulk-cancel-btn:disabled,
+.download-template-btn:disabled,
+.choose-file-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ACTION BUTTONS - LUCIDE + MOLDING */
+.clear-bulk-btn,
+.remove-row-btn,
+.bulk-cancel-btn,
+.bulk-save-btn {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+/* Lucide icons */
+.clear-bulk-btn svg,
+.remove-row-btn svg,
+.bulk-cancel-btn svg,
+.bulk-save-btn svg {
+  flex-shrink: 0;
+  display: inline-block !important;
+}
+
+/* */
+.clear-bulk-btn {
+  height: 30px !important;
+  padding: 0 12px !important;
+  border: 1px solid #dc3545 !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  color: #dc3545 !important;
+  font-family: "Segoe UI", sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer;
+}
+.clear-bulk-btn:hover:not(:disabled) {
+  background: #dc3545 !important;
+  color: #ffffff !important;
+}
+
+/* / REMOVE ROW */
+.remove-row-btn {
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  border: 1px solid #dc3545 !important;
+  border-radius: 5px !important;
+  background: #ffffff !important;
+  color: #dc3545 !important;
+  cursor: pointer;
+}
+.remove-row-btn:hover:not(:disabled) {
+  background: #dc3545 !important;
+  color: #ffffff !important;
+}
+
+/* */
+.bulk-cancel-btn {
+  height: 30px !important;
+  min-width: 90px !important;
+  padding: 0 12px !important;
+  border: 1px solid #6c757d !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  color: #495057 !important;
+  font-family: "Segoe UI", sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer;
+}
+.bulk-cancel-btn:hover:not(:disabled) {
+  background: #6c757d !important;
+  color: #ffffff !important;
+}
+
+/* */
+.bulk-save-btn {
+  height: 30px !important;
+  min-width: 130px !important;
+  padding: 0 14px !important;
+  border: 1px solid #198754 !important;
+  border-radius: 6px !important;
+  background: #198754 !important;
+  color: #ffffff !important;
+  font-family: "Segoe UI", sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer;
+}
+.bulk-save-btn:hover:not(:disabled) {
+  background: #157347 !important;
+}
+
+/* */
+.clear-bulk-btn:disabled,
+.remove-row-btn:disabled,
+.bulk-cancel-btn:disabled,
+.bulk-save-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }

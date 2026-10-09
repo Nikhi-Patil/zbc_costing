@@ -1,8 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
+import DataTable from "react-data-table-component";
+import { Search, X, Plus, FileSpreadsheet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
-
+import "../../assets/css/CompoundMonthlyMaster.css";
+import CompoundMonthlyRateForm from "./CompoundMonthlyRateForm";
 
 const getMonthYearLabel = (monthValue, financialYearValue) => {
   const monthNumber = Number(monthValue);
@@ -30,7 +33,7 @@ const getMonthYearLabel = (monthValue, financialYearValue) => {
     "Dec",
   ];
 
-  return `${monthNames[monthNumber - 1]} ${year}`;
+  return `${monthNames[monthNumber - 1]} ${String(year).slice(-2)}`;
 };
 
 const CompoundMonthlyMaster = () => {
@@ -49,11 +52,9 @@ const CompoundMonthlyMaster = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [viewType, setViewType] = useState("qty");
+  const [searchText, setSearchText] = useState("");
   const [units, setUnits] = useState([]);
-
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showAddRateForm, setShowAddRateForm] = useState(false);
 
   // Load Report + Units
   useEffect(() => {
@@ -63,11 +64,6 @@ const CompoundMonthlyMaster = () => {
   useEffect(() => {
     fetchReport();
   }, [financialYear]);
-
-  // Reset pagination when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [financialYear, rowsPerPage]);
 
   // Fetch Units
   const fetchUnits = async () => {
@@ -103,13 +99,9 @@ const CompoundMonthlyMaster = () => {
       }
 
       setData(result.data || []);
-
-      // Always return to first page after
-      setCurrentPage(1);
     } catch (error) {
       console.error("Error fetching report:", error);
       setData([]);
-      setCurrentPage(1);
     } finally {
       setLoading(false);
     }
@@ -151,35 +143,176 @@ const CompoundMonthlyMaster = () => {
     [units],
   );
 
-  // Pagination
-  const totalEntries = groupedData.length;
-  const totalPages = Math.max(1, Math.ceil(totalEntries / rowsPerPage));
-  const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    return groupedData.slice(startIndex, startIndex + rowsPerPage);
-  }, [groupedData, currentPage, rowsPerPage]);
+  const filteredData = useMemo(() => {
+    const search = searchText.trim().toLowerCase();
 
-  // Pagination Handlers
-  const handleRowsPerPageChange = (e) => {
-    const newRowsPerPage = Number(e.target.value);
-    setRowsPerPage(newRowsPerPage);
-    setCurrentPage(1);
-  };
+    if (!search) {
+      return groupedData;
+    }
 
-  const goToFirstPage = () => {
-    setCurrentPage(1);
-  };
+    return groupedData.filter((compound) => {
+      const searchableText = [
+        compound.compound_code,
+        compound.polymer_name,
+        compound.im_code,
+        unitMap.get(String(compound.unit_id)),
+        compound.financial_year,
+      ]
+        .map((value) => String(value ?? "").toLowerCase())
+        .join(" ");
 
-  const goToPreviousPage = () => {
-    setCurrentPage((page) => Math.max(1, page - 1));
-  };
+      return searchableText.includes(search);
+    });
+  }, [groupedData, searchText, unitMap]);
 
-  const goToNextPage = () => {
-    setCurrentPage((page) => Math.min(totalPages, page + 1));
-  };
+  const compoundColumns = useMemo(() => {
+    return [
+      {
+        name: "Sr. No.",
+        width: "65px",
+        center: true,
+        sortable: false,
+        cell: (row, index) => index + 1,
+      },
 
-  const goToLastPage = () => {
-    setCurrentPage(totalPages);
+      {
+        name: "Compound Code",
+        selector: (row) => row.compound_code || "",
+        sortable: true,
+        minWidth: "130px",
+        cell: (row) => row.compound_code || "-",
+      },
+
+      {
+        name: "Polymer Name",
+        selector: (row) => row.polymer_name || "",
+        sortable: true,
+        minWidth: "90px",
+        cell: (row) => row.polymer_name || "-",
+      },
+
+      {
+        name: "IM Code",
+        selector: (row) => row.im_code || "",
+        sortable: true,
+        minWidth: "80px",
+        cell: (row) => row.im_code || "-",
+      },
+
+      {
+        name: "Unit",
+        selector: (row) => unitMap.get(String(row.unit_id)) || "",
+        sortable: true,
+        minWidth: "70px",
+        center: true,
+        cell: (row) => unitMap.get(String(row.unit_id)) || "-",
+      },
+
+      ...months.map((month) => ({
+        name: getMonthYearLabel(month.value, financialYear),
+        selector: (row) => {
+          const monthData = row.months[month.value];
+
+          if (!monthData) return 0;
+
+          return viewType === "qty"
+            ? Number(monthData.qty || 0)
+            : Number(monthData.rate || 0);
+        },
+        sortable: true,
+        minWidth: "70px",
+        center: true,
+
+        cell: (row) => {
+          const monthData = row.months[month.value] || {
+            qty: null,
+            rate: null,
+          };
+
+          if (viewType === "qty") {
+            return monthData.qty === null
+              ? "-"
+              : Number(monthData.qty).toLocaleString("en-IN");
+          }
+
+          return monthData.rate === null
+            ? "-"
+            : Number(monthData.rate).toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              });
+        },
+      })),
+    ];
+  }, [financialYear, viewType, unitMap]);
+
+  const compoundDataTableStyles = {
+    table: {
+      style: {
+        width: "100%",
+        minWidth: "0",
+        maxWidth: "100%",
+      },
+    },
+
+    headRow: {
+      style: {
+        fontSize: "11px",
+        minHeight: "45px",
+        backgroundColor: "#19224a",
+        borderBottom: "1px solid #cbd8e8",
+      },
+    },
+
+    headCells: {
+      style: {
+        paddingLeft: "8px",
+        paddingRight: "8px",
+        color: "#ffffff",
+        fontSize: "11px",
+        fontWeight: 700,
+        whiteSpace: "normal",
+        wordBreak: "normal",
+        overflowWrap: "break-word",
+        lineHeight: "1.15",
+        textAlign: "center",
+        borderRight: "1px solid #dce5f0",
+      },
+    },
+
+    rows: {
+      style: {
+        minHeight: "35px",
+        fontSize: "12px",
+        color: "#475569",
+        borderBottom: "1px solid #edf1f5",
+      },
+
+      highlightOnHoverStyle: {
+        backgroundColor: "#f5f9ff",
+        outline: "none",
+      },
+    },
+
+    cells: {
+      style: {
+        paddingLeft: "8px",
+        paddingRight: "8px",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        borderRight: "1px solid #edf1f5",
+      },
+    },
+
+    pagination: {
+      style: {
+        minHeight: "42px",
+        borderTop: "1px solid #e7ebf0",
+        color: "#64748b",
+        fontSize: "12px",
+      },
+    },
   };
 
   // Render
@@ -234,172 +367,85 @@ const CompoundMonthlyMaster = () => {
 
           <button
             type="button"
-            className="btn btn-success add-rate-btn"
+            className="add-rate-btn"
             onClick={() => navigate("/monthly-master/compound/add-rate")}
           >
-            <i className="fas fa-plus me-2"></i>
-            Add Rate
+            <Plus size={16} />
+            <span>Add Rate</span>
           </button>
-
           {/* Bulk Upload */}
-
           <button
             type="button"
-            className="btn btn-primary"
+            className="bulk-upload-btn"
             onClick={() => navigate("/monthly-master/compound/bulk-upload")}
           >
-            <i className="fas fa-file-excel me-2"></i>
-            Bulk Upload
+            <FileSpreadsheet size={16} />
+            <span>Bulk Upload</span>
           </button>
         </div>
       </div>
 
       {/* Report */}
       <div className="compound-report-container mt-3">
-        {loading ? (
-          <div className="text-center p-4">Loading...</div>
-        ) : (
-          <>
-            {/* TABLE + HORIZONTAL SCROLLER */}
-            <div className="compound-table-scroll">
-              <table className="table table-bordered compound-report-table">
-                <thead>
-                  <tr>
-                    <th>Sr. No.</th>
-                    <th>Compound Code</th>
-                    <th>Polymer Name</th>
-                    <th>IM Code</th>
-                    <th>Unit</th>
-                    {months.map((month) => (
-                      <th key={month.value} className="month-col">
-                        {getMonthYearLabel(month.value, financialYear)}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
+        <div className="compound-table-header">
+          <div className="compound-table-header-left">
+            <h3>Compound Monthly Report</h3>
 
-                <tbody>
-                  {groupedData.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={5 + months.length}
-                        className="text-center text-muted"
-                      >
-                        No data found
-                      </td>
-                    </tr>
-                  ) : (
-                    paginatedData.map((compound, index) => {
-                      const serialNumber =
-                        (currentPage - 1) * rowsPerPage + index + 1;
-                      return (
-                        <tr
-                          key={`${compound.compound_id}-${compound.unit_id}-${compound.financial_year}`}
-                        >
-                          <td>{serialNumber}</td>
-                          <td>{compound.compound_code || "-"}</td>
-                          <td>{compound.polymer_name || "-"}</td>
-                          <td>{compound.im_code || "-"}</td>
-                          <td>
-                            {unitMap.get(String(compound.unit_id)) || "-"}
-                          </td>
-                          {months.map((month) => {
-                            const monthData = compound.months[month.value] || {
-                              qty: null,
-                              rate: null,
-                            };
-                            return (
-                              <td
-                                key={month.value}
-                                style={{ textAlign: "center" }}
-                              >
-                                {viewType === "qty"
-                                  ? monthData.qty === null
-                                    ? "-"
-                                    : monthData.qty.toLocaleString("en-IN")
-                                  : monthData.rate === null
-                                    ? "-"
-                                    : monthData.rate.toLocaleString("en-IN", {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
-                                      })}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+            <div className="compound-search-box">
+              <Search size={16} className="compound-search-icon" />
+
+              <input
+                type="text"
+                placeholder="Search compound..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+
+              {searchText && (
+                <button
+                  type="button"
+                  className="compound-search-clear"
+                  onClick={() => setSearchText("")}
+                  aria-label="Clear search"
+                >
+                  <X size={15} />
+                </button>
+              )}
             </div>
+          </div>
 
-            {/* PAGINATION - BELOW SCROLLER */}
-            {groupedData.length > 0 && (
-              <div className="compound-pagination">
-                <div className="pagination-left">
-                  <span>Show</span>
-                  <select
-                    className="form-select"
-                    value={rowsPerPage}
-                    onChange={handleRowsPerPageChange}
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                </div>
+          <div className="compound-table-count">
+            {filteredData.length} Compounds
+          </div>
+        </div>
 
-                <div className="pagination-right">
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-light"
-                    disabled={currentPage === 1}
-                    onClick={goToFirstPage}
-                    title="First Page"
-                  >
-                    <i className="fas fa-angle-double-left"></i>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-light"
-                    disabled={currentPage === 1}
-                    onClick={goToPreviousPage}
-                    title="Previous Page"
-                  >
-                    <i className="fas fa-angle-left"></i>
-                  </button>
-
-                  <span className="page-info">
-                    Page {currentPage} of {totalPages}
-                  </span>
-
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-light"
-                    disabled={currentPage === totalPages}
-                    onClick={goToNextPage}
-                    title="Next Page"
-                  >
-                    <i className="fas fa-angle-right"></i>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-light"
-                    disabled={currentPage === totalPages}
-                    onClick={goToLastPage}
-                    title="Last Page"
-                  >
-                    <i className="fas fa-angle-double-right"></i>
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
+        <div className="compound-table-scroll">
+          <DataTable
+            className="compound-data-table"
+            columns={compoundColumns}
+            data={filteredData}
+            customStyles={compoundDataTableStyles}
+            progressPending={loading}
+            progressComponent={
+              <div className="compound-loading">Loading compound data...</div>
+            }
+            noDataComponent={
+              <div className="compound-no-data">No compound data found</div>
+            }
+            pagination
+            paginationPerPage={10}
+            paginationRowsPerPageOptions={[10, 25, 50, 100]}
+            paginationComponentOptions={{
+              rowsPerPageText: "Rows:",
+              rangeSeparatorText: "of",
+              noRowsPerPage: false,
+              selectAllRowsItem: false,
+            }}
+            persistTableHead
+            highlightOnHover
+            responsive={false}
+          />
+        </div>
       </div>
     </div>
   );

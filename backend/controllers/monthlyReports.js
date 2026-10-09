@@ -425,196 +425,186 @@ export const getBopRateForCosting = async (req, res) => {
 export const createBulkBopMonthlyRate = async (req, res) => {
   try {
     const { rows } = req.body;
+    /* BASIC REQUEST VALIDATION */
 
-    // Basic request validation
-    if (
-      !Array.isArray(rows) ||
-      rows.length === 0
-    ) {
+    if (!Array.isArray(rows) || rows.length === 0) {
       return res.status(400).json({
         success: false,
         message: "No Excel records received",
       });
     }
 
-    // Arrays
+    if (rows.length > 5000) {
+      return res.status(400).json({
+        success: false,
+        message: "Maximum 5000 records can be uploaded at once.",
+      });
+    }
+
     const errors = [];
     const validRows = [];
 
-    // Validate basic Excel data for ALL rows
+    /* STEP 1: BASIC VALIDATION FOR ALL EXCEL ROWS */
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      const excelRow = row.rowNumber || i + 2;
+      const excelRow = Number(row.rowNumber) || i + 2;
       const rowErrors = [];
+      const bopErpCode = String(row.bopErpCode ?? "").trim();
+      const supplierName = String(row.supplierName ?? "").trim();
+      const financialYear = String(row.financial_year ?? "").trim();
+      const month =
+        row.month === undefined ||
+          row.month === null ||
+          row.month === ""
+          ? NaN
+          : Number(row.month);
+      const qty =
+        row.qty === undefined ||
+          row.qty === null ||
+          row.qty === ""
+          ? null
+          : Number(row.qty);
+      const rate =
+        row.rate === undefined ||
+          row.rate === null ||
+          row.rate === ""
+          ? null
+          : Number(row.rate);
 
       // BOP ERP Code
-      if (
-        !row.bopErpCode ||
-        !String(row.bopErpCode).trim()
-      ) {
+      if (!bopErpCode) {
         rowErrors.push("BOP ERP Code is required");
       }
 
       // Supplier Name
-      if (
-        !row.supplierName ||
-        !String(row.supplierName).trim()
-      ) {
+      if (!supplierName) {
         rowErrors.push("Supplier Name is required");
       }
 
       // Financial Year
-      if (
-        !row.financial_year ||
-        !String(row.financial_year).trim()
-      ) {
+      if (!financialYear) {
         rowErrors.push("Financial Year is required");
+      } else if (!/^\d{4}-\d{2}$/.test(financialYear)) {
+        rowErrors.push(
+          `Invalid Financial Year '${financialYear}'. Expected format YYYY-YY.`
+        );
       }
 
       // Month
-      const month = Number(row.month);
-      if (
-        !row.month ||
-        month < 1 ||
-        month > 12
-      ) { rowErrors.push("Month must be between 1 and 12"); }
+      if (!Number.isInteger(month) || month < 1 || month > 12) {
+        rowErrors.push("Month must be between 1 and 12");
+      }
 
       // Qty
       if (
-        row.qty === undefined ||
-        row.qty === null ||
-        row.qty === "" ||
-        isNaN(Number(row.qty))
-      ) { rowErrors.push("Invalid Qty"); }
+        qty === null ||
+        !Number.isFinite(qty) ||
+        qty < 0
+      ) {
+        rowErrors.push("Qty must be a valid non-negative number");
+      }
 
       // Rate
       if (
-        row.rate === undefined ||
-        row.rate === null ||
-        row.rate === "" ||
-        isNaN(Number(row.rate))
-      ) { rowErrors.push("Invalid Rate"); }
+        rate === null ||
+        !Number.isFinite(rate) ||
+        rate < 0
+      ) {
+        rowErrors.push("Rate must be a valid non-negative number");
+      }
 
-      // Basic validation failed
       if (rowErrors.length > 0) {
         errors.push({
           rowNumber: excelRow,
-          bopErpCode: row.bopErpCode || "",
-          supplierName: row.supplierName || "",
+          bopErpCode,
+          supplierName,
+          financial_year: financialYear,
+          month: Number.isFinite(month) ? month : row.month ?? "",
+          qty: row.qty ?? "",
+          rate: row.rate ?? "",
           errors: rowErrors,
         });
         continue;
       }
-
-      // Valid basic row
       validRows.push({
         ...row,
         rowNumber: excelRow,
-        bopErpCode: String(row.bopErpCode).trim(),
-        supplierName: String(row.supplierName).trim(),
-        financial_year: String(row.financial_year).trim(),
+        bopErpCode,
+        supplierName,
+        financial_year: financialYear,
         month,
-        qty: Number(row.qty),
-        rate: Number(row.rate),
+        qty,
+        rate,
       });
     }
 
-    // Get unique BOP ERP codes
+    /* STEP 2: GET UNIQUE MASTER VALUES */
     const bopErpCodes = [
       ...new Set(
-        validRows.map((row) =>
-          String(row.bopErpCode)
-            .trim()
-            .toLowerCase()
-        ).filter(Boolean)
+        validRows
+          .map((row) => row.bopErpCode.toLowerCase())
+          .filter(Boolean)
       ),
     ];
 
-    // Get unique suppliers
     const supplierNames = [
       ...new Set(
-        validRows.map((row) =>
-          String(row.supplierName)
-            .trim()
-            .toLowerCase()
-        ).filter(Boolean)
+        validRows
+          .map((row) => row.supplierName.toLowerCase())
+          .filter(Boolean)
       ),
     ];
 
-    // Fetch ALL BOP masters
+    /* STEP 3: LOAD BOP MASTER */
     let bopMap = new Map();
     if (bopErpCodes.length > 0) {
-      const placeholders =
-        bopErpCodes
-          .map(() => "?")
-          .join(",");
-      const [bopRows] = await adminDB.query(
-        `
-    SELECT
-      p.id,
-      p.bop_part_name,
-      p.bop_part_no,
-      p.supplier_id,
-      p.part_id,
-      sd.part_no,
-      sd.fg_code,
-      p.bop_erp_code
-    FROM bop_master p
-    LEFT JOIN part_master sd
-      ON p.part_id = sd.id
-    WHERE LOWER(TRIM(p.bop_erp_code))
-      IN (${placeholders})
-  `,
+      const placeholders = bopErpCodes.map(() => "?").join(",");
+      const [bopRows] = await adminDB.query(`
+        SELECT
+          p.id,
+          p.bop_part_name,
+          p.bop_part_no,
+          p.supplier_id,
+          p.part_id,
+          sd.part_no,
+          sd.fg_code,
+          p.bop_erp_code
+        FROM bop_master p
+        LEFT JOIN part_master sd
+          ON p.part_id = sd.id
+        WHERE LOWER(TRIM(p.bop_erp_code))
+          IN (${placeholders})`,
         bopErpCodes
       );
       bopMap = new Map(
-        bopRows.map((bop) => [
-          String(bop.bop_erp_code)
-            .trim()
-            .toLowerCase(),
-          bop,
-        ]
-        )
+        bopRows.map((bop) => [String(bop.bop_erp_code).trim().toLowerCase(), bop])
       );
     }
 
-    // Fetch ALL suppliers
-    let supplierMap =
-      new Map();
+    /* STEP 4: LOAD SUPPLIER MASTER */
+    let supplierMap = new Map();
     if (supplierNames.length > 0) {
-      const placeholders = supplierNames
-        .map(() => "?")
-        .join(",");
+      const placeholders = supplierNames.map(() => "?").join(",");
+      const [supplierRows] = await adminDB.query(`
+        SELECT id,supplier_name
+        FROM supplier_master
+        WHERE LOWER(TRIM(supplier_name))
+          IN (${placeholders})`,
+        supplierNames
+      );
 
-      const [supplierRows,] =
-        await adminDB.query(`
-          SELECT
-            id,
-            supplier_name
-          FROM supplier_master
-          WHERE LOWER(TRIM(supplier_name))
-            IN (${placeholders}) `,
-          supplierNames
-        );
-      supplierMap =
-        new Map(
-          supplierRows.map(
-            (supplier) => [
-              String(supplier.supplier_name)
-                .trim()
-                .toLowerCase(),
-              supplier,
-            ]
-          )
-        );
+      supplierMap = new Map(
+        supplierRows.map((supplier) => [String(supplier.supplier_name).trim().toLowerCase(), supplier])
+      );
     }
 
-    // Validate BOP + Supplier for EVERY row
+    /* STEP 5: MASTER VALIDATION */
     const rowsReadyForInsert = [];
+    const duplicateMap = new Map();
     for (const row of validRows) {
       const excelRow = row.rowNumber;
-      const bopErpCode = String(row.bopErpCode).trim();
-      const supplierName = String(row.supplierName).trim();
+      const bopErpCode = row.bopErpCode;
+      const supplierName = row.supplierName;
       const bop = bopMap.get(bopErpCode.toLowerCase());
       const supplier = supplierMap.get(supplierName.toLowerCase());
       const rowErrors = [];
@@ -635,34 +625,43 @@ export const createBulkBopMonthlyRate = async (req, res) => {
 
       // Supplier assigned to BOP
       if (bop && supplier) {
-        const bopSupplierIds =
-          String(bop.supplier_id || "")
-            .split(",")
-            .map((id) => id.trim())
-            .filter(Boolean);
-        if (
-          !bopSupplierIds.includes(
-            String(supplier.id)
-          )
-        ) {
+        const bopSupplierIds = String(bop.supplier_id || "")
+          .split(",")
+          .map((id) => id.trim())
+          .filter(Boolean);
+
+        if (!bopSupplierIds.includes(String(supplier.id))) {
           rowErrors.push(
             `Supplier '${supplierName}' is not assigned to BOP '${bopErpCode}'`
           );
         }
       }
 
-      // Store ALL errors
+      /* DUPLICATE CHECK */
+      if (bop && supplier) {
+        const duplicateKey = `${bop.id}||${supplier.id}||${row.financial_year}||${row.month}`;
+        if (duplicateMap.has(duplicateKey)) {
+          rowErrors.push(
+            "Duplicate BOP + Supplier + Financial Year + Month found in upload"
+          );
+        } else {
+          duplicateMap.set(duplicateKey, true);
+        }
+      }
+
       if (rowErrors.length > 0) {
         errors.push({
           rowNumber: excelRow,
           bopErpCode,
           supplierName,
+          financial_year: row.financial_year,
+          month: row.month,
+          qty: row.qty,
+          rate: row.rate,
           errors: rowErrors,
         });
         continue;
       }
-
-      // Completely valid
       rowsReadyForInsert.push({
         ...row,
         bop,
@@ -670,12 +669,24 @@ export const createBulkBopMonthlyRate = async (req, res) => {
       });
     }
 
-    // Insert ONLY valid rows
+    /* DO NOT SAVE ANYTHING IF ANY ROW IS INVALID */
+    if (errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Bulk upload contains invalid records.",
+        totalRows: rows.length,
+        validRows: rowsReadyForInsert.length,
+        invalidRows: errors.length,
+        errors,
+        totalErrors: errors.length,
+      });
+    }
+
+    /* STEP 6: INSERT ONLY WHEN ALL ROWS ARE VALID */
     let insertedCount = 0;
     for (const row of rowsReadyForInsert) {
       const bop = row.bop;
       const supplier = row.supplier;
-
       await zbcDB.query(`
         INSERT INTO bop_monthly_report (
           bop_id,
@@ -698,7 +709,7 @@ export const createBulkBopMonthlyRate = async (req, res) => {
           bop_erp_code = VALUES(bop_erp_code),
           qty = VALUES(qty),
           rate = VALUES(rate),
-          updated_at = CURRENT_TIMESTAMP `,
+        updated_at = CURRENT_TIMESTAMP`,
         [
           bop.id,
           bop.part_no || null,
@@ -716,16 +727,14 @@ export const createBulkBopMonthlyRate = async (req, res) => {
       insertedCount++;
     }
 
-    // Return COMPLETE result
-    return res.status(200).json({
+    /* SUCCESS */
+    return res.status(201).json({
       success: true,
-      message: errors.length > 0
-        ? "Bulk upload completed with some invalid rows"
-        : "BOP monthly rates uploaded successfully",
+      message: `${insertedCount} BOP monthly records saved successfully.`,
       totalRows: rows.length,
       insertedCount,
-      errorCount: errors.length,
-      errors,
+      errorCount: 0,
+      errors: [],
     });
   } catch (error) {
     console.error("Bulk BOP upload error:", error);
@@ -739,186 +748,276 @@ export const createBulkBopMonthlyRate = async (req, res) => {
   }
 };
 
-//Create Bulk Compound Monthly Rate
+// Create Bulk Compound Monthly Rate
 export const createBulkCompoundMonthlyRate = async (req, res) => {
   try {
     const { rows } = req.body;
 
+    /* BASIC REQUEST VALIDATION */
     if (!Array.isArray(rows) || rows.length === 0) {
       return res.status(400).json({
         success: false,
         message: "No Excel records received",
       });
     }
+    if (rows.length > 5000) {
+      return res.status(400).json({
+        success: false,
+        message: "Maximum 5000 records can be uploaded at once.",
+      });
+    }
 
     const errors = [];
     const validRows = [];
 
-    // STEP 1: Validate basic Excel data for ALL rows
+    /* STEP 1: BASIC VALIDATION */
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-
-      // Frontend sends rowNumber, so use it if available
-      const excelRow = row.rowNumber || i + 2;
+      const excelRow = Number(row.rowNumber) || i + 2;
       const rowErrors = [];
+      const imCode = String(row.imCode ?? "").trim();
+      const productionUnit = String(row.productionUnit ?? "").trim();
+      const financialYear = String(row.financial_year ?? "").trim();
+      const month =
+        row.month === undefined ||
+          row.month === null ||
+          row.month === ""
+          ? NaN
+          : Number(row.month);
+      const qty =
+        row.qty === undefined ||
+          row.qty === null ||
+          row.qty === ""
+          ? null
+          : Number(row.qty);
+      const rate =
+        row.rate === undefined ||
+          row.rate === null ||
+          row.rate === ""
+          ? null
+          : Number(row.rate);
 
-      // IM Code
-      if (!row.imCode || !String(row.imCode).trim()) {
-        rowErrors.push("IM Code is required");
-      }
-
-      // Production Unit
-      if (
-        !row.productionUnit ||
-        !String(row.productionUnit).trim()
-      ) {
-        rowErrors.push("Production Unit is required");
-      }
-
-      // Financial Year
-      if (
-        !row.financial_year ||
-        !String(row.financial_year).trim()
-      ) {
-        rowErrors.push("Financial Year is required");
-      }
-
-      // Month
-      const month = Number(row.month);
-      if (!row.month || month < 1 || month > 12) {
-        rowErrors.push("Month must be between 1 and 12");
-      }
-
-      // Qty
-      if (row.qty === undefined || row.qty === null || row.qty === "" || isNaN(Number(row.qty))) {
-        rowErrors.push("Invalid Qty");
-      }
-
-      // Rate
-      if (row.rate === undefined || row.rate === null || row.rate === "" || isNaN(Number(row.rate))) {
-        rowErrors.push("Invalid Rate");
-      }
-
-      // Store basic validation errors
-      if (rowErrors.length > 0) {
-        errors.push({
-          rowNumber: excelRow,
-          imCode: row.imCode || "",
-          productionUnit: row.productionUnit || "",
-          errors: rowErrors,
-        });
-
-        continue;
-      }
-
-      validRows.push({
-        ...row,
-        rowNumber: excelRow,
-        month,
-      });
-    }
-
-    // STEP 2: Get unique IM Codes and Units
-    const imCodes = [
-      ...new Set(
-        validRows
-          .map((row) => String(row.imCode).trim())
-          .filter(Boolean)
-      ),
-    ];
-
-    const productionUnits = [
-      ...new Set(
-        validRows
-          .map((row) => String(row.productionUnit).trim())
-          .filter(Boolean)
-      ),
-    ];
-
-    // STEP 3: Fetch ALL compounds from master in one query
-    let compoundMap = new Map();
-
-    if (imCodes.length > 0) {
-      const placeholders = imCodes.map(() => "?").join(",");
-
-      const [compoundRows] = await adminDB.query(`
-        SELECT
-          id,
-          polymer,
-          compound_code,
-          im_code
-        FROM compound_master
-        WHERE LOWER(TRIM(im_code)) IN (${placeholders})`,
-        imCodes.map((code) => code.toLowerCase())
-      );
-
-      compoundMap = new Map(
-        compoundRows.map((compound) => [
-          String(compound.im_code).trim().toLowerCase(),
-          compound,
-        ])
-      );
-    }
-
-    // STEP 4: Fetch ALL Units from master in one query
-    let unitMap = new Map();
-
-    if (productionUnits.length > 0) {
-      const placeholders = productionUnits.map(() => "?").join(",");
-      const [unitRows] = await adminDB.query(`
-        SELECT
-          id,
-          unit
-        FROM unit_master
-        WHERE LOWER(TRIM(unit)) IN (${placeholders})`,
-        productionUnits.map((unit) => unit.toLowerCase())
-      );
-
-      unitMap = new Map(
-        unitRows.map((unit) => [
-          String(unit.unit).trim().toLowerCase(),
-          unit,
-        ])
-      );
-    }
-
-    // STEP 5: Validate master entries for EVERY row
-    const rowsReadyForInsert = [];
-    for (const row of validRows) {
-      const excelRow = row.rowNumber;
-      const imCode = String(row.imCode).trim();
-      const productionUnit = String(row.productionUnit).trim();
-      const compound = compoundMap.get(imCode.toLowerCase());
-      const unit = unitMap.get(productionUnit.toLowerCase());
-      const rowErrors = [];
-
-      // Check Compound Master
-      if (!compound) {
+      /* IM CODE */
+      if (!imCode) {
         rowErrors.push(
-          `IM Code '${imCode}' not found in compound master`
+          "IM Code is required."
         );
       }
 
-      // Check Unit Master
-      if (!unit) {
+      /* PRODUCTION UNIT */
+      if (!productionUnit) {
         rowErrors.push(
-          `Production Unit '${productionUnit}' not found`
+          "Production Unit is required."
         );
       }
 
-      // If row has errors
+      /* FINANCIAL YEAR */
+      if (!financialYear) {
+        rowErrors.push(
+          "Financial Year is required."
+        );
+      } else if (
+        !/^\d{4}-\d{2}$/.test(financialYear)
+      ) {
+        rowErrors.push(
+          `Invalid Financial Year '${financialYear}'. Expected format YYYY-YY.`
+        );
+      }
+
+      /* MONTH */
+      if (
+        !Number.isInteger(month) ||
+        month < 1 ||
+        month > 12
+      ) {
+        rowErrors.push(
+          "Month must be between 1 and 12."
+        );
+      }
+
+      /* QTY */
+      if (
+        qty === null ||
+        !Number.isFinite(qty) ||
+        qty < 0
+      ) {
+        rowErrors.push(
+          "Qty must be a valid non-negative number."
+        );
+      }
+
+      /* RATE */
+      if (
+        rate === null ||
+        !Number.isFinite(rate) ||
+        rate < 0
+      ) {
+        rowErrors.push(
+          "Rate must be a valid non-negative number."
+        );
+      }
+
+      /* BASIC VALIDATION FAILED */
       if (rowErrors.length > 0) {
         errors.push({
           rowNumber: excelRow,
           imCode,
           productionUnit,
+          financial_year: financialYear,
+          month: Number.isFinite(month)
+            ? month
+            : row.month ?? "",
+          qty: row.qty ?? "",
+          rate: row.rate ?? "",
           errors: rowErrors,
         });
+        continue;
+      }
+      validRows.push({
+        ...row,
+        rowNumber: excelRow,
+        imCode,
+        productionUnit,
+        financial_year: financialYear,
+        month,
+        qty,
+        rate,
+      });
+    }
 
+    /* STEP 2: GET UNIQUE MASTER VALUES */
+    const imCodes = [
+      ...new Set(validRows
+        .map((row) => String(row.imCode).trim().toLowerCase())
+        .filter(Boolean)
+      ),
+    ];
+
+    const productionUnits = [
+      ...new Set(validRows
+        .map((row) => String(row.productionUnit).trim().toLowerCase())
+        .filter(Boolean)
+      ),
+    ];
+
+    /* STEP 3: LOAD COMPOUND MASTER */
+    let compoundMap = new Map();
+    if (imCodes.length > 0) {
+      const placeholders = imCodes
+        .map(() => "?")
+        .join(",");
+      const [compoundRows] = await adminDB.query(`
+          SELECT id,polymer,compound_code,im_code
+          FROM compound_master
+          WHERE LOWER(TRIM(im_code))
+            IN (${placeholders})`,
+        imCodes
+      );
+      compoundMap = new Map(
+        compoundRows.map((compound) => [
+          String(compound.im_code)
+            .trim()
+            .toLowerCase(),
+          compound,
+        ])
+      );
+    }
+
+    /* STEP 4: LOAD UNIT MASTER */
+    let unitMap = new Map();
+    if (productionUnits.length > 0) {
+      const placeholders = productionUnits
+        .map(() => "?")
+        .join(",");
+      const [unitRows] = await adminDB.query(`
+          SELECT id,unit
+          FROM unit_master
+          WHERE LOWER(TRIM(unit))
+            IN (${placeholders})`,
+        productionUnits
+      );
+
+      unitMap = new Map(
+        unitRows.map((unit) => [
+          String(unit.unit)
+            .trim()
+            .toLowerCase(),
+          unit,
+        ])
+      );
+    }
+
+    /* STEP 5: MASTER VALIDATION + DUPLICATE VALIDATION */
+    const rowsReadyForInsert = [];
+    const duplicateMap = new Map();
+    for (const row of validRows) {
+      const excelRow = row.rowNumber;
+      const imCode = String(
+        row.imCode
+      ).trim();
+      const productionUnit = String(
+        row.productionUnit
+      ).trim();
+      const financialYear = String(
+        row.financial_year
+      ).trim();
+      const month = Number(row.month);
+      const compound =
+        compoundMap.get(
+          imCode.toLowerCase()
+        );
+      const unit =
+        unitMap.get(
+          productionUnit.toLowerCase()
+        );
+      const rowErrors = [];
+
+      /* COMPOUND MASTER */
+      if (!compound) {
+        rowErrors.push(
+          `IM Code '${imCode}' not found in Compound Master.`
+        );
+      }
+
+      /* UNIT MASTER */
+      if (!unit) {
+        rowErrors.push(
+          `Production Unit '${productionUnit}' not found in Unit Master.`
+        );
+      }
+
+      /* DUPLICATE */
+      if (compound && unit) {
+        const duplicateKey =
+          `${compound.id}||${unit.id}||${financialYear}||${month}`;
+        if (duplicateMap.has(duplicateKey)) {
+          rowErrors.push(
+            "Duplicate IM Code + Production Unit + Financial Year + Month found in upload."
+          );
+        } else {
+          duplicateMap.set(
+            duplicateKey,
+            true
+          );
+        }
+      }
+
+      /* STORE ERRORS */
+      if (rowErrors.length > 0) {
+        errors.push({
+          rowNumber: excelRow,
+          imCode,
+          productionUnit,
+          financial_year: financialYear,
+          month,
+          qty: row.qty,
+          rate: row.rate,
+          errors: rowErrors,
+        });
         continue;
       }
 
-      // Row is completely valid
+      /* COMPLETELY VALID ROW */
       rowsReadyForInsert.push({
         ...row,
         compound,
@@ -926,7 +1025,20 @@ export const createBulkCompoundMonthlyRate = async (req, res) => {
       });
     }
 
-    // STEP 6: Insert ONLY valid rows
+    /* STEP 6: DO NOT SAVE ANYTHING IF ANY ROW IS INVALID */
+    if (errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Bulk upload contains invalid records.",
+        totalRows: rows.length,
+        validRows: rowsReadyForInsert.length,
+        invalidRows: errors.length,
+        errors,
+        totalErrors: errors.length,
+      });
+    }
+
+    /* STEP 7: INSERT ONLY IF ALL ROWS ARE VALID */
     let insertedCount = 0;
     for (const row of rowsReadyForInsert) {
       const compound = row.compound;
@@ -965,18 +1077,16 @@ export const createBulkCompoundMonthlyRate = async (req, res) => {
       insertedCount++;
     }
 
-    // STEP 7: Return complete result
-    return res.status(200).json({
+    /* STEP 8: SUCCESS */
+    return res.status(201).json({
       success: true,
-      message:
-        errors.length > 0
-          ? "Bulk upload completed with some invalid rows"
-          : "Compound monthly rates uploaded successfully",
-
+      message: "Compound monthly rates uploaded successfully.",
       totalRows: rows.length,
+      validRows: rowsReadyForInsert.length,
+      invalidRows: 0,
       insertedCount,
-      errorCount: errors.length,
-      errors,
+      errorCount: 0,
+      errors: [],
     });
 
   } catch (error) {
@@ -987,7 +1097,7 @@ export const createBulkCompoundMonthlyRate = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to upload compound monthly rates",
+      message: "Failed to upload compound monthly rates.",
       error: error.message,
       code: error.code,
       sqlState: error.sqlState,

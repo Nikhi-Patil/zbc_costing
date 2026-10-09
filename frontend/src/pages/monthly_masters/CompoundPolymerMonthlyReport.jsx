@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
+import DataTable from "react-data-table-component";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
+import { RefreshCw, LoaderCircle } from "lucide-react";
+import "../../assets/css/CompoundPolymerMonthlyReport.css";
 
 const CompoundPolymerMonthlyReport = () => {
   const financialYears = generateFinancialYears();
@@ -9,7 +12,18 @@ const CompoundPolymerMonthlyReport = () => {
     financialYears[0]?.value ||
     "";
   const [financialYear, setFinancialYear] = useState(currentFinancialYear);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem(
+        `compound-polymer-report-${currentFinancialYear}`,
+      );
+
+      return cached ? JSON.parse(cached) : [];
+    } catch (error) {
+      console.error("Error loading cached compound report:", error);
+      return [];
+    }
+  });
   const [viewType, setViewType] = useState("qty");
   const [loading, setLoading] = useState(false);
 
@@ -23,21 +37,36 @@ const CompoundPolymerMonthlyReport = () => {
   const fetchReport = async () => {
     try {
       setLoading(true);
+
       const response = await fetch(
         `${API_BASE_URL}/monthly-compound-polymer-report?financial_year=${encodeURIComponent(
           financialYear,
         )}`,
       );
+
       const result = await response.json();
+
       if (!response.ok || !result.success) {
         throw new Error(
           result.message || "Failed to fetch compound polymer report",
         );
       }
-      setData(result.data || []);
+
+      const newData = result.data || [];
+
+      // Update table with fresh data
+      setData(newData);
+
+      // Save latest data for page reload
+      sessionStorage.setItem(
+        `compound-polymer-report-${financialYear}`,
+        JSON.stringify(newData),
+      );
     } catch (error) {
       console.error("Error fetching compound polymer report:", error);
-      setData([]);
+
+      // IMPORTANT:
+      // Do NOT clear existing data on refresh error.
     } finally {
       setLoading(false);
     }
@@ -95,8 +124,163 @@ const CompoundPolymerMonthlyReport = () => {
     [groupedData],
   );
 
+  // =========================================
+  // REACT DATA TABLE COLUMNS
+  const columns = useMemo(() => {
+    const monthColumns = months.map((month) => {
+      const [startYear] = financialYear.split("-");
+
+      const startYearNumber = Number(startYear);
+
+      const monthNumber = Number(month.value);
+
+      const year = monthNumber >= 4 ? startYearNumber : startYearNumber + 1;
+
+      const shortYear = String(year).slice(-2);
+
+      return {
+        name: `${month.label} ${shortYear}`,
+
+        selector: (row) => {
+          const monthData = row.months?.[month.value];
+
+          if (!monthData) {
+            return 0;
+          }
+
+          return viewType === "qty"
+            ? Number(monthData.qty) || 0
+            : Number(monthData.cost) || 0;
+        },
+
+        cell: (row) => {
+          const monthData = row.months?.[month.value];
+
+          if (!monthData) {
+            return <span className="compound-empty-value">-</span>;
+          }
+
+          const value = viewType === "qty" ? monthData.qty : monthData.cost;
+
+          return <span>{formatNumber(value, 2)}</span>;
+        },
+
+        sortable: true,
+
+        sortFunction: (rowA, rowB) => {
+          const valueA = rowA.months?.[month.value]
+            ? viewType === "qty"
+              ? Number(rowA.months[month.value].qty) || 0
+              : Number(rowA.months[month.value].cost) || 0
+            : 0;
+
+          const valueB = rowB.months?.[month.value]
+            ? viewType === "qty"
+              ? Number(rowB.months[month.value].qty) || 0
+              : Number(rowB.months[month.value].cost) || 0
+            : 0;
+
+          return valueA - valueB;
+        },
+
+        grow: 1,
+      };
+    });
+
+    return [
+      /* =================================
+       SR NO
+    ================================= */
+
+      {
+        name: "No.",
+
+        cell: (row, index) => index + 1,
+
+        width: "55px",
+        minWidth: "55px",
+
+        center: true,
+
+        sortable: false,
+      },
+
+      /* =================================
+       POLYMER NAME
+    ================================= */
+
+      {
+        name: "Polymer Name",
+
+        selector: (row) => row.polymer_name || "",
+
+        cell: (row) => <b>{row.polymer_name || "-"}</b>,
+
+        sortable: true,
+
+        sortFunction: (rowA, rowB) => {
+          const nameA = String(rowA.polymer_name || "").toLowerCase();
+
+          const nameB = String(rowB.polymer_name || "").toLowerCase();
+
+          return nameA.localeCompare(nameB);
+        },
+
+        width: "170px",
+        minWidth: "170px",
+      },
+
+      /* =================================
+       MONTHS
+    ================================= */
+
+      ...monthColumns,
+    ];
+  }, [viewType, groupedData]);
+
+  // =========================================
+  // GRAND TOTAL ROW
+  // =========================================
+  const renderGrandTotal = () => {
+    if (groupedData.length === 0) return null;
+
+    return (
+      <div className="compound-grand-total-row">
+        <div className="grand-total-label">Grand Total</div>
+
+        {months.map((month) => {
+          const monthlyQty = groupedData.reduce(
+            (total, polymer) => total + (polymer.months[month.value]?.qty || 0),
+            0,
+          );
+
+          const monthlyCost = groupedData.reduce(
+            (total, polymer) =>
+              total + (polymer.months[month.value]?.cost || 0),
+            0,
+          );
+
+          return (
+            <div key={month.value} className="grand-total-value">
+              {viewType === "qty"
+                ? formatNumber(monthlyQty, 2)
+                : formatNumber(monthlyCost, 2)}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="compound-report-page">
+      {/*  REPORT TITLE */}
+      <div className="mt-3 mb-3">
+        <h5 className="mb-0">
+          <b>Compound Polymer-wise Monthly Report</b>
+        </h5>
+        <small className="text-muted">Financial Year: {financialYear}</small>
+      </div>
       {/* TOOLBAR */}
       <div className="report-toolbar">
         <div className="report-filters">
@@ -140,158 +324,41 @@ const CompoundPolymerMonthlyReport = () => {
             onClick={fetchReport}
             disabled={loading}
           >
-            <i className="fas fa-sync-alt me-2"></i>
-            Refresh
+            {loading ? (
+              <>
+                <LoaderCircle
+                  size={16}
+                  strokeWidth={2}
+                  className="compound-loading-icon"
+                />
+                <span>Loading...</span>
+              </>
+            ) : (
+              <>
+                <RefreshCw size={16} strokeWidth={2} />
+                <span>Refresh</span>
+              </>
+            )}
           </button>
         </div>
       </div>
-      {/*  REPORT TITLE */}
-      <div className="mt-3 mb-3">
-        <h5 className="mb-0">
-          <b>Compound Polymer-wise Monthly Report</b>
-        </h5>
-        <small className="text-muted">Financial Year: {financialYear}</small>
-      </div>
-      {/* TABLE */}
-      <div className="table-responsive mt-3">
-        {loading ? (
-          /* =============================================
-             LOADING
-          ============================================= */
 
-          <div className="text-center p-4">
-            <i className="fas fa-spinner fa-spin me-2"></i>
-            Loading...
-          </div>
-        ) : (
-          <table className=" table table-bordered compound-report-table ">
-            {/* TABLE HEADER */}
-            <thead>
-              <tr>
-                {/* Sr No */}
-                <th>Sr. No.</th>
-                {/* Polymer */}
-                <th>Polymer Name</th>
-                {/* Months */}
-                {months.map((month) => (
-                  <th key={month.value} className="text-center">
-                    {month.label} {viewType === "qty" ? "Qty" : "Cost"}
-                  </th>
-                ))}
-                {/* Total */}
-                {/* <th className="text-center">
-                  {viewType === "qty" ? "Total Qty" : "Total Cost"}
-                </th> */}
-              </tr>
-            </thead>
-            {/* TABLE BODY */}
-            <tbody>
-              {groupedData.length === 0 ? (
-                /* NO DATA */
-                <tr>
-                  <td
-                    colSpan={2 + months.length + 1}
-                    className="text-center text-muted"
-                  >
-                    No data found
-                  </td>
-                </tr>
-              ) : (
-                /* POLYMER ROWS */
-                groupedData.map((polymer, index) => (
-                  <tr key={polymer.polymer_name}>
-                    {/* Sr No */}
-                    <td>{index + 1}</td>
-                    {/* Polymer Name */}
-                    <td>
-                      <b>{polymer.polymer_name}</b>
-                    </td>
-                    {/*  MONTHLY DATA */}
-                    {months.map((month) => {
-                      const monthData = polymer.months[month.value];
-                      /* No data */
-                      if (!monthData) {
-                        return (
-                          <td key={month.value} className="text-end">
-                            -
-                          </td>
-                        );
-                      }
-                      /* QTY VIEW */
-                      if (viewType === "qty") {
-                        return (
-                          <td key={month.value} className="text-end">
-                            {formatNumber(monthData.qty, 2)}
-                          </td>
-                        );
-                      }
-                      /* COST VIEW */
-                      return (
-                        <td key={month.value} className="text-end">
-                          {formatNumber(monthData.cost, 2)}
-                        </td>
-                      );
-                    })}
-                    {/*  TOTAL */}
-                    {/* <td className="text-end">
-                      <b>
-                        {viewType === "qty"
-                          ? formatNumber(polymer.total_qty, 2)
-                          : formatNumber(polymer.total_cost, 2)}
-                      </b>
-                    </td> */}
-                  </tr>
-                ))
-              )}
-            </tbody>
-            {/* GRAND TOTAL */}
-            {groupedData.length > 0 && (
-              <tfoot>
-                <tr>
-                  {/* Label */}
-                  <th colSpan="2" className="text-end">
-                    Grand Total
-                  </th>
-                  {/* MONTHLY GRAND TOTALS */}
-                  {months.map((month) => {
-                    /* Monthly Qty */
-                    const monthlyQty = groupedData.reduce(
-                      (total, polymer) =>
-                        total + (polymer.months[month.value]?.qty || 0),
-                      0,
-                    );
-                    /* Monthly Cost */
-                    const monthlyCost = groupedData.reduce(
-                      (total, polymer) =>
-                        total + (polymer.months[month.value]?.cost || 0),
-                      0,
-                    );
-                    /* QTY GRAND TOTAL */
-                    if (viewType === "qty") {
-                      return (
-                        <th key={month.value} className="text-end">
-                          {formatNumber(monthlyQty, 2)}
-                        </th>
-                      );
-                    }
-                    /* COST GRAND TOTAL */
-                    return (
-                      <th key={month.value} className="text-end">
-                        {formatNumber(monthlyCost, 2)}
-                      </th>
-                    );
-                  })}
-                  {/* YEAR TOTAL*/}
-                  {/* <th className="text-end">
-                    {viewType === "qty"
-                      ? formatNumber(grandTotalQty, 2)
-                      : formatNumber(grandTotalCost, 2)}
-                  </th> */}
-                </tr>
-              </tfoot>
-            )}
-          </table>
-        )}
+      {/* TABLE */}
+      {/* TABLE */}
+      <div className="compound-monthly-wrapper mt-3">
+        <DataTable
+          columns={columns}
+          data={groupedData}
+          noDataComponent={
+            <div className="compound-no-data">No data found</div>
+          }
+          responsive={false}
+          highlightOnHover={false}
+          pointerOnHover={false}
+          dense
+        />
+
+        {renderGrandTotal()}
       </div>
     </div>
   );
