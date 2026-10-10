@@ -4,7 +4,7 @@ import Header from "./Header";
 import TopHeader from "./Topheader";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
-import "../../assets/css/Layout.css";
+import "../../assets/css/layout/Layout.css";
 
 function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);

@@ -4,7 +4,7 @@ import DataTable from "react-data-table-component";
 import { Plus, FileSpreadsheet, Search, X } from "lucide-react";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
-import "../../assets/css/BopMonthlyMaster.css";
+import "../../assets/css/monthlyMaster/BopMonthlyMaster.css";
 
 const getMonthYearLabel = (monthValue, financialYearValue) => {
   const monthNumber = Number(monthValue);

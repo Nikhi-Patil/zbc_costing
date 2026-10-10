@@ -2567,3 +2567,15 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+.sales-data-table .sales-part-no,
+.sales-data-table .sales-part-name {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-overflow: unset;
+  line-height: 1.3;
+}

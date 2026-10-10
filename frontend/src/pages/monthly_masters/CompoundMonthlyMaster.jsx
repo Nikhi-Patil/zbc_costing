@@ -4,7 +4,7 @@ import { Search, X, Plus, FileSpreadsheet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
-import "../../assets/css/CompoundMonthlyMaster.css";
+import "../../assets/css/monthlyMaster/CompoundMonthlyMaster.css";
 import CompoundMonthlyRateForm from "./CompoundMonthlyRateForm";
 
 const getMonthYearLabel = (monthValue, financialYearValue) => {

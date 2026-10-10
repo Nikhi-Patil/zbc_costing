@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { X, Save, Loader2 } from "lucide-react";
-import "../../assets/css/SalesMonthly.css";
+import "../../assets/css/monthlyMaster/SalesMonthly.css";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import TomSelect from "tom-select";
 import "tom-select/dist/css/tom-select.css";

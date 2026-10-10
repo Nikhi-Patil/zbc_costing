@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
-import "../../assets/css/CompoundMonthlyMaster.css";
+import "../../assets/css/monthlyMaster/CompoundMonthlyMaster.css";
 import { X, Save } from "lucide-react";
 
 const CompoundMonthlyRateForm = () => {

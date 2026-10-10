@@ -8,7 +8,7 @@ import {
   loginUser,
 } from "../auth/auth";
 
-import "./login.css";
+import "../assets/css/components/login.css";
 
 function Login() {
   const navigate = useNavigate();

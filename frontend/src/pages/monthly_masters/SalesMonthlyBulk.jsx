@@ -11,7 +11,7 @@ import {
   AlertCircle,
   Save,
 } from "lucide-react";
-import "../../assets/css/SalesMonthly.css";
+import "../../assets/css/monthlyMaster/SalesMonthly.css";
 import { generateFinancialYears, months } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 

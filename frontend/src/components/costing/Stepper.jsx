@@ -1,4 +1,4 @@
-import "../../assets/css/Stepper.css";
+import "../../assets/css/components/Stepper.css";
 const steps = ["Part Details", "RM Details", "Process Details", "Bottom Line"];
 
 function Stepper({ currentStep }) {

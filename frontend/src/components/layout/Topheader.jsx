@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { User, LogOut, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import "../../assets/css/TopHeader.css";
+import "../../assets/css/layout/TopHeader.css";
 import logo from "../../assets/images/jayshreemain.png";
 import profile from "../../assets/images/profile.jpg";
 import { getUser, logout, isAuthenticated } from "../../auth/auth";
@@ -41,7 +41,8 @@ function TopHeader({ toggleSidebar }) {
   };
 
   // PROFILE NAME
-  const displayName = user?.user_name || user?.username || user?.email || "User";
+  const displayName =
+    user?.user_name || user?.username || user?.email || "User";
 
   // RENDER
   return (
@@ -65,7 +66,6 @@ function TopHeader({ toggleSidebar }) {
         {/* DROPDOWN */}
         {open && (
           <div className="dropdown">
-            
             {/* PROFILE */}
             <div className="dropdown-item">
               <User size={18} />

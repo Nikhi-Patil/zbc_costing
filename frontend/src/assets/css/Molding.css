@@ -1215,12 +1215,12 @@
   box-sizing: border-box;
 }
 
-.molding-header-1 h2 {
+.molding-header-1 h1 {
   margin: 0;
-  font-size: 25px;
-  font-weight: 600;
-  color: #1f2937;
-  white-space: nowrap;
+  font-size: 27px;
+
+  font-weight: 700;
+  color: #173d70;
 }
 
 .molding-actions {

@@ -663,11 +663,11 @@ h5 {
   height: 30px !important;
   padding: 5.25px 10.5px !important;
   font-size: 12px !important;
-  border: var(--bs-border-width) solid #a6a7a8 !important;
+  border: var(--bs-border-width) solid #8d8d8d !important;
   border-radius: 6px !important;
   background: #fff !important;
   box-shadow: none !important;
-  color: #212529;
+  color: #000000;
 }
 
 .ts-wrapper .ts-control > input {
@@ -703,7 +703,7 @@ h5 {
 
 .ts-wrapper .ts-control .item {
   font-size: 12px !important;
-  color: #1e00ff;
+  color: #000000;
 }
 
 .ts-dropdown {

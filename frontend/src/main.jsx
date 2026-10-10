@@ -10,8 +10,8 @@ import "tom-select/dist/css/tom-select.css";
 
 import App from "./App";
 import "./index.css";
-import "./pages/Login.css";
-import "./assets/css/masterTable.css";
+import "./assets/css/components/login.css";
+import "./assets/css/components/masterTable.css";
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(

@@ -20,7 +20,7 @@ import {
   faChartColumn,
 } from "@fortawesome/free-solid-svg-icons";
 
-import "../../assets/css/Sidebar.css";
+import "../../assets/css/layout/Sidebar.css";
 
 function Sidebar({ isOpen }) {
   const [masterOpen, setMasterOpen] = useState(false);

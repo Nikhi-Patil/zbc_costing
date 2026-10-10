@@ -15,8 +15,6 @@ import API_BASE_URL from "../../config/api";
 import "../../assets/css/Molding.css";
 import * as XLSX from "xlsx";
 
-const SALES_MONTHLY_API = `${API_BASE_URL}/sales-monthly`;
-
 const financialYearOptions = generateFinancialYears();
 
 function formatNumber(value, digits = 2) {
@@ -528,7 +526,7 @@ const Molding = () => {
       try {
         setSalesMonthlyLoading(true);
         const response = await fetch(
-          `${SALES_MONTHLY_API}?financialYear=${encodeURIComponent(salesFinancialYear)}`,
+          `${API_BASE_URL}/sales-monthly?financialYear=${encodeURIComponent(salesFinancialYear)}`,
         );
         if (!response.ok) {
           throw new Error(
@@ -1048,17 +1046,17 @@ const Molding = () => {
       {/* HEADER */}
       <div className="molding-header-1">
         <div>
-          <h2>Molding</h2>
+          <h1>Molding</h1>
         </div>
 
         <div className="molding-actions">
           {/* SALES MONTHLY FILTERS */}
-          <div className="sales-monthly-report-filters">
-            {/* LOADING */}
+          {/* <div className="sales-monthly-report-filters">
+            LOADING
             {(salesMonthlyLoading || moldingMonthlyReportLoading) && (
               <span className="sales-monthly-filter-loading">Loading...</span>
             )}
-          </div>
+          </div> */}
           <button
             type="button"
             className="bulk-upload-btn"

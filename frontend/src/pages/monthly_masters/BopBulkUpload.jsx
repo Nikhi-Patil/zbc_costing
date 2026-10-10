@@ -12,7 +12,7 @@ import {
   Save,
   Loader2,
 } from "lucide-react";
-import "../../assets/css/SalesMonthly.css";
+import "../../assets/css/monthlyMaster/SalesMonthly.css";
 import API_BASE_URL from "../../config/api";
 import { months } from "../../utils/costingUtils";
 

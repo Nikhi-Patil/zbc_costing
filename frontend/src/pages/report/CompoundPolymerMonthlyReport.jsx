@@ -3,7 +3,7 @@ import DataTable from "react-data-table-component";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 import { RefreshCw, LoaderCircle } from "lucide-react";
-import "../../assets/css/CompoundPolymerMonthlyReport.css";
+import "../../assets/css/report/CompoundPolymerMonthlyReport.css";
 
 const CompoundPolymerMonthlyReport = () => {
   const financialYears = generateFinancialYears();
@@ -124,7 +124,6 @@ const CompoundPolymerMonthlyReport = () => {
     [groupedData],
   );
 
-  // =========================================
   // REACT DATA TABLE COLUMNS
   const columns = useMemo(() => {
     const monthColumns = months.map((month) => {
@@ -275,11 +274,11 @@ const CompoundPolymerMonthlyReport = () => {
   return (
     <div className="compound-report-page">
       {/*  REPORT TITLE */}
-      <div className="mt-3 mb-3">
-        <h5 className="mb-0">
-          <b>Compound Polymer-wise Monthly Report</b>
-        </h5>
-        <small className="text-muted">Financial Year: {financialYear}</small>
+      <div className="compound-report-page-header-1">
+        <div>
+          <h1>Compound Polymer-wise Monthly Report</h1>
+        </div>
+        <h4 className="text-muted">Financial Year: {financialYear}</h4>
       </div>
       {/* TOOLBAR */}
       <div className="report-toolbar">

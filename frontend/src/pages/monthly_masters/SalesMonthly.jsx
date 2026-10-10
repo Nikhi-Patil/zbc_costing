@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import DataTable from "react-data-table-component";
 import { Search, X, Plus, FileSpreadsheet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import "../../assets/css/SalesMonthly.css";
+import "../../assets/css/monthlyMaster/SalesMonthly.css";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 
@@ -111,16 +111,17 @@ const salesMonthlyColumns = (
     name: "Part No.",
     selector: (row) => row.partNo,
     sortable: true,
-    width: "150px",
+    minWidth: "150px",
+    wrap: true,
     left: true,
     cell: (row) => <span className="sales-part-no">{row.partNo}</span>,
   },
-
   {
     name: "Part Name",
     selector: (row) => row.partName,
     sortable: true,
-    width: "150px",
+    minWidth: "150px",
+    wrap: true,
     left: true,
     cell: (row) => (
       <span className="sales-part-name">{row.partName || "-"}</span>
@@ -138,7 +139,7 @@ const salesMonthlyColumns = (
 
   ...months.map((month) => ({
     name: getMonthYearLabel(month.value, financialYear),
-    width: "80px",
+    width: "70px",
     center: true,
 
     selector: (row) => {
@@ -223,10 +224,13 @@ const salesMonthlyDataTableStyles = {
     style: {
       paddingLeft: "8px",
       paddingRight: "8px",
-      whiteSpace: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
+      whiteSpace: "normal",
+      overflow: "visible",
+      textOverflow: "unset",
+      overflowWrap: "anywhere",
+      wordBreak: "break-word",
       borderRight: "1px solid #edf1f5",
+      alignItems: "flex-start",
     },
   },
 

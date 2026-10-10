@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import TomSelect from "tom-select";
-import { Pencil } from "lucide-react";
+import { Pencil, Plus, RefreshCw, Search, X } from "lucide-react";
 import DataTable from "react-data-table-component";
 import "tom-select/dist/css/tom-select.css";
 import "../../assets/css/BopManagement.css";
@@ -792,6 +792,7 @@ const BopManagement = () => {
     {
       name: "BOP FG Code",
       width: "170px",
+      center: true,
       cell: (row) => {
         const rowIndex = bopRows.indexOf(row);
         const rowValue = row.bopId || "";
@@ -820,16 +821,17 @@ const BopManagement = () => {
     {
       name: "BOP Part No.",
       width: "160px",
+      center: true,
       cell: (row) => <span>{row.bopPartNo || "-"}</span>,
     },
     {
       name: "Part Name",
-      width: "200px",
+      width: "250px",
       cell: (row) => <span>{row.bopPartName || "-"}</span>,
     },
     {
       name: "Supplier Name",
-      width: "200px",
+      width: "250px",
       cell: (row) => {
         const rowIndex = bopRows.indexOf(row);
         const supplierOptions = row.suppliers || [];
@@ -855,13 +857,14 @@ const BopManagement = () => {
     },
     {
       name: "Commodity",
-      width: "150px",
+      center: true,
       cell: (row) => <span>{row.commodity || "-"}</span>,
     },
+
     {
       name: "Assembly Qty",
-      width: "130px",
-      right: true,
+      width: "150px",
+      center: true,
       cell: (row) => {
         const rowIndex = bopRows.indexOf(row);
 
@@ -869,8 +872,12 @@ const BopManagement = () => {
           <input
             type="number"
             min="0"
-            step="0.0001"
-            value={row.assemblyQty ?? ""}
+            step="0.1"
+            value={
+              row.assemblyQty === "" || row.assemblyQty == null
+                ? ""
+                : Number(row.assemblyQty)
+            }
             disabled={saving}
             onChange={(event) =>
               handleRowChange(rowIndex, "assemblyQty", event.target.value)
@@ -881,7 +888,7 @@ const BopManagement = () => {
     },
     {
       name: "Action",
-      width: "95px",
+      width: "80px",
       center: true,
       sortable: false,
       cell: (row) => {
@@ -890,12 +897,11 @@ const BopManagement = () => {
         return (
           <button
             type="button"
-            className="bop-row-delete"
-            title="Delete row"
-            onClick={() => deleteBopRow(rowIndex)}
-            disabled={saving}
+            className="bop-delete-btn"
+            onClick={() => handleDelete(row)}
+            title="Delete"
           >
-            ×
+            <X size={15} />
           </button>
         );
       },
@@ -907,53 +913,56 @@ const BopManagement = () => {
       style: {
         minWidth: "1050px",
         backgroundColor: "#ffffff",
+        fontFamily: '"Times New Roman", Times, serif',
       },
     },
     headRow: {
       style: {
-        minHeight: "46px",
+        minHeight: "55px",
         backgroundColor: "#19224a",
-        borderBottom: "1px solid #dbe1e8",
+        borderBottom: "1px solid #cbd8e8",
       },
     },
     headCells: {
       style: {
-        paddingLeft: "12px",
-        paddingRight: "12px",
+        paddingLeft: "8px",
+        paddingRight: "8px",
         color: "#ffffff",
         fontFamily: '"Times New Roman", Times, serif',
-        fontSize: "13px",
+        fontSize: "12px",
         fontWeight: 700,
-        whiteSpace: "nowrap",
-        borderRight: "1px solid #dbe1e8",
+        whiteSpace: "normal",
+        borderRight: "1px solid #dce5f0",
       },
     },
     rows: {
       style: {
-        minHeight: "50px",
+        minHeight: "35px",
         fontFamily: '"Times New Roman", Times, serif',
-        fontSize: "14px",
-        color: "#374151",
-        borderBottom: "1px solid #e5e7eb",
+        fontSize: "12px",
+        color: "#000000",
+        borderBottom: "1px solid #edf1f5",
       },
       highlightOnHoverStyle: {
-        backgroundColor: "#f8fafc",
+        backgroundColor: "#f5f9ff",
+        transition: "background-color 0.15s ease",
       },
     },
     cells: {
       style: {
-        paddingLeft: "10px",
-        paddingRight: "10px",
-        borderRight: "1px solid #e5e7eb",
+        paddingLeft: "8px",
+        paddingRight: "8px",
+        borderRight: "1px solid #edf1f5",
         overflow: "visible",
       },
     },
     pagination: {
       style: {
         minHeight: "42px",
-        borderTop: "1px solid #e5e7eb",
+        borderTop: "1px solid #e7ebf0",
         fontFamily: '"Times New Roman", Times, serif',
-        fontSize: "13px",
+        fontSize: "12px",
+        color: "#000000",
       },
     },
   };
@@ -1061,7 +1070,7 @@ const BopManagement = () => {
       selector: (row) => String(getExistingValue(row, "commodity") || ""),
       sortable: true,
       wrap: true,
-      width: "90px",
+      width: "100px",
     },
 
     {
@@ -1090,7 +1099,7 @@ const BopManagement = () => {
         ).toLocaleString("en-IN", {
           maximumFractionDigits: 4,
         }),
-      width: "80px",
+      width: "100px",
     },
 
     {
@@ -1127,36 +1136,42 @@ const BopManagement = () => {
       {/* PAGE 1 - EXISTING CONFIGURATIONS */}
       {mode === "list" && (
         <>
-          <div className="bop-management-selector">
-            <div className="bop-management-content-header">
-              <div>
-                <h3 className="bop-management-selector-title">
-                  BOP Management
-                </h3>
-              </div>
+          <div className="bop-management-selector bop-page-header-wrap">
+            <div className="bop-management-content-header bop-page-header">
+              <h1 className="bop-page-title">BOP Management</h1>
 
               <div className="bop-management-actions">
                 <button
                   type="button"
-                  className="bop-btn bop-btn-add"
-                  onClick={handleAddBop}
-                  disabled={loadingParts || loadingBops}
+                  className="bop-btn bop-btn-secondary bop-refresh-btn"
+                  onClick={loadExistingConfigurations}
+                  disabled={loadingExistingConfigurations}
                 >
-                  + Add BOP
+                  <RefreshCw
+                    size={15}
+                    className={
+                      loadingExistingConfigurations ? "bop-icon-spin" : ""
+                    }
+                  />
+                  <span>
+                    {loadingExistingConfigurations
+                      ? "Refreshing..."
+                      : "Refresh"}
+                  </span>
                 </button>
 
                 <button
                   type="button"
-                  className="bop-btn bop-btn-secondary"
-                  onClick={loadExistingConfigurations}
-                  disabled={loadingExistingConfigurations}
+                  className="bop-btn bop-btn-add bop-add-header-btn"
+                  onClick={handleAddBop}
+                  disabled={loadingParts || loadingBops}
                 >
-                  {loadingExistingConfigurations ? "Refreshing..." : "Refresh"}
+                  <Plus size={16} />
+                  <span>Add BOP</span>
                 </button>
               </div>
             </div>
           </div>
-
           <div className="bop-management-content existing-bop-configurations">
             <div className="bop-management-content-header">
               <div>
@@ -1166,6 +1181,7 @@ const BopManagement = () => {
               </div>
               <div className="bop-existing-table-tools">
                 <div className="bop-existing-search">
+                  <Search size={16} className="bop-search-icon" />
                   <input
                     type="text"
                     value={existingConfigurationSearch}
@@ -1183,7 +1199,7 @@ const BopManagement = () => {
                       aria-label="Clear search"
                       title="Clear search"
                     >
-                      ×
+                      <X size={15} />
                     </button>
                   )}
                 </div>
@@ -1240,12 +1256,6 @@ const BopManagement = () => {
                     ? "Add BOP Configuration"
                     : "Edit BOP Configuration"}
                 </h3>
-
-                <p className="bop-management-content-description">
-                  {mode === "new"
-                    ? "Select a Part No. and add its BOP components."
-                    : `Update BOP components for Part No. ${selectedPartNo || "-"}.`}
-                </p>
               </div>
 
               <div className="bop-management-actions">
@@ -1325,11 +1335,6 @@ const BopManagement = () => {
                     <h2 className="bop-management-content-title">
                       BOP Configuration
                     </h2>
-
-                    <p className="bop-management-content-description">
-                      Add BOP components, select suppliers, and enter assembly
-                      quantity.
-                    </p>
                   </div>
 
                   <div className="bop-management-actions">

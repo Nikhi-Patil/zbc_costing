@@ -11,7 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import API_BASE_URL from "../../config/api";
-import "../../assets/css/SalesMonthly.css";
+import "../../assets/css/monthlyMaster/SalesMonthly.css";
 import { months } from "../../utils/costingUtils";
 
 const CompoundBulkUpload = () => {

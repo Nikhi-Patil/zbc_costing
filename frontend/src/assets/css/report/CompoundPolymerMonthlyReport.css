@@ -541,3 +541,12 @@
     transform: rotate(360deg);
   }
 }
+.compound-report-page-header-1 h1{
+  margin: 0;
+  font-size: 27px;
+  font-weight: 700;
+  color: #173d70;
+}
+.compound-report-page-header-1{
+  margin-bottom: 15px;
+}

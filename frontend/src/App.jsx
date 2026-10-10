@@ -23,7 +23,6 @@ import BopMaster from "./pages/masters/BopMaster";
 import CustomerMaster from "./pages/masters/CustomerMaster";
 import PartMaster from "./pages/masters/PartMaster";
 
-import CompoundPolymerMonthlyReport from "./pages/monthly_masters/CompoundPolymerMonthlyReport";
 import BopMonthlyMaster from "./pages/monthly_masters/BopMonthlyMaster";
 import BopMonthlyRateForm from "./pages/monthly_masters/BopMonthlyRateForm";
 import BopBulkUpload from "./pages/monthly_masters/BopBulkUpload";
@@ -35,6 +34,8 @@ import CompoundBulkUpload from "./pages/monthly_masters/CompoundBulkUpload";
 import SalesMonthly from "./pages/monthly_masters/SalesMonthly";
 import SalesMonthlyEntry from "./pages/monthly_masters/SalesMonthlyEntry";
 import SalesMonthlyBulk from "./pages/monthly_masters/SalesMonthlyBulk";
+
+import CompoundPolymerMonthlyReport from "./pages/report/CompoundPolymerMonthlyReport";
 
 // APP
 function App() {
