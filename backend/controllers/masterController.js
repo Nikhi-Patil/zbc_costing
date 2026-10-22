@@ -10,7 +10,6 @@ import Unit from "../models/unitModel.js";
 import Machine from "../models/machineModel.js";
 import Margin from "../models/marginModel.js";
 
-
 // Unit Controller
 export const getAllUnits = async (req, res) => {
     try {

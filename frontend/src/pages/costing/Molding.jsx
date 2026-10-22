@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import DataTable from "react-data-table-component";
-import { generateFinancialYears } from "../../utils/costingUtils";
+import { months, generateFinancialYears } from "../../utils/costingUtils";
 import {
   RefreshCw,
   Search,
@@ -29,23 +29,6 @@ const defaultFinancialYear =
   financialYearOptions.find((item) => item.selected)?.value ||
   financialYearOptions[financialYearOptions.length - 1]?.value ||
   "";
-
-const getMonthValue = (month) => Number(month?.value ?? month);
-
-const fiscalMonths = [
-  { value: 4, label: "Apr" },
-  { value: 5, label: "May" },
-  { value: 6, label: "Jun" },
-  { value: 7, label: "Jul" },
-  { value: 8, label: "Aug" },
-  { value: 9, label: "Sep" },
-  { value: 10, label: "Oct" },
-  { value: 11, label: "Nov" },
-  { value: 12, label: "Dec" },
-  { value: 1, label: "Jan" },
-  { value: 2, label: "Feb" },
-  { value: 3, label: "Mar" },
-];
 
 const getCurrentFiscalMonth = () => new Date().getMonth() + 1;
 
@@ -143,11 +126,7 @@ const formatInteger = (value) =>
     maximumFractionDigits: 0,
   });
 
-const MOLDING_TABLE_COLUMNS = (
-  getSavedPeriodValues,
-  handleOpenTransaction,
-  handleDownloadExcel,
-) => [
+const MOLDING_TABLE_COLUMNS = (handleOpenTransaction, handleDownloadExcel) => [
   {
     name: "TR ID",
     selector: (row) => row.transaction_id,
@@ -231,7 +210,7 @@ const MOLDING_TABLE_COLUMNS = (
     },
   },
   {
-    name: "P/L VS Mfg Cost",
+    name: " Mfg vs Sales Cost",
     selector: (row) => Number(row.__display?.profit_vs_mfg_cost || 0),
     sortable: true,
     grow: 1,
@@ -432,52 +411,49 @@ const moldingDataTableStyles = {
   },
 };
 
+const getStoredUserName = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    return (user.user_name || user.username || user.name || "").trim();
+  } catch (error) {
+    console.error("Unable to read logged-in user:", error);
+    return "";
+  }
+};
+
 const Molding = () => {
   const navigate = useNavigate();
 
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Apply-button loading state. Existing filter/data logic remains unchanged.
   const [isApplyingFilters, setIsApplyingFilters] = useState(false);
-
-  // SELECTED FILTERS (UI only)
   const [selectedFinancialYear, setSelectedFinancialYear] =
     useState(defaultFinancialYear);
-
   const [selectedFromMonth, setSelectedFromMonth] = useState(
     getCurrentFiscalMonth(),
   );
-
   const [selectedToMonth, setSelectedToMonth] = useState(
     getCurrentFiscalMonth(),
   );
-
   const [selectedCustomer, setSelectedCustomer] = useState("All");
   const [selectedSubCategory, setSelectedSubCategory] = useState("All");
   const [selectedPartNo, setSelectedPartNo] = useState("All");
   const [selectedProfitLoss, setSelectedProfitLoss] = useState("All");
-
-  // APPLIED FILTERS
   const [salesFinancialYear, setSalesFinancialYear] =
     useState(defaultFinancialYear);
-
   const [salesFromMonth, setSalesFromMonth] = useState(getCurrentFiscalMonth());
-
   const [salesToMonth, setSalesToMonth] = useState(getCurrentFiscalMonth());
-
   const [customerFilter, setCustomerFilter] = useState("All");
   const [subCategoryFilter, setSubCategoryFilter] = useState("All");
   const [partFilter, setPartFilter] = useState("All");
   const [profitLossFilter, setProfitLossFilter] = useState("All");
   const [searchText, setSearchText] = useState("");
-
-  const [salesMonthlyEntries, setSalesMonthlyEntries] = useState([]);
-
   const [salesMonthlyLoading, setSalesMonthlyLoading] = useState(false);
   const [moldingMonthlyReports, setMoldingMonthlyReports] = useState([]);
   const [moldingMonthlyReportLoading, setMoldingMonthlyReportLoading] =
     useState(false);
+
   useEffect(() => {
     if (!isApplyingFilters) return;
 
@@ -501,7 +477,11 @@ const Molding = () => {
     try {
       setLoading(true);
 
-      const response = await fetch(`${API_BASE_URL}/molding`);
+      const response = await fetch(
+        `${API_BASE_URL}/molding?userName=${encodeURIComponent(
+          getStoredUserName(),
+        )}`,
+      );
       const result = await response.json();
       if (result.success) {
         setTransactions(result.data);
@@ -576,10 +556,13 @@ const Molding = () => {
       try {
         setMoldingMonthlyReportLoading(true);
 
+        const params = new URLSearchParams({
+          financialYear: salesFinancialYear,
+          userName: getStoredUserName(),
+        });
+
         const response = await fetch(
-          `${API_BASE_URL}/molding-monthly-report?financialYear=${encodeURIComponent(
-            salesFinancialYear,
-          )}`,
+          `${API_BASE_URL}/molding-monthly-report?${params.toString()}`,
         );
 
         if (!response.ok) {
@@ -647,7 +630,7 @@ const Molding = () => {
     const normalizedTransactionId = normalizeKey(transactionId);
     const normalizedFinancialYear = normalizeKey(salesFinancialYear);
 
-    return fiscalMonths
+    return months
       .map((month) =>
         savedMonthlyReportByTransactionMonth.get(
           `${normalizedTransactionId}||${normalizedFinancialYear}||${month.value}`,
@@ -717,51 +700,6 @@ const Molding = () => {
     };
   };
 
-  // SALES MONTHLY CALCULATION
-  const salesMonthlyByTransaction = useMemo(() => {
-    const map = new Map();
-    salesMonthlyEntries.forEach((entry) => {
-      const partNo = normalizeKey(entry.partNo);
-      const unit = normalizeKey(entry.unit);
-      const month = Number(entry.month);
-      const fromFiscalIndex = getFiscalMonthIndex(salesFromMonth);
-      const toFiscalIndex = getFiscalMonthIndex(salesToMonth);
-      const monthFiscalIndex = getFiscalMonthIndex(month);
-
-      if (
-        !partNo ||
-        !unit ||
-        monthFiscalIndex < fromFiscalIndex ||
-        monthFiscalIndex > toFiscalIndex
-      ) {
-        return;
-      }
-      const key = `${partNo}||${unit}`;
-      const existing = map.get(key) || {
-        totalQty: 0,
-        weightedRateTotal: 0,
-        hasData: false,
-      };
-      const qty = Number(entry.qty || 0);
-      const sellRate = Number(entry.sellRate || 0);
-
-      // TOTAL QTY
-      existing.totalQty += qty;
-      if (entry.qty !== null && entry.qty !== undefined && qty > 0) {
-        existing.weightedRateTotal += qty * sellRate;
-      }
-      existing.hasData = true;
-      map.set(key, existing);
-    });
-
-    // FINAL WEIGHTED AVERAGE
-    map.forEach((value) => {
-      value.weightedAverageSellCost =
-        value.totalQty > 0 ? value.weightedRateTotal / value.totalQty : 0;
-    });
-    return map;
-  }, [salesMonthlyEntries, salesFromMonth, salesToMonth]);
-
   // KEEP MONTH RANGE VALID IN FINANCIAL-YEAR ORDER
   useEffect(() => {
     if (
@@ -798,22 +736,32 @@ const Molding = () => {
   const handleAddTransaction = () => {
     navigate("/molding/costing-wizard");
   };
+
   const handleBulkUpload = () => {
     navigate("/molding/bulk-upload");
   };
+
   const handleOpenTransaction = (transactionId) => {
     navigate(`/molding/costing-wizard/${transactionId}`);
   };
 
   const handleDownloadExcel = async (transactionId) => {
     try {
+      const userName = getStoredUserName();
+
+      if (!userName) {
+        alert("Unable to identify the logged-in user. Please log in again.");
+        return;
+      }
+
       const response = await fetch(
-        `${API_BASE_URL}/molding/${transactionId}/download-excel`,
+        `${API_BASE_URL}/molding/${encodeURIComponent(
+          transactionId,
+        )}/download-excel?userName=${encodeURIComponent(userName)}`,
       );
 
       if (!response.ok) {
         const errorText = await response.text();
-
         console.error("Excel API error:", errorText);
 
         throw new Error(
@@ -822,7 +770,6 @@ const Molding = () => {
       }
 
       const blob = await response.blob();
-
       const url = window.URL.createObjectURL(blob);
 
       const link = document.createElement("a");
@@ -831,47 +778,73 @@ const Molding = () => {
 
       document.body.appendChild(link);
       link.click();
+      link.remove();
 
-      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Excel download error:", error);
-      alert("Failed to download Excel.");
+      alert("Failed to download Excel. Check the console for details.");
     }
   };
 
   // EXPORT EXCEL
-  const handleExportExcel = async () => {
+  const handleExportExcel = () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/molding/export`);
-      const result = await response.json();
-      if (!result.success) {
-        alert(result.message || "Failed to export molding data.");
-        return;
-      }
-      const { moldingData, bopData } = result;
-      if (!moldingData || moldingData.length === 0) {
-        alert("No molding transactions available to export.");
+      // Export exactly the rows shown after applying table filters.
+      if (!filteredTableRows.length) {
+        alert("No table data available to export.");
         return;
       }
 
-      // MOLDING DATA
-      const moldingWorksheet = XLSX.utils.json_to_sheet(moldingData);
+      const exportData = filteredTableRows.map((row) => ({
+        "TR ID": row.transaction_id ?? "",
+        "Customer Name": row.customer_name ?? "",
+        "Part No": row.part_no ?? "",
+        "Sub Category": row.sub_category ?? "",
+        "Mfg W/O Margin": Number(row.__display?.subtotalA ?? 0),
+        "Mfg With Margin": Number(row.__display?.partCost ?? 0),
+        "Sale Cost": Number(row.__display?.customerSalesCost ?? 0),
+        "Extra P/L": Number(row.__display?.extra_profit ?? 0),
+        "P/L VS Mfg Cost": Number(row.__display?.profit_vs_mfg_cost ?? 0),
+        "Monthly Qty": Number(row.__display?.monthlyQty ?? 0),
+        "Extra P/L Total": Number(row.__display?.extra_monthlyProfitLoss ?? 0),
+        "Total Mfg P/L": Number(row.__display?.monthlyProfitLoss ?? 0),
+        "Prod Unit": row.production_unit ?? "",
+        "Billing Unit": row.billing_unit ?? "",
+        Status: row.status ?? "",
+      }));
 
-      // BOP DATA
-      const bopWorksheet = XLSX.utils.json_to_sheet(bopData || []);
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      worksheet["!cols"] = [
+        { wch: 12 },
+        { wch: 25 },
+        { wch: 22 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 18 },
+        { wch: 15 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 14 },
+        { wch: 14 },
+        { wch: 12 },
+      ];
 
-      // CREATE WORKBOOK
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, moldingWorksheet, "Molding Data");
-      XLSX.utils.book_append_sheet(workbook, bopWorksheet, "BOP Data");
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Molding Report");
 
-      // DOWNLOAD
       const date = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(workbook, `Molding_All_Data_${date}.xlsx`);
+
+      XLSX.writeFile(
+        workbook,
+        `Molding_Report_${salesFinancialYear}_${date}.xlsx`,
+      );
     } catch (error) {
-      console.error("Error exporting molding data:", error);
-      alert("Failed to export molding data.");
+      console.error("Error exporting molding table:", error);
+      alert("Failed to export molding table.");
     }
   };
 
@@ -1031,12 +1004,7 @@ const Molding = () => {
   }, [transactions]);
 
   const moldingColumns = useMemo(
-    () =>
-      MOLDING_TABLE_COLUMNS(
-        getSavedPeriodValues,
-        handleOpenTransaction,
-        handleDownloadExcel,
-      ),
+    () => MOLDING_TABLE_COLUMNS(handleOpenTransaction, handleDownloadExcel),
     [moldingMonthlyReports, salesFinancialYear, salesFromMonth, salesToMonth],
   );
 
@@ -1114,7 +1082,7 @@ const Molding = () => {
               setSelectedFromMonth(Number(event.target.value))
             }
           >
-            {fiscalMonths.map((month) => (
+            {months.map((month) => (
               <option key={month.value} value={month.value}>
                 {month.label}
               </option>
@@ -1130,12 +1098,12 @@ const Molding = () => {
             value={selectedToMonth}
             onChange={(event) => setSelectedToMonth(Number(event.target.value))}
           >
-            {fiscalMonths.map((month) => (
+            {months.map((month) => (
               <option
                 key={month.value}
                 value={month.value}
                 disabled={
-                  getFiscalMonthIndex(getMonthValue(month)) <
+                  getFiscalMonthIndex(month.value) <
                   getFiscalMonthIndex(selectedFromMonth)
                 }
               >

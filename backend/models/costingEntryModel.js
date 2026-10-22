@@ -14,7 +14,7 @@ const generateEntryId = async () => {
         SELECT entry_id
         FROM costing_entry_table
         WHERE entry_id LIKE 'CE%'
-        ORDER BY id DESC
+        ORDER BY id ASC
         LIMIT 1
         `
     );
@@ -211,7 +211,7 @@ export const getCostingEntries = async () => {
 
         FROM costing_entry_table
 
-        ORDER BY id DESC
+        ORDER BY id ASC
         `
     );
 

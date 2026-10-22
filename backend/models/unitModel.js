@@ -6,7 +6,7 @@ const Unit
         const [rows] = await adminDB.query(`
             SELECT id,unit,address,location,created_by,created_at,updated_by,updated_at
             FROM unit_master
-            ORDER BY id DESC
+            ORDER BY id ASC
         `);
         return rows;
     }

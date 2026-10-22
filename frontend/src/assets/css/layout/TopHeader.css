@@ -93,3 +93,8 @@
 .logout{
     color:red;
 }
+
+.header-right span{
+    font-size: 14px !important;
+    font-weight: 700;
+}

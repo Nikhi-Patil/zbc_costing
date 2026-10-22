@@ -1,12 +1,7 @@
 import zbcDB from "../config/zbcDB.js";
 import adminDB from "../config/adminDB.js";
 
-const getBopMonthlyRate = async ({
-    bopErpCode,
-    supplierId,
-    financialYear,
-    month,
-}) => {
+const getBopMonthlyRate = async ({ bopErpCode, supplierId, financialYear, month }) => {
     if (
         !bopErpCode ||
         !supplierId ||
@@ -24,7 +19,7 @@ const getBopMonthlyRate = async ({
           AND supplier_id = ?
           AND financial_year = ?
           AND month = ?
-        ORDER BY id DESC
+        ORDER BY id ASC
         LIMIT 1
         `,
         [
@@ -42,21 +37,19 @@ const getBopMonthlyRate = async ({
 
 const generateTransactionId = async () => {
     const [rows] = await zbcDB.query(`
-        SELECT transaction_id
-        FROM molding_table
-        WHERE transaction_id LIKE 'ML%'
-        ORDER BY id DESC
-        LIMIT 1
-    `);
+    SELECT transaction_id
+    FROM molding_table
+    WHERE transaction_id REGEXP '^ML[0-9]+$'
+    ORDER BY CAST(SUBSTRING(transaction_id, 3) AS UNSIGNED) DESC
+    LIMIT 1
+  `);
 
     let nextNumber = 1;
 
     if (rows.length > 0) {
-        const lastTransactionId = rows[0].transaction_id;
-
         const lastNumber = parseInt(
-            lastTransactionId.replace("ML", ""),
-            10,
+            rows[0].transaction_id.substring(2),
+            10
         );
 
         if (!Number.isNaN(lastNumber)) {
@@ -67,10 +60,7 @@ const generateTransactionId = async () => {
     return `ML${String(nextNumber).padStart(3, "0")}`;
 };
 
-export const createDraft = async (
-    formData,
-    bops,
-) => {
+export const createDraft = async (formData, bops, userName) => {
     const connection =
         await zbcDB.getConnection();
     try {
@@ -155,13 +145,16 @@ export const createDraft = async (
                     buying_cost,
                     buying_profit_loss,
                     monthly_quantity,
-                    monthly_profit_loss
+                    monthly_profit_loss,
+                    created_by,
+                    updated_by
                 )
                 VALUES (
                     ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                     ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                     ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
-                    ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+                    ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
+                    ?,?,?
                 )
                 `,
             [
@@ -241,7 +234,9 @@ export const createDraft = async (
                 formData.buyingCost,
                 formData.buyingProfitLoss,
                 formData.monthlyQuantity,
-                formData.monthlyProfitLoss
+                formData.monthlyProfitLoss,
+                userName,
+                userName
             ],
         );
         const moldingId =
@@ -316,11 +311,7 @@ export const createDraft = async (
     }
 };
 
-export const updateDraft = async (
-    transactionId,
-    formData,
-    bops,
-) => {
+export const updateDraft = async (transactionId, formData, bops, userName) => {
     const connection =
         await zbcDB.getConnection();
     try {
@@ -404,7 +395,8 @@ export const updateDraft = async (
                     phospating = ?,
                     adhesive = ?,
                     painting = ?,
-                    cylindrical_grinding = ?
+                    cylindrical_grinding = ?,
+                    updated_by = ?
                 WHERE transaction_id = ?
                 AND status = 'DRAFT'
                 `,
@@ -484,6 +476,7 @@ export const updateDraft = async (
                     formData.adhesive,
                     formData.painting,
                     formData.cylindricalGrinding,
+                    userName,
                     transactionId,
                 ],
             );
@@ -559,24 +552,27 @@ export const updateDraft = async (
     }
 };
 
-export const submitFinal = async (transactionId) => {
-    const [result] =
-        await zbcDB.query(
-            `
-            UPDATE molding_table
-            SET status = 'FINAL'
-            WHERE transaction_id = ?
-            AND status = 'DRAFT'
-            `,
-            [transactionId],
-        );
+
+export const submitFinal = async (transactionId, userName) => {
+    const [result] = await zbcDB.query(
+        `
+        UPDATE molding_table
+        SET
+            status = 'FINAL',
+            updated_by = ?
+        WHERE transaction_id = ?
+          AND status = 'DRAFT'
+        `,
+        [userName, transactionId]
+    );
+
     if (result.affectedRows === 0) {
         throw new Error("Draft not found or already submitted");
     }
 
     return {
         transactionId,
-        status: "FINAL",
+        status: "FINAL"
     };
 };
 

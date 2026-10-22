@@ -4,7 +4,7 @@ import API_BASE_URL from "../../config/api";
 function ProcessDetailsForm({
   formData,
   transactionId,
-    readOnly = false,
+  readOnly = false,
   handleInputChange,
   handleMachineChange,
   handleTonnageChange,
@@ -195,7 +195,12 @@ function ProcessDetailsForm({
                   formData.shiftTimeEfficiency ? "field-filled" : ""
                 }`}
                 name="shiftTimeEfficiency"
-                value={formData.shiftTimeEfficiency}
+                value={
+                  formData.shiftTimeEfficiency === "" ||
+                  formData.shiftTimeEfficiency == null
+                    ? ""
+                    : String(Number(formData.shiftTimeEfficiency))
+                }
                 onChange={handleInputChange}
               >
                 <option value="">Select</option>

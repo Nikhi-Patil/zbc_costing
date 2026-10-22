@@ -1,5 +1,11 @@
-
 import zbcDB from "../config/zbcDB.js";
+
+const getCurrentUserName = (req) =>
+    req.user?.user_name ||
+    req.user?.username ||
+    req.query?.userName ||
+    req.body?.userName ||
+    null;
 
 /* Create or update a monthly molding report record */
 export const saveMoldingMonthlyReport = async (req, res) => {
@@ -24,8 +30,15 @@ export const saveMoldingMonthlyReport = async (req, res) => {
             part_cost,
             customer_sales_cost,
             monthly_quantity,
+            userName,
+
         } = req.body;
 
+
+        const currentUser =
+            req.user?.user_name ||
+            req.user?.username ||
+            userName;
         // ------------------------------------
         // Required field validation
         // ------------------------------------
@@ -64,6 +77,12 @@ export const saveMoldingMonthlyReport = async (req, res) => {
                 message: "month is required",
             });
         }
+        if (!currentUser || !String(currentUser).trim()) {
+            return res.status(401).json({
+                success: false,
+                message: "Unable to identify the logged-in user",
+            });
+        }
 
         // ------------------------------------
         // Insert / Update
@@ -88,9 +107,11 @@ export const saveMoldingMonthlyReport = async (req, res) => {
         subtotal_a,
         part_cost,
         customer_sales_cost,
-        monthly_quantity
+        monthly_quantity, 
+        created_by,
+        updated_by
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)
 
       ON DUPLICATE KEY UPDATE
 
@@ -110,7 +131,7 @@ export const saveMoldingMonthlyReport = async (req, res) => {
         part_cost = VALUES(part_cost),
         customer_sales_cost = VALUES(customer_sales_cost),
         monthly_quantity = VALUES(monthly_quantity),
-
+        updated_by = VALUES(updated_by),
         updated_at = CURRENT_TIMESTAMP
     `;
 
@@ -134,6 +155,8 @@ export const saveMoldingMonthlyReport = async (req, res) => {
             part_cost ?? null,
             customer_sales_cost ?? null,
             monthly_quantity ?? 0,
+            currentUser,
+            currentUser,
         ];
 
         const [result] = await zbcDB.query(sql, values);
@@ -169,43 +192,47 @@ export const getMoldingMonthlyReport = async (req, res) => {
         } = req.query;
 
         let sql = `
-      SELECT
-        id,
+    SELECT
+        mm.id,
+        mm.molding_id,
+        mm.transaction_id,
+        mm.part_no,
+        mm.fg_code,
+        mm.customer_name,
+        mm.production_unit,
+        mm.billing_unit,
+        mm.sub_category,
+        mm.financial_year,
+        mm.month,
+        mm.month_name,
+        mm.month_index,
+        mm.subtotal_a,
+        mm.part_cost,
+        mm.customer_sales_cost,
+        mm.monthly_quantity,
+        mm.created_at,
+        mm.updated_at
+    FROM molding_monthly_report mm
+    INNER JOIN molding_table m
+        ON m.id = mm.molding_id
+    WHERE LOWER(TRIM(m.created_by)) = LOWER(TRIM(?))
+`;
+        const currentUser = getCurrentUserName(req);
 
-        molding_id,
-        transaction_id,
+        if (!currentUser) {
+            return res.status(401).json({
+                success: false,
+                message: "Unable to identify the logged-in user",
+            });
+        }
 
-        part_no,
-        fg_code,
-        customer_name,
-        production_unit,
-        billing_unit,
-        sub_category,
-
-        financial_year,
-        month,
-        month_name,
-        month_index,
-
-        subtotal_a,
-        part_cost,
-        customer_sales_cost,
-        monthly_quantity,
-
-        created_at,
-        updated_at
-
-      FROM molding_monthly_report
-      WHERE 1 = 1
-    `;
-
-        const params = [];
+        const params = [currentUser];
 
         // ------------------------------------
         // Financial Year filter
         // ------------------------------------
         if (financialYear) {
-            sql += ` AND financial_year = ?`;
+            sql += ` AND mm.financial_year = ?`;
             params.push(financialYear);
         }
 
@@ -217,7 +244,7 @@ export const getMoldingMonthlyReport = async (req, res) => {
             month !== null &&
             month !== ""
         ) {
-            sql += ` AND month = ?`;
+            sql += ` AND mm.month = ?`;
             params.push(month);
         }
 
@@ -225,7 +252,7 @@ export const getMoldingMonthlyReport = async (req, res) => {
         // Transaction ID filter
         // ------------------------------------
         if (transactionId) {
-            sql += ` AND transaction_id = ?`;
+            sql += ` AND mm.transaction_id = ?`;
             params.push(transactionId);
         }
 
@@ -233,7 +260,7 @@ export const getMoldingMonthlyReport = async (req, res) => {
         // Molding ID filter
         // ------------------------------------
         if (moldingId) {
-            sql += ` AND molding_id = ?`;
+            sql += ` AND mm.molding_id = ?`;
             params.push(moldingId);
         }
 
@@ -241,10 +268,10 @@ export const getMoldingMonthlyReport = async (req, res) => {
         // Fiscal month ordering
         // ------------------------------------
         sql += `
-      ORDER BY
-        month_index ASC,
-        id ASC
-    `;
+    ORDER BY
+        mm.month_index ASC,
+        mm.id ASC
+`;
 
         const [rows] = await zbcDB.query(sql, params);
 
@@ -281,6 +308,14 @@ export const getMoldingMonthlyReportByMolding = async (
                 message: "moldingId is required",
             });
         }
+        const currentUser = getCurrentUserName(req);
+
+        if (!currentUser) {
+            return res.status(401).json({
+                success: false,
+                message: "Unable to identify the logged-in user",
+            });
+        }
 
         const sql = `
       SELECT
@@ -309,17 +344,18 @@ export const getMoldingMonthlyReportByMolding = async (
         created_at,
         updated_at
 
-      FROM molding_monthly_report
-
-      WHERE molding_id = ?
+        FROM molding_monthly_report mm
+        INNER JOIN molding_table m
+            ON m.id = mm.molding_id
+        WHERE mm.molding_id = ?
+        AND LOWER(TRIM(m.created_by)) = LOWER(TRIM(?))        
 
       ORDER BY
         financial_year ASC,
         month_index ASC,
         id ASC
     `;
-
-        const [rows] = await zbcDB.query(sql, [moldingId]);
+        const [rows] = await zbcDB.query(sql, [moldingId, currentUser]);
 
         return res.status(200).json({
             success: true,
@@ -354,13 +390,25 @@ export const deleteMoldingMonthlyReport = async (
                 message: "Report id is required",
             });
         }
+        const currentUser = getCurrentUserName(req);
+
+        if (!currentUser) {
+            return res.status(401).json({
+                success: false,
+                message: "Unable to identify the logged-in user",
+            });
+        }
 
         const sql = `
-      DELETE FROM molding_monthly_report
-      WHERE id = ?
+        DELETE mm
+        FROM molding_monthly_report mm
+        INNER JOIN molding_table m
+            ON m.id = mm.molding_id
+        WHERE mm.id = ?
+        AND LOWER(TRIM(m.created_by)) = LOWER(TRIM(?))
     `;
 
-        const [result] = await zbcDB.query(sql, [id]);
+        const [result] = await zbcDB.query(sql, [id, currentUser]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -391,7 +439,12 @@ export const saveMoldingMonthlyReportBulk = async (req, res) => {
     const connection = await zbcDB.getConnection();
 
     try {
-        const { records } = req.body;
+        const { records, userName } = req.body;
+
+        const currentUser =
+            req.user?.user_name ||
+            req.user?.username ||
+            userName;
 
         if (!Array.isArray(records) || records.length === 0) {
             return res.status(400).json({
@@ -436,6 +489,12 @@ export const saveMoldingMonthlyReportBulk = async (req, res) => {
                 errors,
             });
         }
+        if (!currentUser || !String(currentUser).trim()) {
+            return res.status(401).json({
+                success: false,
+                message: "Unable to identify the logged-in user",
+            });
+        }
 
         await connection.beginTransaction();
 
@@ -459,9 +518,11 @@ export const saveMoldingMonthlyReportBulk = async (req, res) => {
                 subtotal_a,
                 part_cost,
                 customer_sales_cost,
-                monthly_quantity
+                monthly_quantity,created_by,
+                updated_by
+
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
             ON DUPLICATE KEY UPDATE
 
@@ -481,7 +542,7 @@ export const saveMoldingMonthlyReportBulk = async (req, res) => {
                 part_cost = VALUES(part_cost),
                 customer_sales_cost = VALUES(customer_sales_cost),
                 monthly_quantity = VALUES(monthly_quantity),
-
+updated_by = VALUES(updated_by),
                 updated_at = CURRENT_TIMESTAMP
         `;
 
@@ -509,6 +570,8 @@ export const saveMoldingMonthlyReportBulk = async (req, res) => {
                 record.part_cost ?? null,
                 record.customer_sales_cost ?? null,
                 record.monthly_quantity ?? 0,
+                currentUser,
+                currentUser,
             ];
 
             const [result] = await connection.query(sql, values);

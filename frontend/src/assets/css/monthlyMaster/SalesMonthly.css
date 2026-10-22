@@ -1336,9 +1336,7 @@
 .sales-filter-field .form-label {
   display: block;
   margin-bottom: 5px;
-  color: #212529;
   font-size: 12px;
-  font-weight: 600;
 }
 .sales-filter-field .form-control {
   width: 100%;
@@ -1439,8 +1437,9 @@
 }
 .sales-table-count {
   white-space: nowrap;
-  font-size: 12px;
-  color: #64748b;
+  font-size: 13px;
+  color: #212428;
+  font-weight: 600;
 }
 
 /* SEARCH - moved into table header like Compound */
@@ -2578,4 +2577,43 @@
   word-break: break-word;
   text-overflow: unset;
   line-height: 1.3;
+}
+.sales-export-btn {
+  height: 35px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #2563eb;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sales-export-btn:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+.sales-export-btn svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .sales-export-btn {
+    width: 100%;
+  }
+}
+.sales-monthly-page h1 {
+  margin: 0px 0px 10px 0px;
+  font-size: 27px;
+  font-weight: 700;
+  color: #173d70;
 }

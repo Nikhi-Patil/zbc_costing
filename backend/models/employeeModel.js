@@ -23,7 +23,7 @@ const Employee
                     d.designation AS designation_name
                 FROM employee_master e
                 LEFT JOIN designation_master d ON e.designation_id = d.id
-                ORDER BY e.id DESC
+                ORDER BY e.id ASC
         `);
 
         return rows;

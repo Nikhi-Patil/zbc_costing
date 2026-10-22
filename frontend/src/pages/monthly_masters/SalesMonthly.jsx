@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import DataTable from "react-data-table-component";
-import { Search, X, Plus, FileSpreadsheet } from "lucide-react";
+import { Search, X, Plus, FileSpreadsheet, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import "../../assets/css/monthlyMaster/SalesMonthly.css";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
@@ -247,7 +248,7 @@ const salesMonthlyDataTableStyles = {
 const SalesMonthly = () => {
   const navigate = useNavigate();
   const [financialYear, setFinancialYear] = useState(defaultFinancialYear);
-  const [view, setView] = useState("Qty");
+  const [view, setView] = useState("Rate");
   const [search, setSearch] = useState("");
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -367,8 +368,18 @@ const SalesMonthly = () => {
     if (!value) {
       return tableRows;
     }
-    return tableRows.filter((row) =>
-      String(row.partNo).toLowerCase().includes(value),
+
+    return tableRows.filter(
+      (row) =>
+        String(row.partNo || "")
+          .toLowerCase()
+          .includes(value) ||
+        String(row.partName || "")
+          .toLowerCase()
+          .includes(value) ||
+        String(row.unit || "")
+          .toLowerCase()
+          .includes(value),
     );
   }, [tableRows, search]);
 
@@ -386,9 +397,76 @@ const SalesMonthly = () => {
     navigate(`/sales-monthly/add?id=${entry.id}`);
   };
 
+  const handleDownloadExcel = () => {
+    if (!filteredRows.length) {
+      showToast("No Sales Monthly records available to export.", "error");
+      return;
+    }
+
+    const headers = [
+      "Sr. No.",
+      "Part No.",
+      "Part Name",
+      "Unit",
+      ...months.map((month) => getMonthYearLabel(month.value, financialYear)),
+    ];
+
+    const createSheetData = (type) => [
+      headers,
+      ...filteredRows.map((row, index) => [
+        index + 1,
+        row.partNo || "-",
+        row.partName || "-",
+        row.unit || "-",
+        ...months.map((month) => {
+          const entry = row.months[Number(month.value)];
+
+          if (!entry) return null;
+
+          return type === "qty" ? entry.qty : entry.sellRate;
+        }),
+      ]),
+    ];
+
+    const createWorksheet = (type) => {
+      const worksheet = XLSX.utils.aoa_to_sheet(createSheetData(type));
+
+      worksheet["!cols"] = [
+        { wch: 10 },
+        { wch: 20 },
+        { wch: 30 },
+        { wch: 12 },
+        ...months.map(() => ({ wch: 14 })),
+      ];
+
+      return worksheet;
+    };
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      createWorksheet("qty"),
+      "Sales Monthly Qty",
+    );
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      createWorksheet("rate"),
+      "Sales Monthly Rate",
+    );
+
+    XLSX.writeFile(workbook, `Sales_Monthly_${financialYear}.xlsx`);
+
+    showToast("Sales Monthly Excel downloaded successfully.");
+  };
+
   /* RENDER */
   return (
     <div className="sales-monthly-page">
+      <div>
+        <h1>Sales Monthly Report</h1>
+      </div>
       {/* TOAST */}
       {toast.show && (
         <div className={`sales-toast ${toast.type}`}>
@@ -469,6 +547,16 @@ const SalesMonthly = () => {
           >
             <FileSpreadsheet size={16} strokeWidth={2} />
             <span>Bulk Upload</span>
+          </button>
+
+          <button
+            type="button"
+            className="sales-export-btn"
+            onClick={handleDownloadExcel}
+            title="Download Sales Monthly Excel"
+          >
+            <Download size={16} />
+            <span>Download Excel</span>
           </button>
         </div>
       </div>

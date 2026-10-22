@@ -36,17 +36,10 @@ export const verifyEmployee = async (req, res) => {
 
     // Employee
     const [rows] = await adminDB.query(`
-        SELECT
-          id,
-          user_name,
-          email,
-          password,
-          unit,
-          sub_department,
-          status
+        SELECT id,user_name,email,password,unit,sub_department,status
         FROM employee_master
         WHERE LOWER(TRIM(email)) = LOWER(?)
-        LIMIT 1        `,
+        LIMIT 1`,
       [cleanEmail]
     );
 
@@ -89,9 +82,7 @@ export const verifyEmployee = async (req, res) => {
       .join(",");
     const [unitRows] =
       await adminDB.query(`
-        SELECT
-          id,
-          unit
+        SELECT id,unit
         FROM unit_master
         WHERE id IN (${placeholders})
         ORDER BY id ASC `,
@@ -126,228 +117,193 @@ export const verifyEmployee = async (req, res) => {
 };
 
 // GET EMPLOYEE SUB DEPARTMENTS
-export const getEmployeeSubDepartments =
-  async (req, res) => {
-    try {
-      const { email, unit } = req.body;
-      if (!email || !unit) {
-        return res.status(400).json({
-          success: false,
-          message: "Email and Unit are required",
-        });
-      }
+export const getEmployeeSubDepartments = async (req, res) => {
+  try {
+    const { email, unit } = req.body;
+    if (!email || !unit) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and Unit are required",
+      });
+    }
 
-      const selectedUnit = Number(unit);
-      if (!Number.isInteger(selectedUnit) || selectedUnit <= 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid Unit",
-        });
-      }
+    const selectedUnit = Number(unit);
+    if (!Number.isInteger(selectedUnit) || selectedUnit <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Unit",
+      });
+    }
 
-      // Employee
-      const [employeeRows] =
-        await adminDB.query(`
-          SELECT
-            id,
-            user_name,
-            email,
-            unit,
-            department,
-            sub_department,
-            status
+    // Employee
+    const [employeeRows] =
+      await adminDB.query(`
+          SELECT id,user_name,email,unit,department,sub_department,status
           FROM employee_master
           WHERE LOWER(TRIM(email)) = LOWER(?)
           LIMIT 1 `,
-          [String(email).trim()]
-        );
+        [String(email).trim()]
+      );
 
-      if (employeeRows.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: "Employee not found",
-        });
-      }
-      const employee = employeeRows[0];
+    if (employeeRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found",
+      });
+    }
+    const employee = employeeRows[0];
 
-      // Active
-      if (!isActive(employee.status)) {
-        return res.status(403).json({
-          success: false,
-          message: "Employee account is inactive",
-        });
-      }
+    // Active
+    if (!isActive(employee.status)) {
+      return res.status(403).json({
+        success: false,
+        message: "Employee account is inactive",
+      });
+    }
 
-      // Employee unit
-      const employeeUnitIds = getIdList(employee.unit);
-      if (!employeeUnitIds.includes(selectedUnit)) {
-        return res.status(403).json({
-          success: false,
-          message: "Selected Unit is not assigned to this employee",
-        });
-      }
+    // Employee unit
+    const employeeUnitIds = getIdList(employee.unit);
+    if (!employeeUnitIds.includes(selectedUnit)) {
+      return res.status(403).json({
+        success: false,
+        message: "Selected Unit is not assigned to this employee",
+      });
+    }
 
-      // ZBC access
-      const misModuleId = Number(req.misModule?.id);
+    // ZBC access
+    const misModuleId = Number(req.misModule?.id);
 
-      if (!Number.isInteger(misModuleId) || misModuleId <= 0) {
-        return res.status(403).json({
-          success: false,
-          message: "ZBC module access is not available",
-        });
+    if (!Number.isInteger(misModuleId) || misModuleId <= 0) {
+      return res.status(403).json({
+        success: false,
+        message: "ZBC module access is not available",
+      });
 
-      }
+    }
 
-      // USER ACCESS
-      const [accessRows] =
-        await adminDB.query(`
-          SELECT
-            id,
-            employee_id,
-            sub_department_ids,
-            module_ids
+    // USER ACCESS
+    const [accessRows] =
+      await adminDB.query(`
+          SELECT id,employee_id,sub_department_ids,module_ids
           FROM user_access
           WHERE employee_id = ?
             AND FIND_IN_SET(
-              ?,
-              REPLACE(module_ids, ' ', '')
+              ?,REPLACE(module_ids, ' ', '')
             ) > 0
           LIMIT 1`,
-          [employee.id, misModuleId]
-        );
-
-      if (accessRows.length === 0) {
-        return res.status(403).json({
-          success: false,
-          message: "This employee does not have ZBC access",
-        });
-      }
-      const userAccess = accessRows[0];
-
-      // Employee sub departments
-      const employeeSubDepartmentIds = getIdList(employee.sub_department);
-      if (employeeSubDepartmentIds.length === 0) {
-        return res.status(403).json({
-          success: false,
-          message: "No sub-department is assigned to this employee",
-        });
-
-      }
-
-      // User access sub departments
-      const accessSubDepartmentIds = getIdList(userAccess.sub_department_ids);
-
-      if (accessSubDepartmentIds.length === 0) {
-        return res.status(403).json({
-          success: false,
-          message: "No sub-department access is assigned to this employee",
-        });
-      }
-
-      // Common sub departments
-      const allowedSubDepartmentIds = employeeSubDepartmentIds.filter(
-        (id) => accessSubDepartmentIds.includes(id)
+        [employee.id, misModuleId]
       );
 
-      if (allowedSubDepartmentIds.length === 0) {
-        return res.status(403).json({
-          success: false,
-          message: "No authorized sub-department is assigned to this employee",
-        });
-      }
+    if (accessRows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "This employee does not have ZBC access",
+      });
+    }
+    const userAccess = accessRows[0];
 
-      // Sub department master
-      const placeholders = allowedSubDepartmentIds
-        .map(() => "?")
-        .join(",");
+    // Employee sub departments
+    const employeeSubDepartmentIds = getIdList(employee.sub_department);
+    if (employeeSubDepartmentIds.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "No sub-department is assigned to this employee",
+      });
 
-      const [subDepartmentRows] = await adminDB.query(`
-        SELECT
-          id,
-          unit_id,
-          sub_department_name
+    }
+
+    // User access sub departments
+    const accessSubDepartmentIds = getIdList(userAccess.sub_department_ids);
+    if (accessSubDepartmentIds.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "No sub-department access is assigned to this employee",
+      });
+    }
+
+    // Common sub departments
+    const allowedSubDepartmentIds = employeeSubDepartmentIds.filter(
+      (id) => accessSubDepartmentIds.includes(id)
+    );
+
+    if (allowedSubDepartmentIds.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "No authorized sub-department is assigned to this employee",
+      });
+    }
+
+    // Sub department master
+    const placeholders = allowedSubDepartmentIds
+      .map(() => "?")
+      .join(",");
+
+    const [subDepartmentRows] = await adminDB.query(`
+        SELECT id,unit_id,sub_department_name
         FROM sub_department_master
         WHERE id IN (${placeholders})
           AND unit_id = ?
           AND sub_department_name IS NOT NULL
           AND TRIM(sub_department_name) <> ''
         ORDER BY id ASC `,
-        [...allowedSubDepartmentIds, selectedUnit]
-      );
+      [...allowedSubDepartmentIds, selectedUnit]
+    );
 
-      if (subDepartmentRows.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: "No authorized sub-department found for selected Unit",
-        });
-      }
-
-      // Success
-      return res.json({
-        success: true,
-        employee_id: employee.id,
-        unit: selectedUnit,
-        data: subDepartmentRows.map(
-          (row) => ({
-            id: row.id,
-            name: row.sub_department_name,
-            unit_id: row.unit_id,
-          })
-        ),
-      });
-
-    } catch (error) {
-      console.error(
-        "Get employee sub departments error:",
-        error
-      );
-      return res.status(500).json({
+    if (subDepartmentRows.length === 0) {
+      return res.status(404).json({
         success: false,
-        message:
-          "Server error while loading sub-departments",
-        error:
-          error.message,
+        message: "No authorized sub-department found for selected Unit",
       });
     }
-  };
+
+    // Success
+    return res.json({
+      success: true,
+      employee_id: employee.id,
+      unit: selectedUnit,
+      data: subDepartmentRows.map(
+        (row) => ({
+          id: row.id,
+          name: row.sub_department_name,
+          unit_id: row.unit_id,
+        })
+      ),
+    });
+
+  } catch (error) {
+    console.error(
+      "Get employee sub departments error:",
+      error
+    );
+    return res.status(500).json({
+      success: false,
+      message: "Server error while loading sub-departments",
+      error: error.message,
+    });
+  }
+};
 
 // FINAL LOGIN
-export const loginUser = async (
-  req,
-  res
-) => {
+export const loginUser = async (req, res) => {
   try {
-    const {
-      email,
-      password,
-      unit,
-      sub_department,
-    } = req.body;
-
+    const { email, password, unit, sub_department } = req.body;
     // Required
-    if (
-      !email ||
-      !password ||
-      !unit ||
-      !sub_department
-    ) {
+    if (!email || !password || !unit || !sub_department) {
       return res.status(400).json({
         success: false,
-        message:
-          "Email, Password, Unit and Sub Department are required",
+        message: "Email, Password, Unit and Sub Department are required",
       });
     }
+
     const selectedUnit = Number(unit);
     const selectedSubDepartment = Number(sub_department);
-    if (
-      !Number.isInteger(selectedUnit) ||
-      selectedUnit <= 0
-    ) {
+    if (!Number.isInteger(selectedUnit) || selectedUnit <= 0) {
       return res.status(400).json({
         success: false,
         message: "Invalid Unit",
       });
     }
+
     if (!Number.isInteger(selectedSubDepartment) || selectedSubDepartment <= 0) {
       return res.status(400).json({
         success: false,
@@ -356,8 +312,7 @@ export const loginUser = async (
     }
 
     // ZBC module
-    const misModuleId =
-      Number(req.misModule?.id);
+    const misModuleId = Number(req.misModule?.id);
     if (!Number.isInteger(misModuleId) || misModuleId <= 0) {
       return res.status(403).json({
         success: false,
@@ -368,19 +323,13 @@ export const loginUser = async (
     // Employee
     const [employeeRows] =
       await adminDB.query(`
-        SELECT
-          id,
-          user_name,
-          email,
-          password,
-          unit,
-          sub_department,
-          status
+        SELECT id,user_name,email,password,unit,sub_department,status
         FROM employee_master
         WHERE LOWER(TRIM(email)) = LOWER(?)
         LIMIT 1 `,
         [String(email).trim()]
       );
+
     if (employeeRows.length === 0) {
       return res.status(401).json({
         success: false,
@@ -408,11 +357,7 @@ export const loginUser = async (
     // USER ACCESS
     const [accessRows] =
       await adminDB.query(`
-        SELECT
-          id,
-          employee_id,
-          sub_department_ids,
-          module_ids
+        SELECT id,employee_id,sub_department_ids,module_ids
         FROM user_access
         WHERE employee_id = ?
           AND FIND_IN_SET(
@@ -459,10 +404,7 @@ export const loginUser = async (
 
     // Verify Sub Department + Unit
     const [subDepartmentRows,] = await adminDB.query(`
-      SELECT
-        id,
-        unit_id,
-        sub_department_name
+      SELECT id,unit_id,sub_department_name
       FROM sub_department_master
       WHERE id = ?
         AND unit_id = ?
@@ -482,9 +424,7 @@ export const loginUser = async (
 
     // Unit Master
     const [unitRows] = await adminDB.query(`
-        SELECT
-          id,
-          unit
+        SELECT id,unit
         FROM unit_master
         WHERE id = ?
         LIMIT 1 `,
@@ -497,8 +437,7 @@ export const loginUser = async (
         message: "Selected Unit was not found",
       });
     }
-    const unitName =
-      unitRows[0].unit;
+    const unitName = unitRows[0].unit;
 
     // LOGIN SUCCESS
     return res.json({

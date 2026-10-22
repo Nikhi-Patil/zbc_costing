@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import DataTable from "react-data-table-component";
-import { Search, X, Plus, FileSpreadsheet } from "lucide-react";
+import { Search, X, Plus, FileSpreadsheet, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 import "../../assets/css/monthlyMaster/CompoundMonthlyMaster.css";
-import CompoundMonthlyRateForm from "./CompoundMonthlyRateForm";
 
 const getMonthYearLabel = (monthValue, financialYearValue) => {
   const monthNumber = Number(monthValue);
@@ -51,7 +51,7 @@ const CompoundMonthlyMaster = () => {
   const [financialYear, setFinancialYear] = useState(currentFinancialYear);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [viewType, setViewType] = useState("qty");
+  const [viewType, setViewType] = useState("rate");
   const [searchText, setSearchText] = useState("");
   const [units, setUnits] = useState([]);
   const [showAddRateForm, setShowAddRateForm] = useState(false);
@@ -174,21 +174,19 @@ const CompoundMonthlyMaster = () => {
         sortable: false,
         cell: (row, index) => index + 1,
       },
-
-      {
-        name: "Compound Code",
-        selector: (row) => row.compound_code || "",
-        sortable: true,
-        minWidth: "130px",
-        cell: (row) => row.compound_code || "-",
-      },
-
       {
         name: "Polymer Name",
         selector: (row) => row.polymer_name || "",
         sortable: true,
         minWidth: "90px",
         cell: (row) => row.polymer_name || "-",
+      },
+      {
+        name: "Compound Code",
+        selector: (row) => row.compound_code || "",
+        sortable: true,
+        minWidth: "130px",
+        cell: (row) => row.compound_code || "-",
       },
 
       {
@@ -315,9 +313,77 @@ const CompoundMonthlyMaster = () => {
     },
   };
 
+  const handleDownloadExcel = () => {
+    if (!filteredData.length) {
+      alert("No compound records available to export.");
+      return;
+    }
+
+    const headers = [
+      "Sr. No.",
+      "Polymer Name",
+      "Compound Code",
+      "IM Code",
+      "Unit",
+      ...months.map((month) => getMonthYearLabel(month.value, financialYear)),
+    ];
+
+    const createSheetData = (type) => [
+      headers,
+      ...filteredData.map((compound, index) => [
+        index + 1,
+        compound.polymer_name || "-",
+        compound.compound_code || "-",
+        compound.im_code || "-",
+        unitMap.get(String(compound.unit_id)) || "-",
+        ...months.map((month) => {
+          const monthData = compound.months?.[month.value];
+
+          if (!monthData) return null;
+
+          return type === "qty" ? monthData.qty : monthData.rate;
+        }),
+      ]),
+    ];
+
+    const createWorksheet = (type) => {
+      const worksheet = XLSX.utils.aoa_to_sheet(createSheetData(type));
+
+      worksheet["!cols"] = [
+        { wch: 10 },
+        { wch: 22 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 15 },
+        ...months.map(() => ({ wch: 14 })),
+      ];
+
+      return worksheet;
+    };
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      createWorksheet("qty"),
+      "Compound Monthly Qty",
+    );
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      createWorksheet("rate"),
+      "Compound Monthly Rate",
+    );
+
+    XLSX.writeFile(workbook, `Compound_Monthly_${financialYear}.xlsx`);
+  };
+
   // Render
   return (
     <div className="compound-report-page">
+      <div>
+        <h1>Compound Monthly Report</h1>
+      </div>
       {/* Toolbar */}
       <div className="report-toolbar">
         <div className="report-filters">
@@ -382,6 +448,15 @@ const CompoundMonthlyMaster = () => {
             <FileSpreadsheet size={16} />
             <span>Bulk Upload</span>
           </button>
+          <button
+            type="button"
+            className="compound-export-btn"
+            onClick={handleDownloadExcel}
+            title="Download Compound Monthly Excel"
+          >
+            <Download size={16} />
+            <span>Download Excel</span>
+          </button>
         </div>
       </div>
 
@@ -389,8 +464,6 @@ const CompoundMonthlyMaster = () => {
       <div className="compound-report-container mt-3">
         <div className="compound-table-header">
           <div className="compound-table-header-left">
-            <h3>Compound Monthly Report</h3>
-
             <div className="compound-search-box">
               <Search size={16} className="compound-search-icon" />
 

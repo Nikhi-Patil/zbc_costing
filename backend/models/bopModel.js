@@ -22,7 +22,7 @@ const Bop= {
                 LEFT JOIN supplier_master d ON FIND_IN_SET(d.id, p.supplier_id)
                 LEFT JOIN part_master sd ON p.part_id = sd.id
                 GROUP BY p.id
-                ORDER BY p.id DESC
+                ORDER BY p.id ASC
         `);
         return rows;
     }

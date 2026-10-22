@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import "../../assets/css/components/Stepper.css";
 
 function WizardButtons({
   currentStep,
@@ -14,17 +15,14 @@ function WizardButtons({
       <div className="wizard-buttons-card">
         <div className="wizard-buttons-body">
           {/* Previous */}
+          {/* Previous */}
           <div>
             {currentStep > 1 && (
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="wizard-btn-secondary"
                 onClick={onPrevious}
                 title="Previous"
-                style={{
-                  padding: "2px 8px",
-                  borderRadius: "18px",
-                }}
               >
                 <ChevronLeft size={18} strokeWidth={2.5} />
               </button>
@@ -36,33 +34,20 @@ function WizardButtons({
             {currentStep < totalSteps && (
               <button
                 type="button"
-                className="btn btn-success"
+                className="wizard-btn-success"
                 onClick={onNext}
                 title="Next"
-                style={{
-                  padding: "2px 8px",
-                  borderRadius: "18px",
-                }}
               >
-                <ChevronRight size={18} strokeWidth={2.5} />{" "}
+                <ChevronRight size={18} strokeWidth={2.5} />
               </button>
             )}
 
             {currentStep === totalSteps && !readOnly && (
               <button
                 type="button"
-                className="btn btn-success"
+                className="wizard-btn-submit"
                 onClick={onSubmit}
-                style={{
-                  padding: "2px 3px",
-                  borderRadius: "6px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "5px",
-                  whiteSpace: "nowrap",
-                  minWidth: "65px",
-                }}
+                
               >
                 <Check size={15} strokeWidth={2.5} />
                 <span>Submit</span>

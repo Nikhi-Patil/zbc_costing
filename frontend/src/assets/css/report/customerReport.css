@@ -1,0 +1,526 @@
+/* CUSTOMER WISE REPORT */
+.customer-report-page {
+  padding: 0;
+  min-width: 0;
+  color: #172033;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Page heading */
+.cr-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.cr-page-heading h1 {
+  margin: 0;
+  color: #173d70;
+  font-size: 27px;
+  font-weight: 700;
+}
+
+/* FILTER PANEL */
+.customer-report-page .cr-filter-panel {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  flex-wrap: nowrap;
+  gap: 12px;
+  width: 100%;
+  margin: 18px 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.customer-report-page .cr-filter-panel label {
+  display: flex;
+  flex: 0 1 190px;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.customer-report-page .cr-filter-panel label > span {
+  color: #172033;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.customer-report-page .cr-filter-panel select {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  color: #172033;
+  font-size: 13px;
+}
+
+.customer-report-page .cr-filter-panel select:focus,
+.customer-report-page .cr-search-input:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px #2563eb1c;
+}
+
+.customer-report-page .cr-filter-panel .cr-search-label {
+  flex: 1 1 240px;
+  min-width: 150px;
+}
+
+.customer-report-page .cr-search-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+}
+
+.customer-report-page .cr-search-input input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #172033;
+  font-size: 13px;
+  box-shadow: none;
+}
+
+/* Refresh button stays at the right */
+.customer-report-page .cr-refresh-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 34px;
+  min-width: 96px;
+  margin-left: auto;
+  padding: 0 10px;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
+}
+
+.customer-report-page .cr-refresh-button:hover:not(:disabled) {
+  background: #2563eb;
+  color: #fff;
+}
+
+.customer-report-page .cr-refresh-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.cr-spin {
+  animation: cr-rotate 0.8s linear infinite;
+}
+
+@keyframes cr-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* MAIN CUSTOMER TABLE */
+.customer-report-page .cr-table-card {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #e1e7ec;
+  border-radius: 7px;
+  background: #fff;
+}
+
+.customer-report-page .cr-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 48px;
+  padding: 6px 12px;
+  border-bottom: 1px solid #e4e7eb;
+}
+
+.customer-report-page .cr-card-heading h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.customer-report-page .cr-card-heading > span {
+  color: #1f2022;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Main table cell spacing */
+.customer-report-page .rdt_TableCell {
+  padding: 0 8px !important;
+  box-sizing: border-box;
+}
+
+.customer-report-page .rdt_TableCol {
+  padding: 0 8px !important;
+  box-sizing: border-box;
+}
+
+/* Expand customer button */
+.cr-expand-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 0;
+  border: none;
+  background: transparent;
+  color: #111827;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cr-expand-button:hover {
+  color: #159fb2;
+}
+
+/* Profit and loss values */
+.cr-value-link {
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.cr-profit-link,
+.cr-positive {
+  color: #0752a4;
+}
+
+.cr-loss-link,
+.cr-negative {
+  color: #f00000;
+}
+
+.cr-neutral {
+  color: #64748b;
+}
+
+/* EXPANDED CUSTOMER CATEGORIES */
+.customer-report-page .cr-expanded-customer {
+  width: 100%;
+  min-width: 0;
+  padding: 0 0 0 42px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #dce5f0;
+  background: #f8fafc;
+}
+
+.customer-report-page .cr-expanded-customer .rdt_Table {
+  width: 100%;
+}
+
+.customer-report-page .cr-expanded-customer .rdt_TableHead {
+  display: none !important;
+}
+
+.customer-report-page .cr-expanded-customer .rdt_TableCell {
+  padding: 4px 8px !important;
+}
+
+.cr-category-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 0;
+  border: none;
+  background: transparent;
+  color: #111827;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cr-category-button:hover {
+  color: #07899a;
+  text-decoration: underline;
+}
+
+/* LOADING, ERROR AND EMPTY STATES */
+.cr-error-message {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid #fecaca;
+  border-radius: 5px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 12px;
+}
+
+.cr-loading,
+.cr-empty-state {
+  padding: 28px 14px;
+  color: #64748b;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* PART LIST MODAL */
+/* Popup overlay */
+.customer-report-page .cr-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+/* Popup sizes itself to its content */
+.customer-report-page .cr-detail-modal {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  max-width: 96vw;
+  height: auto;
+  max-height: 88vh;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 60px #0003;
+}
+
+/* Header uses only the space it needs */
+.customer-report-page .cr-detail-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Table height follows the number of rows */
+.customer-report-page .cr-detail-table {
+  flex: 0 1 auto;
+  width: max-content;
+  max-width: 96vw;
+  min-width: 0;
+  min-height: 0;
+  max-height: calc(88vh - 90px);
+  overflow: auto;
+  padding: 0;
+}
+
+/* Allow the table to size naturally */
+.customer-report-page .cr-detail-modal .rdt_TableWrapper {
+  width: max-content;
+  max-width: 96vw;
+  max-height: none;
+  overflow: visible;
+}
+
+/* Keep the table header visible */
+.customer-report-page .cr-detail-modal .rdt_TableHead {
+  display: flex;
+}
+
+/* Keep pagination at the bottom */
+.customer-report-page .cr-detail-modal .rdt_Pagination {
+  flex: 0 0 auto;
+}
+
+/* Mobile screens */
+@media (max-width: 560px) {
+  .customer-report-page .cr-detail-overlay {
+    padding: 8px;
+  }
+  .customer-report-page .cr-detail-modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: 90vh;
+  }
+  .customer-report-page .cr-detail-table {
+    max-width: 100%;
+    max-height: calc(90vh - 90px);
+  }
+  .customer-report-page .cr-detail-modal .rdt_TableWrapper {
+    max-width: 100%;
+  }
+}
+.customer-report-page .cr-detail-header h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.customer-report-page .cr-detail-header p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.customer-report-page .cr-close-button {
+  flex: 0 0 auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.customer-report-page .cr-close-button:hover {
+  color: #dc2626;
+}
+
+/* DataTable owns its internal scrollable table wrapper */
+.customer-report-page .cr-detail-table {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* Remove the unused blank subheader */
+.customer-report-page
+  .cr-detail-modal
+  .rdt_Table
+  > .rdt_TableHead
+  + .rdt_TableBody {
+  min-height: 0;
+}
+.customer-report-page .cr-detail-modal .rdt_TableWrapper {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  overflow: auto;
+}
+
+/* Keep table headings visible */
+.customer-report-page .cr-detail-modal .rdt_TableHead {
+  display: flex;
+}
+
+/* Keep pagination visible */
+.customer-report-page .cr-detail-modal .rdt_Pagination {
+  flex: 0 0 auto;
+}
+
+/* RESPONSIVE LAYOUT */
+@media (max-width: 1000px) {
+  .customer-report-page .cr-filter-panel {
+    flex-wrap: wrap;
+  }
+  .customer-report-page .cr-filter-panel label {
+    flex: 1 1 180px;
+  }
+  .customer-report-page .cr-filter-panel .cr-search-label {
+    flex: 1 1 220px;
+  }
+  .customer-report-page .cr-filter-panel .cr-refresh-button {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .customer-report-page .cr-page-heading h1 {
+    font-size: 20px;
+  }
+  .customer-report-page .cr-filter-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .customer-report-page .cr-filter-panel label,
+  .customer-report-page .cr-filter-panel .cr-search-label {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+  .customer-report-page .cr-filter-panel .cr-refresh-button {
+    align-self: flex-end;
+    margin-left: 0;
+  }
+  .customer-report-page .cr-detail-overlay {
+    padding: 6px;
+  }
+  .customer-report-page .cr-detail-modal {
+    width: 100%;
+    height: 94vh;
+    max-height: none;
+  }
+  .customer-report-page .cr-detail-header {
+    padding: 10px 12px;
+  }
+}
+
+/* Keep filters and Refresh in one row */
+.customer-report-page .cr-filter-panel {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: flex-end !important;
+  width: 100%;
+  gap: 12px;
+}
+
+/* Filters remain on the left */
+.customer-report-page .cr-filter-panel label {
+  flex: 0 1 200px;
+  min-width: 0;
+}
+
+/* Search uses available space */
+.customer-report-page .cr-filter-panel .cr-search-label {
+  flex: 1 1 auto;
+  min-width: 100px;
+}
+
+/* Refresh stays at the far right */
+.customer-report-page .cr-filter-panel .cr-refresh-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto !important;
+  margin-right: 0 !important;
+  height: 34px;
+  min-width: 96px;
+  white-space: nowrap;
+}
+
+/* Allow wrapping on smaller screens */
+@media (max-width: 900px) {
+  .customer-report-page .cr-filter-panel {
+    flex-wrap: wrap !important;
+  }
+}

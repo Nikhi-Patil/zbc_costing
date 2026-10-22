@@ -1096,552 +1096,553 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
   const totalBilling = sumBy(billingData, (item) => item.value);
 
   return (
-    <main className="molding-dashboard min-h-screen bg-slate-50 text-slate-700">
-      <header className="molding-header bg-gradient-to-r from-[#173d70] via-[#335d91] to-slate-100 px-4 py-3 text-white shadow-sm sm:px-6">
-        <div className="molding-header-inner mx-auto flex max-w-[1600px] flex-col justify-between gap-3 md:flex-row md:items-center">
-          <div className="molding-brand flex items-center gap-3">
-            <Factory size={43} strokeWidth={1.7} className="shrink-0" />
-            <div>
-              <h3 className="font-serif text-2xl font-bold leading-none sm:text-[27px]">
-               Jayashree Polymers Molding Dashboard
-              </h3>
-              <p className="mt-1 text-sm text-blue-100">
-                Manufacturing Cost &amp; Profitability Analysis
-              </p>
-            </div>
-          </div>
-        </div>
-      </header>
+    // <main className="molding-dashboard min-h-screen bg-slate-50 text-slate-700">
+    //   <header className="molding-header bg-gradient-to-r from-[#173d70] via-[#335d91] to-slate-100 px-4 py-3 text-white shadow-sm sm:px-6">
+    //     <div className="molding-header-inner mx-auto flex max-w-[1600px] flex-col justify-between gap-3 md:flex-row md:items-center">
+    //       <div className="molding-brand flex items-center gap-3">
+    //         <Factory size={43} strokeWidth={1.7} className="shrink-0" />
+    //         <div>
+    //           <h3 className="font-serif text-2xl font-bold leading-none sm:text-[27px]">
+    //            Jayashree Polymers Molding Dashboard
+    //           </h3>
+    //           <p className="mt-1 text-sm text-blue-100">
+    //             Manufacturing Cost &amp; Profitability Analysis
+    //           </p>
+    //         </div>
+    //       </div>
+    //     </div>
+    //   </header>
 
-      <div className="molding-content mx-auto max-w-[1600px] space-y-3 px-4 py-3 sm:px-6">
-        <DashboardCard className="molding-filter-bar p-3">
-          <div className="molding-filter-fields grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8">
-            <SelectField
-              label="Financial Year"
-              value={draftFilters.financialYear}
-              onChange={(value) => updateDraftFilter("financialYear", value)}
-            >
-              {financialYears.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
-              label="From Month"
-              value={draftFilters.fromMonth}
-              onChange={(value) => updateDraftFilter("fromMonth", value)}
-            >
-              {FISCAL_MONTHS.map((month) => (
-                <option key={month.value} value={month.value}>
-                  {monthLabel(draftFilters.financialYear, month.value)}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
-              label="To Month"
-              value={draftFilters.toMonth}
-              onChange={(value) => updateDraftFilter("toMonth", value)}
-            >
-              {FISCAL_MONTHS.map((month) => (
-                <option
-                  key={month.value}
-                  value={month.value}
-                  disabled={
-                    fiscalIndex(month.value) <
-                    fiscalIndex(draftFilters.fromMonth)
-                  }
-                >
-                  {monthLabel(draftFilters.financialYear, month.value)}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
-              label="Production Unit"
-              value={draftFilters.prodUnit}
-              onChange={(value) => updateDraftFilter("prodUnit", value)}
-            >
-              <option value="ALL">All Units</option>
-              {options.prodUnits.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
-              label="Billing Unit"
-              value={draftFilters.billingUnit}
-              onChange={(value) => updateDraftFilter("billingUnit", value)}
-            >
-              <option value="ALL">All Units</option>
-              {options.billingUnits.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
-              label="Customer"
-              value={draftFilters.customer}
-              onChange={(value) => updateDraftFilter("customer", value)}
-            >
-              <option value="ALL">All Customers</option>
-              {options.customers.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
-              label="Status"
-              value={draftFilters.status}
-              onChange={(value) => updateDraftFilter("status", value)}
-            >
-              <option value="ALL">All</option>
-              {options.statuses.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </SelectField>
-            <button
-              type="button"
-              onClick={() => setAppliedFilters(draftFilters)}
-              className="mt-[21px] flex h-9 items-center justify-center gap-2 rounded-md bg-[#173d70] px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#102e55] focus:outline-none focus:ring-2 focus:ring-blue-300"
-            >
-              <Search size={16} /> Apply Filters
-            </button>
-          </div>
-        </DashboardCard>
+    //   <div className="molding-content mx-auto max-w-[1600px] space-y-3 px-4 py-3 sm:px-6">
+    //     <DashboardCard className="molding-filter-bar p-3">
+    //       <div className="molding-filter-fields grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8">
+    //         <SelectField
+    //           label="Financial Year"
+    //           value={draftFilters.financialYear}
+    //           onChange={(value) => updateDraftFilter("financialYear", value)}
+    //         >
+    //           {financialYears.map((year) => (
+    //             <option key={year} value={year}>
+    //               {year}
+    //             </option>
+    //           ))}
+    //         </SelectField>
+    //         <SelectField
+    //           label="From Month"
+    //           value={draftFilters.fromMonth}
+    //           onChange={(value) => updateDraftFilter("fromMonth", value)}
+    //         >
+    //           {FISCAL_MONTHS.map((month) => (
+    //             <option key={month.value} value={month.value}>
+    //               {monthLabel(draftFilters.financialYear, month.value)}
+    //             </option>
+    //           ))}
+    //         </SelectField>
+    //         <SelectField
+    //           label="To Month"
+    //           value={draftFilters.toMonth}
+    //           onChange={(value) => updateDraftFilter("toMonth", value)}
+    //         >
+    //           {FISCAL_MONTHS.map((month) => (
+    //             <option
+    //               key={month.value}
+    //               value={month.value}
+    //               disabled={
+    //                 fiscalIndex(month.value) <
+    //                 fiscalIndex(draftFilters.fromMonth)
+    //               }
+    //             >
+    //               {monthLabel(draftFilters.financialYear, month.value)}
+    //             </option>
+    //           ))}
+    //         </SelectField>
+    //         <SelectField
+    //           label="Production Unit"
+    //           value={draftFilters.prodUnit}
+    //           onChange={(value) => updateDraftFilter("prodUnit", value)}
+    //         >
+    //           <option value="ALL">All Units</option>
+    //           {options.prodUnits.map((item) => (
+    //             <option key={item} value={item}>
+    //               {item}
+    //             </option>
+    //           ))}
+    //         </SelectField>
+    //         <SelectField
+    //           label="Billing Unit"
+    //           value={draftFilters.billingUnit}
+    //           onChange={(value) => updateDraftFilter("billingUnit", value)}
+    //         >
+    //           <option value="ALL">All Units</option>
+    //           {options.billingUnits.map((item) => (
+    //             <option key={item} value={item}>
+    //               {item}
+    //             </option>
+    //           ))}
+    //         </SelectField>
+    //         <SelectField
+    //           label="Customer"
+    //           value={draftFilters.customer}
+    //           onChange={(value) => updateDraftFilter("customer", value)}
+    //         >
+    //           <option value="ALL">All Customers</option>
+    //           {options.customers.map((item) => (
+    //             <option key={item} value={item}>
+    //               {item}
+    //             </option>
+    //           ))}
+    //         </SelectField>
+    //         <SelectField
+    //           label="Status"
+    //           value={draftFilters.status}
+    //           onChange={(value) => updateDraftFilter("status", value)}
+    //         >
+    //           <option value="ALL">All</option>
+    //           {options.statuses.map((item) => (
+    //             <option key={item} value={item}>
+    //               {item}
+    //             </option>
+    //           ))}
+    //         </SelectField>
+    //         <button
+    //           type="button"
+    //           onClick={() => setAppliedFilters(draftFilters)}
+    //           className="mt-[21px] flex h-9 items-center justify-center gap-2 rounded-md bg-[#173d70] px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#102e55] focus:outline-none focus:ring-2 focus:ring-blue-300"
+    //         >
+    //           <Search size={16} /> Apply Filters
+    //         </button>
+    //       </div>
+    //     </DashboardCard>
 
-        <div className="molding-kpis grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
-          <KpiCard
-            icon={ClipboardList}
-            iconClass="bg-blue-100 text-blue-600"
-            title="Total Transactions"
-            value={formatNumber(summary.transactionCount)}
-            trend={trends.transactionCount}
-          />
-          <KpiCard
-            icon={PackageCheck}
-            iconClass="bg-rose-100 text-rose-500"
-            title="Monthly Qty"
-            value={formatNumber(summary.monthlyQty)}
-            trend={trends.monthlyQty}
-          />
-          <KpiCard
-            icon={IndianRupee}
-            iconClass="bg-emerald-100 text-emerald-600"
-            title="Total Sales Value"
-            value={formatCurrency(summary.salesValue)}
-            trend={trends.salesValue}
-          />
-          <KpiCard
-            icon={Settings2}
-            iconClass="bg-blue-100 text-blue-600"
-            title="Manufacturing Value"
-            value={formatCurrency(summary.manufacturingValue)}
-            trend={trends.manufacturingValue}
-          />
-          <KpiCard
-            icon={TrendingUp}
-            iconClass="bg-rose-100 text-rose-500"
-            title="Total Mfg P/L"
-            value={formatCurrency(summary.totalMfgPL)}
-            trend={trends.totalMfgPL}
-          />
-          <KpiCard
-            icon={Percent}
-            iconClass="bg-emerald-100 text-emerald-600"
-            title="Average Margin"
-            value={formatPercent(summary.averageMargin)}
-            trend={trends.averageMargin}
-          />
-        </div>
+    //     <div className="molding-kpis grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+    //       <KpiCard
+    //         icon={ClipboardList}
+    //         iconClass="bg-blue-100 text-blue-600"
+    //         title="Total Transactions"
+    //         value={formatNumber(summary.transactionCount)}
+    //         trend={trends.transactionCount}
+    //       />
+    //       <KpiCard
+    //         icon={PackageCheck}
+    //         iconClass="bg-rose-100 text-rose-500"
+    //         title="Monthly Qty"
+    //         value={formatNumber(summary.monthlyQty)}
+    //         trend={trends.monthlyQty}
+    //       />
+    //       <KpiCard
+    //         icon={IndianRupee}
+    //         iconClass="bg-emerald-100 text-emerald-600"
+    //         title="Total Sales Value"
+    //         value={formatCurrency(summary.salesValue)}
+    //         trend={trends.salesValue}
+    //       />
+    //       <KpiCard
+    //         icon={Settings2}
+    //         iconClass="bg-blue-100 text-blue-600"
+    //         title="Manufacturing Value"
+    //         value={formatCurrency(summary.manufacturingValue)}
+    //         trend={trends.manufacturingValue}
+    //       />
+    //       <KpiCard
+    //         icon={TrendingUp}
+    //         iconClass="bg-rose-100 text-rose-500"
+    //         title="Total Mfg P/L"
+    //         value={formatCurrency(summary.totalMfgPL)}
+    //         trend={trends.totalMfgPL}
+    //       />
+    //       <KpiCard
+    //         icon={Percent}
+    //         iconClass="bg-emerald-100 text-emerald-600"
+    //         title="Average Margin"
+    //         value={formatPercent(summary.averageMargin)}
+    //         trend={trends.averageMargin}
+    //       />
+    //     </div>
 
-        <div className="molding-primary-charts grid grid-cols-1 gap-3 xl:grid-cols-2">
-          <DashboardCard title="Manufacturing Cost vs Sell Cost">
-            <div className="mb-1 flex justify-end gap-5">
-              <LegendDot color={COLORS.blue} label="Manufacturing Cost" />
-              <LegendDot color={COLORS.green} label="Sell Cost" />
-            </div>
-            <div className="h-[215px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={monthlyData}
-                  margin={{ top: 8, right: 6, left: -10, bottom: 2 }}
-                  barGap={3}
-                >
-                  <CartesianGrid stroke="#e2e8f0" vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickFormatter={(value) => value.replace(" ", "\n")}
-                    {...chartAxis}
-                  />
-                  <YAxis
-                    {...chartAxis}
-                    label={{
-                      value: "Value (₹ in Lakhs)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fontSize: 11,
-                      fill: "#334155",
-                    }}
-                  />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Bar
-                    dataKey="manufacturing"
-                    name="Manufacturing Cost"
-                    fill={COLORS.blue}
-                    radius={[2, 2, 0, 0]}
-                    maxBarSize={20}
-                  />
-                  <Bar
-                    dataKey="sales"
-                    name="Sell Cost"
-                    fill={COLORS.green}
-                    radius={[2, 2, 0, 0]}
-                    maxBarSize={20}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </DashboardCard>
+    //     <div className="molding-primary-charts grid grid-cols-1 gap-3 xl:grid-cols-2">
+    //       <DashboardCard title="Manufacturing Cost vs Sell Cost">
+    //         <div className="mb-1 flex justify-end gap-5">
+    //           <LegendDot color={COLORS.blue} label="Manufacturing Cost" />
+    //           <LegendDot color={COLORS.green} label="Sell Cost" />
+    //         </div>
+    //         <div className="h-[215px]">
+    //           <ResponsiveContainer width="100%" height="100%">
+    //             <BarChart
+    //               data={monthlyData}
+    //               margin={{ top: 8, right: 6, left: -10, bottom: 2 }}
+    //               barGap={3}
+    //             >
+    //               <CartesianGrid stroke="#e2e8f0" vertical={false} />
+    //               <XAxis
+    //                 dataKey="month"
+    //                 tickFormatter={(value) => value.replace(" ", "\n")}
+    //                 {...chartAxis}
+    //               />
+    //               <YAxis
+    //                 {...chartAxis}
+    //                 label={{
+    //                   value: "Value (₹ in Lakhs)",
+    //                   angle: -90,
+    //                   position: "insideLeft",
+    //                   fontSize: 11,
+    //                   fill: "#334155",
+    //                 }}
+    //               />
+    //               <Tooltip content={<ChartTooltip />} />
+    //               <Bar
+    //                 dataKey="manufacturing"
+    //                 name="Manufacturing Cost"
+    //                 fill={COLORS.blue}
+    //                 radius={[2, 2, 0, 0]}
+    //                 maxBarSize={20}
+    //               />
+    //               <Bar
+    //                 dataKey="sales"
+    //                 name="Sell Cost"
+    //                 fill={COLORS.green}
+    //                 radius={[2, 2, 0, 0]}
+    //                 maxBarSize={20}
+    //               />
+    //             </BarChart>
+    //           </ResponsiveContainer>
+    //         </div>
+    //       </DashboardCard>
 
-          <DashboardCard title="Monthly Profit / Loss">
-            <div className="mb-1 flex justify-end">
-              <LegendDot color={COLORS.red} label="P/L (₹ in Lakhs)" />
-            </div>
-            <div className="h-[215px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={monthlyData}
-                  margin={{ top: 8, right: 6, left: -10, bottom: 2 }}
-                >
-                  <defs>
-                    <linearGradient id="profitFill" x1="0" x2="0" y1="0" y2="1">
-                      <stop
-                        offset="0%"
-                        stopColor={COLORS.red}
-                        stopOpacity={0.32}
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor={COLORS.red}
-                        stopOpacity={0.03}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid stroke="#e2e8f0" vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickFormatter={(value) => value.replace(" ", "\n")}
-                    {...chartAxis}
-                  />
-                  <YAxis
-                    {...chartAxis}
-                    label={{
-                      value: "P/L (₹ in Lakhs)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fontSize: 11,
-                      fill: "#334155",
-                    }}
-                  />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Area
-                    type="monotone"
-                    dataKey="profit"
-                    name="P/L"
-                    stroke={COLORS.red}
-                    strokeWidth={2}
-                    fill="url(#profitFill)"
-                    dot={{ r: 3, fill: COLORS.red }}
-                    activeDot={{ r: 5 }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </DashboardCard>
-        </div>
-        <div className="molding-performance-grid grid grid-cols-1 gap-3 xl:grid-cols-[1.05fr_0.92fr_1.05fr]">
-          <DashboardCard
-            title="Top 10 Customers by P/L"
-            action={
-              <span className="text-xs text-slate-500">P/L (₹ in Lakhs)</span>
-            }
-          >
-            <div className="h-[214px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  layout="vertical"
-                  data={customerData}
-                  margin={{ top: 0, right: 38, left: 10, bottom: 0 }}
-                >
-                  <CartesianGrid stroke="#edf2f7" horizontal={false} />
-                  <XAxis type="number" hide />
-                  <YAxis
-                    type="category"
-                    dataKey="customer"
-                    width={130}
-                    tick={{ fontSize: 11, fill: "#334155" }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Bar
-                    dataKey="profit"
-                    name="P/L"
-                    fill={COLORS.blue}
-                    radius={[0, 3, 3, 0]}
-                    maxBarSize={15}
-                  >
-                    <LabelList
-                      dataKey="profit"
-                      position="right"
-                      formatter={(value) => number(value).toFixed(1)}
-                      fill="#173d70"
-                      fontSize={11}
-                    />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </DashboardCard>
+    //       <DashboardCard title="Monthly Profit / Loss">
+    //         <div className="mb-1 flex justify-end">
+    //           <LegendDot color={COLORS.red} label="P/L (₹ in Lakhs)" />
+    //         </div>
+    //         <div className="h-[215px]">
+    //           <ResponsiveContainer width="100%" height="100%">
+    //             <AreaChart
+    //               data={monthlyData}
+    //               margin={{ top: 8, right: 6, left: -10, bottom: 2 }}
+    //             >
+    //               <defs>
+    //                 <linearGradient id="profitFill" x1="0" x2="0" y1="0" y2="1">
+    //                   <stop
+    //                     offset="0%"
+    //                     stopColor={COLORS.red}
+    //                     stopOpacity={0.32}
+    //                   />
+    //                   <stop
+    //                     offset="100%"
+    //                     stopColor={COLORS.red}
+    //                     stopOpacity={0.03}
+    //                   />
+    //                 </linearGradient>
+    //               </defs>
+    //               <CartesianGrid stroke="#e2e8f0" vertical={false} />
+    //               <XAxis
+    //                 dataKey="month"
+    //                 tickFormatter={(value) => value.replace(" ", "\n")}
+    //                 {...chartAxis}
+    //               />
+    //               <YAxis
+    //                 {...chartAxis}
+    //                 label={{
+    //                   value: "P/L (₹ in Lakhs)",
+    //                   angle: -90,
+    //                   position: "insideLeft",
+    //                   fontSize: 11,
+    //                   fill: "#334155",
+    //                 }}
+    //               />
+    //               <Tooltip content={<ChartTooltip />} />
+    //               <Area
+    //                 type="monotone"
+    //                 dataKey="profit"
+    //                 name="P/L"
+    //                 stroke={COLORS.red}
+    //                 strokeWidth={2}
+    //                 fill="url(#profitFill)"
+    //                 dot={{ r: 3, fill: COLORS.red }}
+    //                 activeDot={{ r: 5 }}
+    //               />
+    //             </AreaChart>
+    //           </ResponsiveContainer>
+    //         </div>
+    //       </DashboardCard>
+    //     </div>
+    //     <div className="molding-performance-grid grid grid-cols-1 gap-3 xl:grid-cols-[1.05fr_0.92fr_1.05fr]">
+    //       <DashboardCard
+    //         title="Top 10 Customers by P/L"
+    //         action={
+    //           <span className="text-xs text-slate-500">P/L (₹ in Lakhs)</span>
+    //         }
+    //       >
+    //         <div className="h-[214px]">
+    //           <ResponsiveContainer width="100%" height="100%">
+    //             <BarChart
+    //               layout="vertical"
+    //               data={customerData}
+    //               margin={{ top: 0, right: 38, left: 10, bottom: 0 }}
+    //             >
+    //               <CartesianGrid stroke="#edf2f7" horizontal={false} />
+    //               <XAxis type="number" hide />
+    //               <YAxis
+    //                 type="category"
+    //                 dataKey="customer"
+    //                 width={130}
+    //                 tick={{ fontSize: 11, fill: "#334155" }}
+    //                 tickLine={false}
+    //                 axisLine={false}
+    //               />
+    //               <Tooltip content={<ChartTooltip />} />
+    //               <Bar
+    //                 dataKey="profit"
+    //                 name="P/L"
+    //                 fill={COLORS.blue}
+    //                 radius={[0, 3, 3, 0]}
+    //                 maxBarSize={15}
+    //               >
+    //                 <LabelList
+    //                   dataKey="profit"
+    //                   position="right"
+    //                   formatter={(value) => number(value).toFixed(1)}
+    //                   fill="#173d70"
+    //                   fontSize={11}
+    //                 />
+    //               </Bar>
+    //             </BarChart>
+    //           </ResponsiveContainer>
+    //         </div>
+    //       </DashboardCard>
 
-          <DashboardCard title="Production Unit Performance">
-            <div className="mb-1 flex justify-end gap-4">
-              <LegendDot color={COLORS.blue} label="Sales Value" />
-              <LegendDot color={COLORS.green} label="P/L" />
-            </div>
-            <div className="h-[214px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={productionData}
-                  margin={{ top: 14, right: 2, left: -12, bottom: 0 }}
-                  barGap={3}
-                >
-                  <CartesianGrid stroke="#e2e8f0" vertical={false} />
-                  <XAxis dataKey="unit" {...chartAxis} />
-                  <YAxis
-                    {...chartAxis}
-                    label={{
-                      value: "Value (₹ in Lakhs)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fontSize: 11,
-                      fill: "#334155",
-                    }}
-                  />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Bar
-                    dataKey="sales"
-                    name="Sales Value"
-                    fill={COLORS.blue}
-                    radius={[2, 2, 0, 0]}
-                    maxBarSize={24}
-                  >
-                    <LabelList
-                      dataKey="sales"
-                      position="top"
-                      formatter={(value) => Math.round(value)}
-                      fill="#173d70"
-                      fontSize={10}
-                    />
-                  </Bar>
-                  <Bar
-                    dataKey="profit"
-                    name="P/L"
-                    fill={COLORS.green}
-                    radius={[2, 2, 0, 0]}
-                    maxBarSize={24}
-                  >
-                    <LabelList
-                      dataKey="profit"
-                      position="top"
-                      formatter={(value) => number(value).toFixed(0)}
-                      fill="#173d70"
-                      fontSize={10}
-                    />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </DashboardCard>
+    //       <DashboardCard title="Production Unit Performance">
+    //         <div className="mb-1 flex justify-end gap-4">
+    //           <LegendDot color={COLORS.blue} label="Sales Value" />
+    //           <LegendDot color={COLORS.green} label="P/L" />
+    //         </div>
+    //         <div className="h-[214px]">
+    //           <ResponsiveContainer width="100%" height="100%">
+    //             <BarChart
+    //               data={productionData}
+    //               margin={{ top: 14, right: 2, left: -12, bottom: 0 }}
+    //               barGap={3}
+    //             >
+    //               <CartesianGrid stroke="#e2e8f0" vertical={false} />
+    //               <XAxis dataKey="unit" {...chartAxis} />
+    //               <YAxis
+    //                 {...chartAxis}
+    //                 label={{
+    //                   value: "Value (₹ in Lakhs)",
+    //                   angle: -90,
+    //                   position: "insideLeft",
+    //                   fontSize: 11,
+    //                   fill: "#334155",
+    //                 }}
+    //               />
+    //               <Tooltip content={<ChartTooltip />} />
+    //               <Bar
+    //                 dataKey="sales"
+    //                 name="Sales Value"
+    //                 fill={COLORS.blue}
+    //                 radius={[2, 2, 0, 0]}
+    //                 maxBarSize={24}
+    //               >
+    //                 <LabelList
+    //                   dataKey="sales"
+    //                   position="top"
+    //                   formatter={(value) => Math.round(value)}
+    //                   fill="#173d70"
+    //                   fontSize={10}
+    //                 />
+    //               </Bar>
+    //               <Bar
+    //                 dataKey="profit"
+    //                 name="P/L"
+    //                 fill={COLORS.green}
+    //                 radius={[2, 2, 0, 0]}
+    //                 maxBarSize={24}
+    //               >
+    //                 <LabelList
+    //                   dataKey="profit"
+    //                   position="top"
+    //                   formatter={(value) => number(value).toFixed(0)}
+    //                   fill="#173d70"
+    //                   fontSize={10}
+    //                 />
+    //               </Bar>
+    //             </BarChart>
+    //           </ResponsiveContainer>
+    //         </div>
+    //       </DashboardCard>
 
-          <DashboardCard title="Billing Unit Performance">
-            <div className="molding-billing-content flex h-[214px] items-center gap-2">
-              <div className="relative h-full min-w-0 flex-1">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={billingData}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius="52%"
-                      outerRadius="83%"
-                      paddingAngle={1}
-                      stroke="white"
-                      strokeWidth={2}
-                    >
-                      {billingData.map((entry, index) => (
-                        <Cell
-                          key={entry.name}
-                          fill={
-                            [
-                              COLORS.blue,
-                              COLORS.green,
-                              COLORS.orange,
-                              COLORS.red,
-                            ][index % 4]
-                          }
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => formatCurrency(value)} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
-                  <div>
-                    <p className="font-serif text-lg font-bold text-[#173d70]">
-                      {formatCurrency(totalBilling)}
-                    </p>
-                    <p className="text-[11px] font-semibold text-slate-500">
-                      Total Sales
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="w-[42%] space-y-3 pr-1">
-                {billingData.map((entry, index) => (
-                  <LegendDot
-                    key={entry.name}
-                    color={
-                      [COLORS.blue, COLORS.green, COLORS.orange, COLORS.red][
-                        index % 4
-                      ]
-                    }
-                    label={entry.name}
-                    value={formatCurrency(entry.value)}
-                  />
-                ))}
-              </div>
-            </div>
-          </DashboardCard>
-        </div>
-        <div className="molding-bottom-grid grid grid-cols-1 gap-3 xl:grid-cols-[1fr_1fr_0.9fr]">
-          <PartsTable
-            title="Top 10 Profitable Parts"
-            rows={profitableParts}
-            positive
-          />
-          <PartsTable
-            title="Top 10 Loss Making Parts"
-            rows={lossParts}
-            positive={false}
-          />
-          <div className="grid gap-3">
-            <DashboardCard title="Transaction Status">
-              <div className="flex h-[125px] items-center gap-3">
-                <div className="relative h-full min-w-0 flex-1">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={statusData}
-                        dataKey="value"
-                        nameKey="name"
-                        innerRadius="54%"
-                        outerRadius="84%"
-                        paddingAngle={1}
-                        stroke="white"
-                        strokeWidth={2}
-                      >
-                        {statusData.map((entry) => (
-                          <Cell key={entry.name} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
-                    <div>
-                      <p className="font-serif text-xl font-bold text-[#173d70]">
-                        {summary.transactionCount}
-                      </p>
-                      <p className="text-[10px] font-semibold text-slate-500">
-                        Transactions
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="w-[45%] space-y-2">
-                  {statusData.map((item) => (
-                    <LegendDot
-                      key={item.name}
-                      color={item.color}
-                      label={item.name}
-                      value={item.value}
-                    />
-                  ))}
-                </div>
-              </div>
-            </DashboardCard>
+    //       <DashboardCard title="Billing Unit Performance">
+    //         <div className="molding-billing-content flex h-[214px] items-center gap-2">
+    //           <div className="relative h-full min-w-0 flex-1">
+    //             <ResponsiveContainer width="100%" height="100%">
+    //               <PieChart>
+    //                 <Pie
+    //                   data={billingData}
+    //                   dataKey="value"
+    //                   nameKey="name"
+    //                   innerRadius="52%"
+    //                   outerRadius="83%"
+    //                   paddingAngle={1}
+    //                   stroke="white"
+    //                   strokeWidth={2}
+    //                 >
+    //                   {billingData.map((entry, index) => (
+    //                     <Cell
+    //                       key={entry.name}
+    //                       fill={
+    //                         [
+    //                           COLORS.blue,
+    //                           COLORS.green,
+    //                           COLORS.orange,
+    //                           COLORS.red,
+    //                         ][index % 4]
+    //                       }
+    //                     />
+    //                   ))}
+    //                 </Pie>
+    //                 <Tooltip formatter={(value) => formatCurrency(value)} />
+    //               </PieChart>
+    //             </ResponsiveContainer>
+    //             <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+    //               <div>
+    //                 <p className="font-serif text-lg font-bold text-[#173d70]">
+    //                   {formatCurrency(totalBilling)}
+    //                 </p>
+    //                 <p className="text-[11px] font-semibold text-slate-500">
+    //                   Total Sales
+    //                 </p>
+    //               </div>
+    //             </div>
+    //           </div>
+    //           <div className="w-[42%] space-y-3 pr-1">
+    //             {billingData.map((entry, index) => (
+    //               <LegendDot
+    //                 key={entry.name}
+    //                 color={
+    //                   [COLORS.blue, COLORS.green, COLORS.orange, COLORS.red][
+    //                     index % 4
+    //                   ]
+    //                 }
+    //                 label={entry.name}
+    //                 value={formatCurrency(entry.value)}
+    //               />
+    //             ))}
+    //           </div>
+    //         </div>
+    //       </DashboardCard>
+    //     </div>
+    //     <div className="molding-bottom-grid grid grid-cols-1 gap-3 xl:grid-cols-[1fr_1fr_0.9fr]">
+    //       <PartsTable
+    //         title="Top 10 Profitable Parts"
+    //         rows={profitableParts}
+    //         positive
+    //       />
+    //       <PartsTable
+    //         title="Top 10 Loss Making Parts"
+    //         rows={lossParts}
+    //         positive={false}
+    //       />
+    //       <div className="grid gap-3">
+    //         <DashboardCard title="Transaction Status">
+    //           <div className="flex h-[125px] items-center gap-3">
+    //             <div className="relative h-full min-w-0 flex-1">
+    //               <ResponsiveContainer width="100%" height="100%">
+    //                 <PieChart>
+    //                   <Pie
+    //                     data={statusData}
+    //                     dataKey="value"
+    //                     nameKey="name"
+    //                     innerRadius="54%"
+    //                     outerRadius="84%"
+    //                     paddingAngle={1}
+    //                     stroke="white"
+    //                     strokeWidth={2}
+    //                   >
+    //                     {statusData.map((entry) => (
+    //                       <Cell key={entry.name} fill={entry.color} />
+    //                     ))}
+    //                   </Pie>
+    //                   <Tooltip />
+    //                 </PieChart>
+    //               </ResponsiveContainer>
+    //               <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+    //                 <div>
+    //                   <p className="font-serif text-xl font-bold text-[#173d70]">
+    //                     {summary.transactionCount}
+    //                   </p>
+    //                   <p className="text-[10px] font-semibold text-slate-500">
+    //                     Transactions
+    //                   </p>
+    //                 </div>
+    //               </div>
+    //             </div>
+    //             <div className="w-[45%] space-y-2">
+    //               {statusData.map((item) => (
+    //                 <LegendDot
+    //                   key={item.name}
+    //                   color={item.color}
+    //                   label={item.name}
+    //                   value={item.value}
+    //                 />
+    //               ))}
+    //             </div>
+    //           </div>
+    //         </DashboardCard>
 
-            <DashboardCard
-              title="Costing Alerts"
-              action={
-                <button
-                  type="button"
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-800"
-                >
-                  View All
-                </button>
-              }
-            >
-              <div className="divide-y divide-slate-100">
-                {alerts.map((alert) => {
-                  const Icon =
-                    alert.tone === "green"
-                      ? CheckCircle2
-                      : alert.tone === "red"
-                        ? AlertCircle
-                        : AlertCircle;
-                  const iconStyle = {
-                    red: "text-rose-500",
-                    orange: "text-orange-500",
-                    amber: "text-amber-500",
-                    green: "text-emerald-600",
-                  }[alert.tone];
-                  return (
-                    <div
-                      key={alert.text}
-                      className="flex gap-2 py-1.5 text-xs leading-4 text-slate-600"
-                    >
-                      <Icon
-                        size={16}
-                        className={`mt-0.5 shrink-0 ${iconStyle}`}
-                      />
-                      <p>
-                        <strong className="text-[#173d70]">
-                          {alert.count}
-                        </strong>{" "}
-                        {alert.text}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </DashboardCard>
-          </div>
-        </div>
+    //         <DashboardCard
+    //           title="Costing Alerts"
+    //           action={
+    //             <button
+    //               type="button"
+    //               className="text-xs font-semibold text-blue-600 hover:text-blue-800"
+    //             >
+    //               View All
+    //             </button>
+    //           }
+    //         >
+    //           <div className="divide-y divide-slate-100">
+    //             {alerts.map((alert) => {
+    //               const Icon =
+    //                 alert.tone === "green"
+    //                   ? CheckCircle2
+    //                   : alert.tone === "red"
+    //                     ? AlertCircle
+    //                     : AlertCircle;
+    //               const iconStyle = {
+    //                 red: "text-rose-500",
+    //                 orange: "text-orange-500",
+    //                 amber: "text-amber-500",
+    //                 green: "text-emerald-600",
+    //               }[alert.tone];
+    //               return (
+    //                 <div
+    //                   key={alert.text}
+    //                   className="flex gap-2 py-1.5 text-xs leading-4 text-slate-600"
+    //                 >
+    //                   <Icon
+    //                     size={16}
+    //                     className={`mt-0.5 shrink-0 ${iconStyle}`}
+    //                   />
+    //                   <p>
+    //                     <strong className="text-[#173d70]">
+    //                       {alert.count}
+    //                     </strong>{" "}
+    //                     {alert.text}
+    //                   </p>
+    //                 </div>
+    //               );
+    //             })}
+    //           </div>
+    //         </DashboardCard>
+    //       </div>
+    //     </div>
 
-        {!isLoading && filteredTransactions.length === 0 && (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-500">
-            No transactions match the selected filters.
-          </div>
-        )}
-      </div>
-    </main>
+    //     {!isLoading && filteredTransactions.length === 0 && (
+    //       <div className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-500">
+    //         No transactions match the selected filters.
+    //       </div>
+    //     )}
+    //   </div>
+    // </main>
+    <h1>Coming soon</h1>
   );
 }
 

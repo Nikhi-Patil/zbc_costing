@@ -12,6 +12,7 @@ import {
 import API_BASE_URL from "../../config/api";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import "../../assets/css/MoldingData.css";
+import * as XLSX from "xlsx";
 
 function formatValue(value) {
   if (value === null || value === undefined || value === "") return "—";
@@ -72,6 +73,7 @@ const TABLE_COLUMNS = [
     center: true,
   },
   {
+    id: "customer_name",
     name: "Customer Name",
     selector: (row) => row.customer_name,
     cell: (row) => (
@@ -80,21 +82,17 @@ const TABLE_COLUMNS = [
       </span>
     ),
     sortable: true,
-    width: "180px",
+    minWidth: "220px",
   },
   {
+    id: "part_no",
     name: "Part No.",
     selector: (row) => row.part_no,
     cell: (row) => (
       <span className="molding-data-part-no">{formatValue(row.part_no)}</span>
     ),
     sortable: true,
-    width: "180px",
-    style: {
-      position: "sticky",
-      left: "0px",
-      zIndex: 3,
-    },
+    minWidth: "220px",
   },
   // {
   //   name: "Part Name",
@@ -102,24 +100,16 @@ const TABLE_COLUMNS = [
   //   cell: (row) => formatValue(row.part_name),
   //   sortable: true,
   //   width: "100px",
-  //   style: {
-  //     position: "sticky",
-  //     left: "100px",
-  //     zIndex: 3,
-  //     backgroundColor: "#fff",
-  //   },
   // },
   {
+    id: "fg_code",
     name: "FG Code",
     selector: (row) => row.fg_code,
     cell: (row) => formatValue(row.fg_code),
     sortable: true,
-    width: "85px",
-    style: {
-      position: "sticky",
-      left: "200px",
-      zIndex: 3,
-    },
+    width: "90px",
+    minWidth: "90px",
+    maxWidth: "90px",
   },
   {
     name: "Sub Dept",
@@ -398,7 +388,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.inspection,
     cell: (row) => formatNumber(row.inspection, 0),
     sortable: true,
-    width: "50px",
+    width: "60px",
     center: true,
   },
   {
@@ -414,7 +404,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.vapour_degreasing,
     cell: (row) => formatNumber(row.vapour_degreasing, 0),
     sortable: true,
-    width: "50px",
+    width: "60px",
     center: true,
   },
   {
@@ -422,7 +412,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.chromating,
     cell: (row) => formatNumber(row.chromating, 0),
     sortable: true,
-    width: "50px",
+    width: "60px",
     center: true,
   },
   {
@@ -430,7 +420,7 @@ const TABLE_COLUMNS = [
     selector: (row) => row.phospating,
     cell: (row) => formatNumber(row.phospating, 0),
     sortable: true,
-    width: "50px",
+    width: "60px",
     center: true,
   },
   {
@@ -455,7 +445,7 @@ const TABLE_COLUMNS = [
     cell: (row) => formatNumber(row.cylindrical_grinding, 0),
     sortable: true,
     center: true,
-    width: "50px",
+    width: "60px",
   },
   {
     name: "Assy Qty",
@@ -697,7 +687,9 @@ const TABLE_COLUMNS = [
 const customStyles = {
   table: {
     style: {
+      width: "100%",
       minWidth: "100%",
+      maxWidth: "100%",
     },
   },
   headRow: {
@@ -710,8 +702,8 @@ const customStyles = {
 
   headCells: {
     style: {
-      paddingLeft: "7px",
-      paddingRight: "7px",
+      paddingLeft: "0px",
+      paddingRight: "0px",
       color: "#fff",
       fontSize: "10px",
       fontWeight: 700,
@@ -737,8 +729,8 @@ const customStyles = {
   },
   cells: {
     style: {
-      paddingLeft: "7px",
-      paddingRight: "7px",
+      paddingLeft: "0px",
+      paddingRight: "0px",
       color: "#000000",
       whiteSpace: "nowrap",
       overflow: "hidden",
@@ -859,7 +851,12 @@ const saveHistoricalMonthlyReport = async ({
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ records }),
+
+    body: JSON.stringify({
+      records,
+      userName:
+        JSON.parse(localStorage.getItem("user") || "null")?.user_name || null,
+    }),
   });
 
   if (!response.ok) {
@@ -880,12 +877,18 @@ const saveHistoricalMonthlyReport = async ({
   return result;
 };
 
+const getStoredUserName = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    return user.user_name || user.username || "";
+  } catch {
+    return "";
+  }
+};
+
 export default function MoldingData() {
   const navigate = useNavigate();
   const [rows, setRows] = useState([]);
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  const [totalRecords, setTotalRecords] = useState(0);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -895,6 +898,9 @@ export default function MoldingData() {
   const [showProcessAssemblyColumns, setShowProcessAssemblyColumns] =
     useState(false);
   const [subCategoryFilter, setSubCategoryFilter] = useState("MOLDING");
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [salesMonthlyLoading, setSalesMonthlyLoading] = useState(false);
+  const [page, setPage] = useState(1);
 
   // ROW-LEVEL TABLE FILTERS
   const [selectedCustomer, setSelectedCustomer] = useState("All");
@@ -909,7 +915,6 @@ export default function MoldingData() {
 
   const [showMarginUpdateModal, setShowMarginUpdateModal] = useState(false);
   const [marginUpdateLoading, setMarginUpdateLoading] = useState(false);
-  const [marginUpdateResult, setMarginUpdateResult] = useState(null);
 
   // HISTORICAL REPORT
   const financialYears = useMemo(() => generateFinancialYears(), []);
@@ -934,7 +939,6 @@ export default function MoldingData() {
   const [historicalLoading, setHistoricalLoading] = useState(false);
   const [historicalSaveLoading, setHistoricalSaveLoading] = useState(false);
   const [salesMonthlyEntries, setSalesMonthlyEntries] = useState([]);
-  const [salesMonthlyLoading, setSalesMonthlyLoading] = useState(false);
 
   const loadData = async (
     requestedSearch = search,
@@ -945,6 +949,7 @@ export default function MoldingData() {
       setError("");
       const params = new URLSearchParams({
         subCategoryFilter: requestedSubCategory,
+        userName: getStoredUserName(),
       });
       const trimmedSearch = requestedSearch.trim();
       if (trimmedSearch) {
@@ -1307,15 +1312,6 @@ export default function MoldingData() {
     };
   }, [rows, salesMonthlyEntries, historicalFinancialYear, historicalMonth]);
 
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
-  };
-
-  const handleRowsPerPageChange = (newLimit) => {
-    setLimit(newLimit);
-    setPage(1);
-  };
-
   const openBopDetails = async (row) => {
     if (!row?.transaction_id) return;
     try {
@@ -1350,18 +1346,31 @@ export default function MoldingData() {
     if (!transactionId) return;
 
     try {
+      const userName = getStoredUserName();
+
+      if (!userName) {
+        alert("Unable to identify the logged-in user. Please log in again.");
+        return;
+      }
+
+      const params = new URLSearchParams({ userName });
+
       const response = await fetch(
         `${API_BASE_URL}/molding/${encodeURIComponent(
           transactionId,
-        )}/download-excel`,
+        )}/download-excel?${params.toString()}`,
       );
 
       if (!response.ok) {
-        throw new Error("Failed to download Excel");
+        const errorText = await response.text();
+        console.error("Excel download API error:", response.status, errorText);
+
+        throw new Error(
+          `Excel download failed (${response.status}): ${errorText}`,
+        );
       }
 
       const blob = await response.blob();
-
       const url = window.URL.createObjectURL(blob);
 
       const link = document.createElement("a");
@@ -1370,13 +1379,12 @@ export default function MoldingData() {
 
       document.body.appendChild(link);
       link.click();
-
-      document.body.removeChild(link);
+      link.remove();
 
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Excel download error:", error);
-      alert("Failed to download Excel.");
+      alert(error.message || "Failed to download Excel.");
     }
   };
 
@@ -1579,7 +1587,6 @@ export default function MoldingData() {
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Failed to update molding margins");
       }
-      setMarginUpdateResult(result);
       setShowMarginUpdateModal(false);
 
       // Refresh molding table
@@ -1606,6 +1613,204 @@ export default function MoldingData() {
       setMarginUpdateLoading(false);
     }
   };
+
+  const handleExportExcel = async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/molding/export?userName=${encodeURIComponent(
+          getStoredUserName(),
+        )}`,
+      );
+
+      if (!response.ok) {
+        throw new Error(`Export request failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (!result.success) {
+        alert(
+          result.message || result.error || "Failed to export molding data.",
+        );
+        return;
+      }
+      const moldingData = result.data || [];
+      const bopData = result.bops || [];
+      if (!moldingData || moldingData.length === 0) {
+        alert("No molding transactions available to export.");
+        return;
+      }
+
+      // EXPLICIT EXCEL COLUMN HEADERS
+      const moldingHeaderMap = {
+        transaction_id: "Transaction ID",
+        status: "Status",
+        financial_year: "Financial Year",
+        month: "Month",
+        effective_date: "Effective Date",
+        customer_name: "Customer Name",
+
+        sub_department: "Sub Department",
+        sub_category: "Sub Category",
+        part_no: "Part Number",
+        fg_code: "FG Code",
+        im_code: "IM Code",
+
+        // Weight and BOP
+        gross_weight: "Gross Weight",
+        net_weight: "Net Weight",
+        loading_per: "Loading %",
+        has_bop: "Has BOP",
+        total_bop_cost: "Total BOP Cost",
+
+        // Raw material / compound
+        polymer_name: "Polymer Name",
+        compound_code: "Compound Code",
+        rm_im_code: "RM IM Code",
+        comp_month: "Compound Month",
+        compound_rate: "Compound Rate",
+        total_rm_cost: "Total RM Cost",
+        final_rm_cost: "Final RM Cost",
+
+        // Process details
+        process_type: "Process Type",
+        machine_tonnage: "Machine Tonnage",
+        shift_rate: "Shift Rate",
+        total_cavity: "Total Cavity",
+        running_cavity: "Running Cavity",
+        cycle_time: "Cycle Time",
+        shift_time_efficiency: "Shift Time Efficiency",
+        efficiency: "Efficiency",
+        total_shots: "Total Shots",
+        total_production_per_shift: "Total Production Per Shift",
+        platten_size: "Platten Size",
+        tool_size: "Tool Size",
+
+        // Process costs
+        process_cost_a: "Process Cost A",
+        post_curing: "Post Curing",
+        finishing: "Finishing",
+        inspection: "Inspection",
+        shot_blasting: "Shot Blasting",
+        vapour_degreasing: "Vapour Degreasing",
+        chromating: "Chromating",
+        phospating: "Phospating",
+        adhesive: "Adhesive",
+        painting: "Painting",
+        cylindrical_grinding: "Cylindrical Grinding",
+        assembly_qty: "Assembly Quantity",
+        assembly_per_cost: "Assembly Per Cost",
+        total_assembly_cost: "Total Assembly Cost",
+        process_cost_b: "Process Cost B",
+        conversion_cost: "Conversion Cost",
+
+        // Cost and margin calculations
+        subtotal_a: "Subtotal A",
+        icc_on_rm: "ICC %",
+        icc_on_rm_cost: "ICC Cost",
+        rej_on_subtotal: "Rejection %",
+        rej_on_subtotal_cost: "Rejection Cost",
+        oh_on_subtotal: "Overheads %",
+        oh_on_subtotal_cost: "Overheads Cost",
+        profit_on_subtotal: "Profit %",
+        profit_on_subtotal_cost: "Profit Cost",
+        packaging_on_subtotal: "Packaging %",
+        packaging_on_subtotal_cost: "Packaging Cost",
+        transport_on_subtotal: "Transport %",
+        transport_on_subtotal_cost: "Transport Cost",
+        subtotal_b: "Subtotal B",
+        part_cost: "Part Cost",
+        customer_sales_cost: "Sales Cost",
+        sales_profit_loss: "Sales Profit/Loss",
+
+        // Buying details
+        buying_type: "Buying Type",
+        vendor_name: "Vendor Name",
+        buying_cost: "Buying Cost",
+        buying_profit_loss: "Buying Profit/Loss",
+
+        // Monthly data
+        monthly_quantity: "Monthly Quantity",
+        monthly_profit_loss: "Monthly Profit/Loss",
+
+        // Units
+        production_unit: "Production Unit",
+        billing_unit: "Billing Unit",
+
+        // Audit fields
+        created_by: "Created By",
+        updated_by: "Updated By",
+      };
+
+      // Convert database field names into readable Excel headers.
+      const formatExcelRows = (rows, headerMap, excludeFields = []) =>
+        rows.map((row) =>
+          Object.fromEntries(
+            Object.entries(row)
+              .filter(([key]) => !excludeFields.includes(key))
+
+              .map(([key, value]) => {
+                if (key === "effective_date" && value) {
+                  value = String(value).slice(0, 10);
+                }
+
+                return [
+                  headerMap[key] ||
+                    key
+                      .replace(/_/g, " ")
+                      .replace(/\b\w/g, (char) => char.toUpperCase()),
+                  value,
+                ];
+              }),
+          ),
+        );
+
+      // MOLDING DATA
+      const formattedMoldingData = formatExcelRows(
+        moldingData,
+        moldingHeaderMap,
+        ["id", "created_at", "updated_at", "part_name"],
+      );
+
+      const moldingWorksheet = XLSX.utils.json_to_sheet(formattedMoldingData);
+      // BOP DATA
+      const bopHeaderMap = {
+        id: "ID",
+        part_no: "Part Number",
+        part_id: "Part ID",
+        part_name: "Part Name",
+        fg_code: "FG Code",
+        bop_id: "BOP ID",
+        bop_fg_code: "BOP FG Code",
+        bop_part_no: "BOP Part Number",
+        bop_part_name: "BOP Part Name",
+        commodity: "Commodity",
+        supplier_id: "Supplier ID",
+        supplier_name: "Supplier Name",
+        assembly_qty: "Assembly Quantity",
+        financial_year: "Financial Year",
+        bop_month: "BOP Month",
+        bop_rate: "BOP Rate",
+        bop_cost: "BOP Cost",
+      };
+
+      const formattedBopData = formatExcelRows(bopData || [], bopHeaderMap);
+
+      const bopWorksheet = XLSX.utils.json_to_sheet(formattedBopData);
+
+      // CREATE WORKBOOK
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, moldingWorksheet, "Molding Data");
+      XLSX.utils.book_append_sheet(workbook, bopWorksheet, "BOP Data");
+
+      // DOWNLOAD
+      const date = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(workbook, `Molding_All_Data_${date}.xlsx`);
+    } catch (error) {
+      console.error("Error exporting molding data:", error);
+      alert("Failed to export molding data.");
+    }
+  };
+
   return (
     <div className="molding-data-page">
       <div className="molding-data-header">
@@ -1696,6 +1901,16 @@ export default function MoldingData() {
                 className={marginUpdateLoading ? "spin" : ""}
               />
               {marginUpdateLoading ? "Updating..." : "Update"}
+            </button>
+
+            {/* EXPORT */}
+            <button
+              type="button"
+              className="molding-export-excel-btn"
+              onClick={handleExportExcel}
+            >
+              <FileSpreadsheet size={15} />
+              Export Excel
             </button>
           </div>
         </div>

@@ -36,6 +36,7 @@ import SalesMonthlyEntry from "./pages/monthly_masters/SalesMonthlyEntry";
 import SalesMonthlyBulk from "./pages/monthly_masters/SalesMonthlyBulk";
 
 import CompoundPolymerMonthlyReport from "./pages/report/CompoundPolymerMonthlyReport";
+import CustmorReport from "./pages/report/customerReport";
 
 // APP
 function App() {
@@ -70,7 +71,7 @@ function App() {
           <Route path="/bop-master" element={<BopMaster />} />
           <Route path="/customer-master" element={<CustomerMaster />} />
           <Route path="/part-master" element={<PartMaster />} />
-          
+
           {/* BOP MONTHLY MASTER */}
           <Route path="/monthly-master/bop" element={<BopMonthlyMaster />} />
           <Route
@@ -101,6 +102,8 @@ function App() {
             path="/compound-polymer-monthly-report"
             element={<CompoundPolymerMonthlyReport />}
           />
+
+          <Route path="/customer-report" element={<CustmorReport/>}/>
 
           {/* SALES MONTHLY */}
           <Route path="/sales-monthly" element={<SalesMonthly />} />

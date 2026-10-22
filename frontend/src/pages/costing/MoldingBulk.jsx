@@ -3,16 +3,6 @@ import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import "../../assets/css/MoldingBulk.css";
 import API_BASE_URL from "../../config/api";
-import { generateFinancialYears } from "../../utils/costingUtils";
-
-const MOLDING_API = `${API_BASE_URL}/molding`;
-
-const financialYearOptions = generateFinancialYears();
-
-const defaultFinancialYear =
-  financialYearOptions.find((item) => item.selected)?.value ||
-  financialYearOptions[financialYearOptions.length - 1]?.value ||
-  "";
 
 const MONTHS = [
   "January",
@@ -31,9 +21,6 @@ const MONTHS = [
 
 /* EXCEL COLUMNS */
 const EXCEL_HEADERS = [
-  "Effective Date",
-  "Financial Year",
-  "Month",
   "Customer",
   "Production Unit",
   "Billing Unit",
@@ -62,13 +49,8 @@ const EXCEL_HEADERS = [
   "Painting",
   "Cylindrical Grinding",
   "Assembly Per Cost",
-  "ICC %",
-  "Rejection %",
-  "OH %",
-  "Profit %",
-  "Packaging %",
-  "Transport %",
   "Buying Type",
+  "Vendor Name",
   "Buying Cost",
 ];
 
@@ -140,20 +122,12 @@ const parseDate = (value) => {
 
   const text = String(value).trim();
 
-  /*
-   * Excel may contain:
-   * DD-MM-YYYY
-   * DD/MM/YYYY
-   * YYYY-MM-DD
-   */
-
   const match = text.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
 
   if (match) {
     const day = String(match[1]).padStart(2, "0");
     const month = String(match[2]).padStart(2, "0");
     const year = match[3];
-
     return `${year}-${month}-${day}`;
   }
 
@@ -164,11 +138,6 @@ const createEmptyRow = (excelRow) => ({
   id: `${Date.now()}-${excelRow}-${Math.random()}`,
 
   excelRow,
-
-  effectiveDate: "",
-  financialYear: defaultFinancialYear,
-  startMonth: null,
-
   customer: "",
   productionUnit: "",
   billingUnit: "",
@@ -204,15 +173,9 @@ const createEmptyRow = (excelRow) => ({
 
   assemblyPerCost: null,
 
-  icc: 1,
-  rejection: 3,
-  oh: 10,
-  profit: 10,
-  packaging: 2,
-  transport: 2,
-
   buyingType: "",
   buyingCost: null,
+  vendorName: null,
 
   errors: [],
 });
@@ -220,22 +183,6 @@ const createEmptyRow = (excelRow) => ({
 const validateRows = (rows) => {
   return rows.map((row) => {
     const errors = [];
-
-    if (!String(row.effectiveDate || "").trim()) {
-      errors.push("Effective Date is required.");
-    }
-
-    if (!String(row.financialYear || "").trim()) {
-      errors.push("Financial Year is required.");
-    }
-
-    if (
-      !Number.isInteger(Number(row.startMonth)) ||
-      Number(row.startMonth) < 1 ||
-      Number(row.startMonth) > 12
-    ) {
-      errors.push("Month is required.");
-    }
 
     if (!String(row.customer || "").trim()) {
       errors.push("Customer is required.");
@@ -332,27 +279,6 @@ const validateRows = (rows) => {
     ) {
       errors.push("Shift Time Efficiency must be greater than 0.");
     }
-
-    const percentageFields = [
-      ["ICC %", row.icc],
-      ["Rejection %", row.rejection],
-      ["OH %", row.oh],
-      ["Profit %", row.profit],
-      ["Packaging %", row.packaging],
-      ["Transport %", row.transport],
-    ];
-
-    percentageFields.forEach(([label, value]) => {
-      if (
-        value !== null &&
-        value !== undefined &&
-        value !== "" &&
-        (!Number.isFinite(Number(value)) || Number(value) < 0)
-      ) {
-        errors.push(`${label} must be a valid non-negative number.`);
-      }
-    });
-
     if (
       row.buyingCost !== null &&
       row.buyingCost !== undefined &&
@@ -360,6 +286,18 @@ const validateRows = (rows) => {
       (!Number.isFinite(Number(row.buyingCost)) || Number(row.buyingCost) < 0)
     ) {
       errors.push("Buying Cost must be a valid non-negative number.");
+    }
+
+    if (!["INHOUSE", "OUTSOURCE"].includes(row.buyingType)) {
+      errors.push("Buying Type must be INHOUSE or OUTSOURCE");
+    }
+
+    if (row.buyingType === "OUTSOURCE" && !row.vendorName) {
+      errors.push("Vendor Name is required when Buying Type is OUTSOURCE");
+    }
+
+    if (row.buyingType === "INHOUSE") {
+      row.vendorName = "";
     }
 
     return {
@@ -425,19 +363,6 @@ const MoldingBulk = () => {
       ) {
         width = 22;
       }
-
-      if (header === "Effective Date") {
-        width = 16;
-      }
-
-      if (header === "Financial Year") {
-        width = 16;
-      }
-
-      if (header === "Month") {
-        width = 15;
-      }
-
       return { wch: width };
     });
 
@@ -449,10 +374,7 @@ const MoldingBulk = () => {
 
     XLSX.utils.book_append_sheet(workbook, worksheet, "Molding Bulk");
 
-    XLSX.writeFile(
-      workbook,
-      `Molding_Bulk_Template_${defaultFinancialYear}.xlsx`,
-    );
+    XLSX.writeFile(workbook, "Molding_Bulk_Template.xlsx");
   };
 
   /* READ EXCEL */
@@ -532,11 +454,6 @@ const MoldingBulk = () => {
         .slice(1)
         .map((excelRow, index) => {
           const row = createEmptyRow(index + 2);
-          row.effectiveDate = parseDate(getCell(excelRow, "Effective Date"));
-          row.financialYear = String(
-            getCell(excelRow, "Financial Year") || defaultFinancialYear,
-          ).trim();
-          row.startMonth = parseMonth(getCell(excelRow, "Month"));
           row.customer = String(getCell(excelRow, "Customer")).trim();
           row.productionUnit = String(
             getCell(excelRow, "Production Unit"),
@@ -581,31 +498,20 @@ const MoldingBulk = () => {
           row.assemblyPerCost = parseNumber(
             getCell(excelRow, "Assembly Per Cost"),
           );
+          row.buyingType = String(getCell(excelRow, "Buying Type") ?? "")
+            .trim()
+            .toUpperCase();
 
-          const icc = parseNumber(getCell(excelRow, "ICC %"));
-          const rejection = parseNumber(getCell(excelRow, "Rejection %"));
-          const oh = parseNumber(getCell(excelRow, "OH %"));
-          const profit = parseNumber(getCell(excelRow, "Profit %"));
-          const packaging = parseNumber(getCell(excelRow, "Packaging %"));
-          const transport = parseNumber(getCell(excelRow, "Transport %"));
-
-          row.icc = icc === null ? 1 : icc;
-          row.rejection = rejection === null ? 3 : rejection;
-          row.oh = oh === null ? 10 : oh;
-          row.profit = profit === null ? 10 : profit;
-          row.packaging = packaging === null ? 2 : packaging;
-          row.transport = transport === null ? 2 : transport;
-          row.buyingType = String(getCell(excelRow, "Buying Type")).trim();
+          row.vendorName = String(
+            getCell(excelRow, "Vendor Name") ?? "",
+          ).trim();
           row.buyingCost = parseNumber(getCell(excelRow, "Buying Cost"));
           return row;
         })
         .filter((row) => {
           return EXCEL_HEADERS.some((header) => {
             const fieldMap = {
-              "Effective Date": row.effectiveDate,
-              "Financial Year": row.financialYear,
-              Month: row.startMonth,
-              Customer: row.customer,
+              "Customer": row.customer,
               "Production Unit": row.productionUnit,
               "Billing Unit": row.billingUnit,
               "Sub Department": row.subDepartment,
@@ -682,23 +588,12 @@ const MoldingBulk = () => {
       "painting",
       "cylindricalGrinding",
       "assemblyPerCost",
-      "icc",
-      "rejection",
-      "oh",
-      "profit",
-      "packaging",
-      "transport",
       "buyingCost",
     ];
 
     if (numericFields.includes(field)) {
       finalValue = value === "" ? null : parseNumber(value);
     }
-
-    if (field === "startMonth") {
-      finalValue = parseMonth(value);
-    }
-
     setRows((current) =>
       current.map((row, rowIndex) =>
         rowIndex === index
@@ -764,10 +659,6 @@ const MoldingBulk = () => {
       const entries = rows.map((row) => ({
         excelRow: row.excelRow,
 
-        effectiveDate: row.effectiveDate,
-        financialYear: row.financialYear,
-        startMonth: row.startMonth,
-
         customer: row.customer,
         productionUnit: row.productionUnit,
         billingUnit: row.billingUnit,
@@ -804,18 +695,12 @@ const MoldingBulk = () => {
 
         assemblyPerCost: row.assemblyPerCost ?? 0,
 
-        icc: row.icc,
-        rejection: row.rejection,
-        oh: row.oh,
-        profit: row.profit,
-        packaging: row.packaging,
-        transport: row.transport,
-
         buyingType: row.buyingType,
+        vendorName: row.vendorName ?? "",
         buyingCost: row.buyingCost ?? 0,
       }));
 
-      const response = await fetch(`${MOLDING_API}/bulk/calculate`, {
+      const response = await fetch(`${API_BASE_URL}/molding/bulk/calculate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -910,26 +795,29 @@ const MoldingBulk = () => {
 
     const entries = validRows.map((row) => ({
       excelRow: row.excelRow,
-      effectiveDate: row.effectiveDate,
-      financialYear: row.financialYear || defaultFinancialYear,
-      startMonth: row.startMonth,
+
       customer: row.customer,
       productionUnit: row.productionUnit,
       billingUnit: row.billingUnit,
       subDepartment: row.subDepartment,
       subCategory: row.subCategory,
+
       partNo: row.partNo,
       productionImCode: row.productionImCode,
+
       grossWeight: row.grossWeight,
       netWeight: row.netWeight,
+
       processType: row.processType,
       machineTonnage: row.machineTonnage,
       totalCavity: row.totalCavity,
       runningCavity: row.runningCavity,
       cycleTime: row.cycleTime,
       shiftTimeEfficiency: row.shiftTimeEfficiency,
+
       plattenSize: row.plattenSize,
       toolSize: row.toolSize,
+
       postCuring: row.postCuring ?? 0,
       finishing: row.finishing ?? 0,
       inspection: row.inspection ?? 0,
@@ -940,46 +828,69 @@ const MoldingBulk = () => {
       adhesive: row.adhesive ?? 0,
       painting: row.painting ?? 0,
       cylindricalGrinding: row.cylindricalGrinding ?? 0,
+
       assemblyPerCost: row.assemblyPerCost ?? 0,
-      icc: row.icc,
-      rejection: row.rejection,
-      oh: row.oh,
-      profit: row.profit,
-      packaging: row.packaging,
-      transport: row.transport,
+
       buyingType: row.buyingType,
+      vendorName: row.vendorName ?? "",
       buyingCost: row.buyingCost ?? 0,
     }));
 
     try {
       setLoading(true);
+      let loggedInUser = {};
 
-      const response = await fetch(`${MOLDING_API}/bulk`, {
+      try {
+        loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+      } catch {
+        loggedInUser = {};
+      }
+
+      const userName =
+        loggedInUser.user_name ||
+        loggedInUser.username ||
+        loggedInUser.name ||
+        "";
+
+      const response = await fetch(`${API_BASE_URL}/molding/bulk`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          financialYear: defaultFinancialYear,
+          userName,
           entries,
         }),
       });
 
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
 
-      if (!response.ok) {
-        if (Array.isArray(result?.errors)) {
+      if (!response.ok || result.success === false) {
+        console.error("Molding bulk save API failure:", {
+          status: response.status,
+          message: result.message,
+          error: result.error,
+          code: result.code,
+          sqlState: result.sqlState,
+          sqlMessage: result.sqlMessage,
+          errors: result.errors,
+        });
+
+        if (Array.isArray(result.errors) && result.errors.length > 0) {
           const message = result.errors
             .slice(0, 15)
             .map((item) => `Excel Row ${item.row}: ${item.message}`)
             .join("\n");
 
-          throw new Error(
-            message || result.message || "Bulk Molding save failed.",
-          );
+          throw new Error(message);
         }
 
-        throw new Error(result?.message || "Bulk Molding save failed.");
+        throw new Error(
+          result.sqlMessage ||
+            result.error ||
+            result.message ||
+            `Bulk Molding save failed (HTTP ${response.status}).`,
+        );
       }
 
       showToast(
@@ -1001,11 +912,7 @@ const MoldingBulk = () => {
     }
   };
 
-  /*
-  ========================================================
-  CLEAR
-  ========================================================
-  */
+  /* CLEAR */
   const handleClear = () => {
     setRows([]);
     setFileName("");
@@ -1020,12 +927,7 @@ const MoldingBulk = () => {
     setRows((current) => current.filter((_, rowIndex) => rowIndex !== index));
   };
 
-  /*
-  ========================================================
-  RENDER
-  ========================================================
-  */
-
+  /* RENDER */
   return (
     <div className="molding-bulk-page">
       {toast.show && (
@@ -1186,10 +1088,6 @@ const MoldingBulk = () => {
 
                   <th>Sub Category</th>
 
-                  <th>FY</th>
-
-                  <th>Month</th>
-
                   <th>Gross Wt.</th>
 
                   <th>Net Wt.</th>
@@ -1299,41 +1197,6 @@ const MoldingBulk = () => {
                         }
                         disabled={loading}
                       />
-                    </td>
-
-                    <td>
-                      <input
-                        type="text"
-                        className="bulk-edit-input"
-                        value={row.financialYear}
-                        onChange={(e) =>
-                          handleRowChange(
-                            index,
-                            "financialYear",
-                            e.target.value,
-                          )
-                        }
-                        disabled={loading}
-                      />
-                    </td>
-
-                    <td>
-                      <select
-                        className="bulk-month-select"
-                        value={row.startMonth || ""}
-                        onChange={(e) =>
-                          handleRowChange(index, "startMonth", e.target.value)
-                        }
-                        disabled={loading}
-                      >
-                        <option value="">Select</option>
-
-                        {MONTHS.map((month, monthIndex) => (
-                          <option key={month} value={monthIndex + 1}>
-                            {month}
-                          </option>
-                        ))}
-                      </select>
                     </td>
 
                     <td>

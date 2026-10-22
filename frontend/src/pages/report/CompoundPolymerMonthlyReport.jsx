@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import DataTable from "react-data-table-component";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
-import { RefreshCw, LoaderCircle } from "lucide-react";
+import * as XLSX from "xlsx";
+import { RefreshCw, LoaderCircle, Download } from "lucide-react";
 import "../../assets/css/report/CompoundPolymerMonthlyReport.css";
 
 const CompoundPolymerMonthlyReport = () => {
@@ -271,14 +272,79 @@ const CompoundPolymerMonthlyReport = () => {
     );
   };
 
+  const handleDownloadExcel = () => {
+    const monthHeaders = months.map((month) => {
+      const [startYear] = financialYear.split("-");
+      const year =
+        Number(month.value) >= 4 ? Number(startYear) : Number(startYear) + 1;
+
+      return `${month.label} ${String(year).slice(-2)}`;
+    });
+
+    const rows = [
+      [
+        "No.",
+        "Polymer Name",
+        ...monthHeaders,
+        viewType === "qty" ? "Total Qty" : "Total Cost",
+      ],
+      ...groupedData.map((polymer, index) => [
+        index + 1,
+        polymer.polymer_name,
+        ...months.map((month) => {
+          const monthData = polymer.months[month.value];
+          return viewType === "qty"
+            ? Number(monthData?.qty || 0)
+            : Number(monthData?.cost || 0);
+        }),
+        viewType === "qty" ? polymer.total_qty : polymer.total_cost,
+      ]),
+    ];
+
+    const monthlyTotals = months.map((month) =>
+      groupedData.reduce((total, polymer) => {
+        const monthData = polymer.months[month.value];
+        return (
+          total +
+          (viewType === "qty"
+            ? Number(monthData?.qty || 0)
+            : Number(monthData?.cost || 0))
+        );
+      }, 0),
+    );
+
+    rows.push([
+      "",
+      "Grand Total",
+      ...monthlyTotals,
+      viewType === "qty" ? grandTotalQty : grandTotalCost,
+    ]);
+
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+
+    worksheet["!cols"] = [
+      { wch: 8 },
+      { wch: 25 },
+      ...months.map(() => ({ wch: 14 })),
+      { wch: 16 },
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Report");
+
+    XLSX.writeFile(
+      workbook,
+      `Compound_Polymer_Monthly_${financialYear}_${viewType.toUpperCase()}.xlsx`,
+    );
+  };
+
   return (
     <div className="compound-report-page">
       {/*  REPORT TITLE */}
       <div className="compound-report-page-header-1">
         <div>
-          <h1>Compound Polymer-wise Monthly Report</h1>
+          <h1>Compound Polymer-wise Monthly Report ({financialYear})</h1>
         </div>
-        <h4 className="text-muted">Financial Year: {financialYear}</h4>
       </div>
       {/* TOOLBAR */}
       <div className="report-toolbar">
@@ -316,10 +382,20 @@ const CompoundPolymerMonthlyReport = () => {
           </div>
         </div>
         {/* REFRESH BUTTON */}
-        <div>
+        <div className="d-flex gap-2 align-items-end">
           <button
             type="button"
-            className="btn btn-primary"
+            className="compound-report-download"
+            onClick={handleDownloadExcel}
+            disabled={loading || groupedData.length === 0}
+          >
+            <Download size={16} />
+            <span className="ms-1">Download Excel</span>
+          </button>
+
+          <button
+            type="button"
+            className="compound-refresh-btn"
             onClick={fetchReport}
             disabled={loading}
           >
@@ -341,8 +417,6 @@ const CompoundPolymerMonthlyReport = () => {
           </button>
         </div>
       </div>
-
-      {/* TABLE */}
       {/* TABLE */}
       <div className="compound-monthly-wrapper mt-3">
         <DataTable

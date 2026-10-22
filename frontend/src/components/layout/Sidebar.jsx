@@ -48,7 +48,7 @@ function Sidebar({ isOpen }) {
               className={({ isActive }) => (isActive ? "menu active" : "menu")}
             >
               <FontAwesomeIcon icon={faGears} />
-              <span className="sidebar-manue">Molding</span>
+              <span className="sidebar-manue">Molding - P/L</span>
             </NavLink>
           </li>
 
@@ -61,6 +61,57 @@ function Sidebar({ isOpen }) {
               <FontAwesomeIcon icon={faGears} />
               <span className="sidebar-manue">Molding Report</span>
             </NavLink>
+          </li>
+
+           {/* REPORTS */}
+          <li>
+            <div
+              className={`menu report-menu ${reportsOpen ? "active" : ""}`}
+              onClick={() => setReportsOpen((prev) => !prev)}
+            >
+              <FontAwesomeIcon icon={faChartColumn} />
+
+              <span className="sidebar-manue">Reports</span>
+
+              <FontAwesomeIcon
+                icon={reportsOpen ? faChevronDown : faChevronRight}
+                className="master-arrow"
+              />
+            </div>
+
+            {reportsOpen && (
+              <ul className="master-submenu">
+                {/* Monthly Polymer Report */}
+                <li>
+                  <NavLink
+                    to="/compound-polymer-monthly-report"
+                    className={({ isActive }) =>
+                      isActive ? "menu active" : "menu"
+                    }
+                  >
+                    <FontAwesomeIcon icon={faFlask} />
+
+                    <span className="sidebar-manue">
+                      Monthly Polymer Report
+                    </span>
+                  </NavLink>
+                </li>
+
+                {/* Customer Wise Report */}
+                <li>
+                  <NavLink
+                    to="/customer-report"
+                    className={({ isActive }) =>
+                      isActive ? "menu active" : "menu"
+                    }
+                  >
+                    <FontAwesomeIcon icon={faFlask} />
+
+                    <span className="sidebar-manue">Customer Wise Report</span>
+                  </NavLink>
+                </li>
+              </ul>
+            )}
           </li>
 
           {/* Costing
@@ -160,57 +211,7 @@ function Sidebar({ isOpen }) {
             )}
           </li>
 
-          {/* REPORTS */}
-          <li>
-            <div
-              className={`menu report-menu ${reportsOpen ? "active" : ""}`}
-              onClick={() => setReportsOpen((prev) => !prev)}
-            >
-              <FontAwesomeIcon icon={faChartColumn} />
-
-              <span className="sidebar-manue">Reports</span>
-
-              <FontAwesomeIcon
-                icon={reportsOpen ? faChevronDown : faChevronRight}
-                className="master-arrow"
-              />
-            </div>
-
-            {reportsOpen && (
-              <ul className="master-submenu">
-                {/* Monthly Polymer Report */}
-                <li>
-                  <NavLink
-                    to="/compound-polymer-monthly-report"
-                    className={({ isActive }) =>
-                      isActive ? "menu active" : "menu"
-                    }
-                  >
-                    <FontAwesomeIcon icon={faFlask} />
-
-                    <span className="sidebar-manue">
-                      Monthly Polymer Report
-                    </span>
-                  </NavLink>
-                </li>
-
-                {/* Customer Wise Report */}
-                {/* <li>
-                  <NavLink
-                    to="#"
-                    className={({ isActive }) =>
-                      isActive ? "menu active" : "menu"
-                    }
-                  >
-                    <FontAwesomeIcon icon={faFlask} />
-
-                    <span className="sidebar-manue">Customer Wise Report</span>
-                  </NavLink>
-                </li> */}
-              </ul>
-            )}
-          </li>
-
+         
           {/*  MASTERS */}
           <li>
             <div

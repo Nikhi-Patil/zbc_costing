@@ -22,7 +22,7 @@ const SubCategory = {
             params.push(category);
         }
         query += `
-            ORDER BY id DESC
+            ORDER BY id ASC
         `;
         const [rows] = await adminDb.query(query, params);
         return rows;

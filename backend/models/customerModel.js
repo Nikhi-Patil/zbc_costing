@@ -24,5 +24,4 @@ const Customer
     }
 
 };
-export default Customer
-    ;
+export default Customer;

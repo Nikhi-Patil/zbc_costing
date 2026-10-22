@@ -9,7 +9,7 @@ const Compound
             SELECT
                 id,polymer,im_code,compound_code,updated_by,updated_at,created_at,created_by
             FROM compound_master
-            ORDER BY id DESC
+            ORDER BY id ASC
         `);
 
         return rows;

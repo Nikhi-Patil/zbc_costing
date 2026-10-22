@@ -24,7 +24,7 @@ const Part = {
                     ON sd.department_id = d.id
                 LEFT JOIN unit_master u
                     ON sd.unit_id = u.id
-                ORDER BY p.id DESC
+                ORDER BY p.id ASC
         `);
         return rows;
     }

@@ -139,7 +139,7 @@ export const getPreviousMonthSales = async (req, res) => {
             WHERE LOWER(TRIM(part_no)) = LOWER(TRIM(?))
               AND financial_year = ?
               AND month = ?
-            ORDER BY qty DESC, id DESC
+            ORDER BY qty ASC, id ASC
             LIMIT 1
             `,
             [

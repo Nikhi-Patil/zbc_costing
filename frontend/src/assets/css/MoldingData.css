@@ -1,4 +1,4 @@
-/* MOLDING DATA PAGE */
+/*MOLDINGDATAPAGE*/
 .molding-data-page {
   min-height: 100vh;
   padding: 0 0px;
@@ -7,7 +7,7 @@
   box-sizing: border-box;
 }
 
-/* HEADER */
+/*HEADER*/
 .molding-data-header {
   display: flex;
   align-items: center;
@@ -45,7 +45,7 @@
   gap: 9px;
   width: min(420px, 100%);
   height: 30px;
-  padding: 0 11px;
+  padding: 0px 11px;
   border: 1px solid #000;
   border-radius: 7px;
   background: #fff;
@@ -95,7 +95,7 @@
   align-items: center;
   gap: 8px;
   height: 38px;
-  padding: 0 15px;
+  padding: 0px 15px;
   border: 0;
   border-radius: 7px;
   background: #173d70;
@@ -117,7 +117,7 @@
 .mdata-apply-btn {
   height: 30px;
   min-width: 100px;
-  flex: 0 0 auto;
+  flex: auto;
   padding: 0 15px;
   margin-left: 4px;
   border: 1px solid #2563eb;
@@ -176,58 +176,107 @@
   overflow: hidden;
   border-radius: 10px;
   background: #fff;
-  box-shadow: 0 3px 14px rgb(15 23 42 / 5%);
+  box-shadow: 3px 14px rgb(15 23 42 /5%);
 }
 
 /* REACT DATA TABLE */
 .molding-datatable-wrapper {
   width: 100%;
-  overflow: visible;
+  min-width: 0px;
 }
 
 .molding-datatable-wrapper .rdt_TableWrapper {
   width: 100%;
+  max-width: 100%;
   max-height: calc(100vh - 235px);
-  overflow-x: auto !important;
-  overflow-y: auto !important;
-}
-
-.molding-datatable-wrapper .rdt_TableHead {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 30 !important;
-}
-
-.molding-datatable-wrapper .rdt_TableHeadRow {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 30 !important;
-  background: #19244a !important;
-}
-
-.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol {
-  background: #19244a !important;
-  z-index: 31 !important;
+  overflow: auto !important;
 }
 
 .molding-datatable-wrapper .rdt_Table {
-  min-width: max-content;
-}
-
-.molding-datatable-wrapper .rdt_TableHead,
-.molding-datatable-wrapper .rdt_TableBody,
-.molding-datatable-wrapper .rdt_TableRow {
-  min-width: max-content;
+  width: max-content;
+  min-width: 100%;
 }
 
 .molding-datatable-wrapper .rdt_TableCol,
 .molding-datatable-wrapper .rdt_TableCell {
+  box-sizing: border-box;
   flex-shrink: 0;
 }
 
-.molding-datatable-wrapper > div {
+/*Header appearance and readable wrapping*/
+.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol {
+  background: #19244a;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol_Sortable {
   width: 100%;
   min-width: 0;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: break-word;
+  word-break: normal;
+  line-height: 1.2;
+  text-align: center;
+  color: #fff;
+}
+
+.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol_Sortable > div {
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* STICKY CUSTOMER NAME, PART NO. AND FG CODE */
+/* Shared positioning and widths */
+.molding-datatable-wrapper [data-column-id="customer_name"],
+.molding-datatable-wrapper [data-column-id="part_no"],
+.molding-datatable-wrapper [data-column-id="fg_code"] {
+  position: sticky !important;
+  box-sizing: border-box !important;
+}
+
+/* First sticky column */
+.molding-datatable-wrapper [data-column-id="customer_name"] {
+  left: 0 !important;
+  width: 220px !important;
+  min-width: 220px !important;
+}
+
+/* Second sticky column */
+.molding-datatable-wrapper [data-column-id="part_no"] {
+  left: 220px !important;
+  width: 220px !important;
+  min-width: 220px !important;
+}
+
+/* Third sticky column */
+.molding-datatable-wrapper [data-column-id="fg_code"] {
+  left: 440px !important;
+  width: 80px !important;
+  min-width: 80px !important;
+  max-width: 80px !important;
+}
+
+/* Sticky headers */
+.molding-datatable-wrapper .rdt_TableHeadRow [data-column-id="customer_name"],
+.molding-datatable-wrapper .rdt_TableHeadRow [data-column-id="part_no"],
+.molding-datatable-wrapper .rdt_TableHeadRow [data-column-id="fg_code"] {
+  position: sticky !important;
+  top: 0;
+  color: #fff !important;
+  z-index: 30 !important;
+}
+
+/* Sticky body cells */
+.molding-datatable-wrapper .rdt_TableBody [data-column-id="customer_name"],
+.molding-datatable-wrapper .rdt_TableBody [data-column-id="part_no"],
+.molding-datatable-wrapper .rdt_TableBody [data-column-id="fg_code"] {
+  background: #fff !important;
+  z-index: 10 !important;
 }
 
 .molding-datatable-message {
@@ -236,114 +285,6 @@
   color: #94a3b8;
   text-align: center;
   font-size: 13px;
-}
-
-/* HEADER TEXT */
-.molding-datatable-wrapper
-  .rdt_TableHeadRow
-  .rdt_TableCol
-  .rdt_TableCol_Sortable {
-  white-space: normal !important;
-  overflow: visible !important;
-  text-overflow: unset !important;
-  word-break: normal !important;
-  overflow-wrap: break-word !important;
-  line-height: 1.2 !important;
-  text-align: center !important;
-  width: 100% !important;
-  min-width: 0 !important;
-}
-
-.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol {
-  white-space: normal !important;
-  overflow: visible !important;
-  min-width: 0 !important;
-}
-
-.molding-datatable-wrapper
-  .rdt_TableHeadRow
-  .rdt_TableCol
-  .rdt_TableCol_Sortable
-  > div {
-  white-space: normal !important;
-  overflow: visible !important;
-  text-overflow: unset !important;
-  word-break: normal !important;
-  overflow-wrap: break-word !important;
-  line-height: 1.2 !important;
-  text-align: center !important;
-}
-
-/* STICKY COLUMNS: Part No, Part Name, FG Code */
-/* Customer */
-.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol:nth-child(3) {
-  position: sticky !important;
-  left: 0 !important;
-  z-index: 40 !important;
-  background: #19244a !important;
-}
-
-/* Part No. */
-.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol:nth-child(4) {
-  position: sticky !important;
-  left: 180px !important;
-  z-index: 40 !important;
-  background: #19244a !important;
-}
-
-/* FG Code */
-.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol:nth-child(5) {
-  position: sticky !important;
-  left: 360px !important;
-  z-index: 40 !important;
-  background: #19244a !important;
-}
-/* Customer */
-.molding-datatable-wrapper
-  .rdt_TableBody
-  .rdt_TableRow
-  .rdt_TableCell:nth-child(3) {
-  position: sticky !important;
-  left: 0 !important;
-  z-index: 15 !important;
-  background: #fff !important;
-}
-
-/* Part No. */
-.molding-datatable-wrapper
-  .rdt_TableBody
-  .rdt_TableRow
-  .rdt_TableCell:nth-child(4) {
-  position: sticky !important;
-  left: 180px !important;
-  z-index: 15 !important;
-  background: #fff !important;
-}
-
-/* FG Code */
-.molding-datatable-wrapper
-  .rdt_TableBody
-  .rdt_TableRow
-  .rdt_TableCell:nth-child(5) {
-  position: sticky !important;
-  left: 360px !important;
-  z-index: 15 !important;
-  background: #fff !important;
-}
-
-.molding-datatable-wrapper
-  .rdt_TableBody
-  .rdt_TableRow:hover
-  .rdt_TableCell:nth-child(3),
-.molding-datatable-wrapper
-  .rdt_TableBody
-  .rdt_TableRow:hover
-  .rdt_TableCell:nth-child(4),
-.molding-datatable-wrapper
-  .rdt_TableBody
-  .rdt_TableRow:hover
-  .rdt_TableCell:nth-child(5) {
-  background: #f5f9ff !important;
 }
 
 /* PROCESS / ASSEMBLY COLUMN TOGGLE */
@@ -395,7 +336,7 @@
 }
 
 .molding-subcategory-select:focus {
-  box-shadow: 0 0 0 2px rgb(23 61 112 / 12%);
+  box-shadow: 0 0 0 2px rgb(23 61 112/12%);
 }
 
 /* BOP COUNT BUTTON */
@@ -436,7 +377,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgb(15 23 42 / 50%);
+  background: rgb(15 23 42/50%);
 }
 
 .molding-bop-modal {
@@ -446,7 +387,7 @@
   border: 1px solid #d9e2ec;
   border-radius: 12px;
   background: #fff;
-  box-shadow: 0 25px 70px rgb(15 23 42 / 28%);
+  box-shadow: 0 25px 70px rgb(15 23 42/28%);
 }
 
 .molding-bop-modal-header {
@@ -616,7 +557,7 @@
 
 .mdata-filter-group select:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgb(37 99 235 / 8%);
+  box-shadow: 0 0 0 2px rgb(37 99 235/8%);
 }
 
 #mdata-filter-financial-year,
@@ -768,10 +709,10 @@
   color: #fff;
 }
 
-/* Force Molding DataTable cell padding */
+/* Force Molding Data Table cell padding */
 .molding-datatable-wrapper .rdt_TableCell {
-  padding-left: 7px !important;
-  padding-right: 7px !important;
+  padding-left: 5px !important;
+  padding-right: 5px !important;
   box-sizing: border-box !important;
 }
 
@@ -824,8 +765,8 @@
 }
 
 .molding-margin-update-btn:hover:not(:disabled) {
-  background: #f4f7fa;
-  border-color: #aeb7c2;
+  background: #173d70;
+  color: #ffffff;
 }
 
 .molding-margin-update-btn:disabled {
@@ -861,7 +802,6 @@
   padding: 18px 20px;
   border-bottom: 1px solid #e5e7eb;
 }
-
 .molding-margin-modal-header h2 {
   margin: 0;
   font-size: 17px;
@@ -950,7 +890,6 @@
 }
 
 /* NOTE */
-
 .molding-margin-note {
   display: flex;
   flex-direction: column;
@@ -972,7 +911,6 @@
 }
 
 /* FOOTER */
-
 .molding-margin-modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -1038,4 +976,103 @@
 /* HIDE SORTING ARROW */
 .molding-datatable-wrapper .rdt_TableCol_Sortable svg {
   display: none !important;
+}
+
+.molding-data-page .mdata-filters {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) minmax(100px, 0.8fr);
+  align-items: end;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+/* Dropdowns */
+.molding-data-page .mdata-filter-group {
+  width: 100%;
+  min-width: 0;
+  flex: initial;
+}
+
+.molding-data-page .mdata-filter-group select {
+  width: 100% !important;
+  min-width: 0;
+  max-width: 100%;
+  height: 36px;
+  box-sizing: border-box;
+}
+
+/*Apply button- keep it in the same row */
+.molding-data-page .mdata-filters .mdata-apply-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  margin: 0;
+  padding: 0 8px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Tablet and smaller screens */
+@media (max-width: 1000px) {
+  .molding-data-page .mdata-filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .molding-data-page .mdata-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 380px) {
+  .molding-data-page .mdata-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* EXPORT BUTTON */
+.molding-export-excel-btn {
+  height: 30px;
+  min-width: 110px;
+  border: 1px solid #198754;
+  background: #fff;
+  color: #198754;
+  padding: 0px 4px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: 0.2s;
+}
+
+.molding-export-excel-btnspan {
+  font-size: 16px;
+}
+
+.molding-export-excel-btn:hover {
+  background: #198754;
+  color: #fff;
+}
+.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol,
+.molding-datatable-wrapper .rdt_TableBody .rdt_TableCell {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
+/* Restore borders on all table headers */
+.molding-datatable-wrapper .rdt_TableHeadRow .rdt_TableCol {
+  border-right: 1px solid #dce1ec !important;
+  box-sizing: border-box !important;
 }

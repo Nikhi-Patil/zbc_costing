@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import API_BASE_URL from "../../config/api";
+import * as XLSX from "xlsx";
+import { Download } from "lucide-react";
 
 const CompoundMaster = () => {
   const [compounds, setCompounds] = useState([]);
@@ -69,7 +71,7 @@ const CompoundMaster = () => {
     },
     headRow: {
       style: {
-        minHeight: "48px",
+        minHeight: "40px",
         backgroundColor: "#19244a",
         borderBottom: "1px solid #d7d7d7",
       },
@@ -87,7 +89,7 @@ const CompoundMaster = () => {
     },
     rows: {
       style: {
-        minHeight: "48px",
+        minHeight: "35px",
         fontSize: "13px",
         borderBottom: "1px solid #d7d7d7",
         "&:hover": {
@@ -131,34 +133,73 @@ const CompoundMaster = () => {
     );
   });
 
+  const handleDownloadExcel = () => {
+    if (filteredCompounds.length === 0) {
+      alert("No compound records available to export.");
+      return;
+    }
+
+    const exportData = filteredCompounds.map((compound) => ({
+      ID: compound.id,
+      "Polymer Name": compound.polymer || "-",
+      "Compound Code": compound.compound_code || "-",
+      "IM Code": compound.im_code || "-",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    worksheet["!cols"] = [{ wch: 10 }, { wch: 30 }, { wch: 24 }, { wch: 18 }];
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Compound Master");
+
+    XLSX.writeFile(
+      workbook,
+      `Compound_Master_${new Date().toISOString().slice(0, 10)}.xlsx`,
+    );
+  };
+
   return (
     <div className="compound-master">
       <div className="compound-master-toolbar">
         <h2>Compound Master</h2>
 
-        <div className="compound-master-search">
-          <input
-            type="text"
-            placeholder="Search compounds..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            aria-label="Search compounds"
-          />
+        <div className="compound-master-actions">
+          <div className="compound-master-search">
+            <input
+              type="text"
+              placeholder="Search compounds..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              aria-label="Search compounds"
+            />
 
-          {searchText && (
-            <button
-              type="button"
-              className="compound-master-search-clear"
-              onClick={() => setSearchText("")}
-              aria-label="Clear search"
-              title="Clear search"
-            >
-              ×
-            </button>
-          )}
+            {searchText && (
+              <button
+                type="button"
+                className="compound-master-search-clear"
+                onClick={() => setSearchText("")}
+                aria-label="Clear search"
+                title="Clear search"
+              >
+                ×
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="compound-master-export-btn"
+            onClick={handleDownloadExcel}
+            disabled={loading || filteredCompounds.length === 0}
+          >
+            <Download size={16} />
+            Download Excel
+          </button>
         </div>
       </div>
-
+      
       {error && <p className="compound-master-error">Error: {error}</p>}
 
       <DataTable
@@ -168,8 +209,8 @@ const CompoundMaster = () => {
         customStyles={customStyles}
         progressPending={loading}
         pagination
-        paginationPerPage={10}
-        paginationRowsPerPageOptions={[10, 25, 50, 100]}
+        paginationPerPage={15}
+        paginationRowsPerPageOptions={[15, 25, 50, 100]}
         highlightOnHover
         responsive
         striped

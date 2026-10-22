@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
+import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
-import { Plus, FileSpreadsheet, Search, X } from "lucide-react";
+import { Plus, FileSpreadsheet, Search, X, Download } from "lucide-react";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
 import API_BASE_URL from "../../config/api";
 import "../../assets/css/monthlyMaster/BopMonthlyMaster.css";
@@ -48,7 +49,7 @@ const BopMonthlyMaster = () => {
     "";
   /* STATE */
   const [financialYear, setFinancialYear] = useState(currentFinancialYear);
-  const [viewType, setViewType] = useState("qty");
+  const [viewType, setViewType] = useState("rate");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -218,9 +219,9 @@ const BopMonthlyMaster = () => {
         if (!monthData) {
           return 0;
         }
-        return viewType === "qty"
-          ? Number(monthData.qty) || 0
-          : Number(monthData.rate) || 0;
+        return viewType === "rate"
+          ? Number(monthData.rate) || 0
+          : Number(monthData.qty) || 0;
       },
       sortable: true,
       width: "55px",
@@ -231,17 +232,17 @@ const BopMonthlyMaster = () => {
           rate: null,
         };
 
-        if (viewType === "qty") {
-          return monthData.qty === null
+        if (viewType === "rate") {
+          return monthData.rate === null
             ? "-"
-            : Number(monthData.qty).toLocaleString("en-IN");
+            : Number(monthData.rate).toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              });
         }
-        return monthData.rate === null
+        return monthData.qty === null
           ? "-"
-          : Number(monthData.rate).toLocaleString("en-IN", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            });
+          : Number(monthData.qty).toLocaleString("en-IN");
       },
     }));
 
@@ -308,9 +309,88 @@ const BopMonthlyMaster = () => {
     },
   };
 
+  const handleDownloadExcel = () => {
+    if (!filteredData.length) {
+      alert("No BOP records available to export.");
+      return;
+    }
+
+    const fixedHeaders = [
+      "Sr. No.",
+      "Part No",
+      "FG Code",
+      "BOP Part Name",
+      "BOP Part No",
+      "BOP ERP Code",
+      "Supplier Name",
+    ];
+
+    const headers = [
+      ...fixedHeaders,
+      ...months.map((month) => getMonthYearLabel(month.value, financialYear)),
+    ];
+
+    const createSheetData = (type) => [
+      headers,
+      ...filteredData.map((row, index) => [
+        index + 1,
+        row.part_no || "-",
+        row.fg_code || "-",
+        row.bop_part_name || "-",
+        row.bop_part_no || "-",
+        row.bop_erp_code || "-",
+        row.supplier_name || "-",
+        ...months.map((month) => {
+          const monthData = row.months?.[month.value];
+
+          if (!monthData) return null;
+
+          return type === "qty" ? monthData.qty : monthData.rate;
+        }),
+      ]),
+    ];
+
+    const createWorksheet = (type) => {
+      const worksheet = XLSX.utils.aoa_to_sheet(createSheetData(type));
+
+      worksheet["!cols"] = [
+        { wch: 10 },
+        { wch: 18 },
+        { wch: 14 },
+        { wch: 25 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 25 },
+        ...months.map(() => ({ wch: 14 })),
+      ];
+
+      return worksheet;
+    };
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      createWorksheet("qty"),
+      "BOP Monthly Qty",
+    );
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      createWorksheet("rate"),
+      "BOP Monthly Rate",
+    );
+
+    XLSX.writeFile(workbook, `BOP_Monthly_${financialYear}.xlsx`);
+  };
+
   /* RENDER */
   return (
     <div className="bop-report-page">
+      <div>
+        <h1>BOP Monthly Report</h1>
+      </div>
+
       {/* TOOLBAR */}
       <div className="report-toolbar">
         {/* FILTERS */}
@@ -345,8 +425,8 @@ const BopMonthlyMaster = () => {
               value={viewType}
               onChange={(e) => setViewType(e.target.value)}
             >
-              <option value="qty">Qty</option>
               <option value="rate">Rate</option>
+              <option value="qty">Qty</option>
             </select>
           </div>
         </div>
@@ -369,6 +449,16 @@ const BopMonthlyMaster = () => {
           >
             <FileSpreadsheet size={16} strokeWidth={2} />
             <span>Bulk Upload</span>
+          </button>
+
+          <button
+            type="button"
+            className="bop-monthly-export-btn"
+            onClick={handleDownloadExcel}
+            title="Download BOP Monthly Excel"
+          >
+            <Download size={15} />
+            <span>Download Excel</span>
           </button>
         </div>
       </div>

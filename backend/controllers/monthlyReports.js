@@ -1118,11 +1118,7 @@ export const getCompoundPolymerMonthlyReport = async (req, res) => {
     }
 
     const [rows] = await zbcDB.query(`
-      SELECT
-        polymer_name,
-        month,
-        SUM(qty) AS total_qty,
-        SUM(qty * rate) AS total_cost
+      SELECT polymer_name,month,SUM(qty) AS total_qty,SUM(qty * rate) AS total_cost
       FROM compound_monthly_report
       WHERE financial_year = ?
         AND polymer_name IS NOT NULL
@@ -1153,23 +1149,9 @@ export const getCompoundPolymerMonthlyReport = async (req, res) => {
 // HISTORICAL COMPOUND RATE
 export const getHistoricalCompoundRate = async (req, res) => {
   try {
-    const {
-      compoundCode,
-      polymerName,
-      imCode,
-      unitId,
-      financial_year,
-      month,
-    } = req.query;
+    const { compoundCode, polymerName, imCode, unitId, financial_year, month } = req.query;
 
-    if (
-      !compoundCode ||
-      !polymerName ||
-      !imCode ||
-      !unitId ||
-      !financial_year ||
-      !month
-    ) {
+    if (!compoundCode || !polymerName || !imCode || !unitId || !financial_year || !month) {
       return res.status(400).json({
         success: false,
         found: false,
@@ -1179,11 +1161,7 @@ export const getHistoricalCompoundRate = async (req, res) => {
 
     // Resolve production unit
     let resolvedUnitId = null;
-
-    if (
-      Number.isInteger(Number(unitId)) &&
-      Number(unitId) > 0
-    ) {
+    if (Number.isInteger(Number(unitId)) && Number(unitId) > 0) {
       resolvedUnitId = Number(unitId);
     } else {
       const [unitRows] = await adminDB.query(`
@@ -1193,7 +1171,6 @@ export const getHistoricalCompoundRate = async (req, res) => {
         LIMIT 1`,
         [String(unitId).trim()]
       );
-
       if (unitRows.length > 0) {
         resolvedUnitId = Number(unitRows[0].id);
       }
@@ -1231,7 +1208,7 @@ export const getHistoricalCompoundRate = async (req, res) => {
         AND unit_id = ?
         AND TRIM(financial_year) = TRIM(?)
         AND month = ?
-      ORDER BY id DESC
+      ORDER BY id ASC
       LIMIT 1`,
       [
         String(compoundCode).trim(),

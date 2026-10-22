@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import API_BASE_URL from "../../config/api";
+import * as XLSX from "xlsx";
+import { Download } from "lucide-react";
 
 function CustomerMaster() {
   const [customer, setCustomers] = useState([]);
@@ -75,7 +77,7 @@ function CustomerMaster() {
     },
     headRow: {
       style: {
-        minHeight: "48px",
+        minHeight: "40px",
         backgroundColor: "#19244a",
         borderBottom: "1px solid #d7d7d7",
       },
@@ -93,7 +95,7 @@ function CustomerMaster() {
     },
     rows: {
       style: {
-        minHeight: "48px",
+        minHeight: "35px",
         fontSize: "13px",
         borderBottom: "1px solid #d7d7d7",
         "&:hover": {
@@ -138,31 +140,77 @@ function CustomerMaster() {
     );
   });
 
+  const handleDownloadExcel = () => {
+    if (filteredCustomers.length === 0) {
+      alert("No customer records available to export.");
+      return;
+    }
+
+    const exportData = filteredCustomers.map((item) => ({
+      ID: item.id,
+      "Customer Name": item.customer_name || "-",
+      "Sub Customer Code": item.sub_customer || "-",
+      "Domestic/Export": item.geo_type || "-",
+      Zone: item.zone || "-",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    worksheet["!cols"] = [
+      { wch: 10 },
+      { wch: 30 },
+      { wch: 25 },
+      { wch: 20 },
+      { wch: 18 },
+    ];
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Customer Master");
+
+    XLSX.writeFile(
+      workbook,
+      `Customer_Master_${new Date().toISOString().slice(0, 10)}.xlsx`,
+    );
+  };
+
   return (
     <div className="customer-master">
       <div className="customer-master-toolbar">
         <h2>Customer Master</h2>
 
-        <div className="customer-master-search">
-          <input
-            type="text"
-            placeholder="Search customers..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            aria-label="Search customers"
-          />
+        <div className="customer-master-actions">
+          <div className="customer-master-search">
+            <input
+              type="text"
+              placeholder="Search customers..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              aria-label="Search customers"
+            />
 
-          {searchText && (
-            <button
-              type="button"
-              className="customer-master-search-clear"
-              onClick={() => setSearchText("")}
-              aria-label="Clear search"
-              title="Clear search"
-            >
-              ×
-            </button>
-          )}
+            {searchText && (
+              <button
+                type="button"
+                className="customer-master-search-clear"
+                onClick={() => setSearchText("")}
+                aria-label="Clear search"
+                title="Clear search"
+              >
+                ×
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="customer-master-export-btn"
+            onClick={handleDownloadExcel}
+            disabled={loading || filteredCustomers.length === 0}
+          >
+            <Download size={16} />
+            Download Excel
+          </button>
         </div>
       </div>
 
@@ -175,8 +223,8 @@ function CustomerMaster() {
         customStyles={customStyles}
         progressPending={loading}
         pagination
-        paginationPerPage={10}
-        paginationRowsPerPageOptions={[10, 25, 50, 100]}
+        paginationPerPage={15}
+        paginationRowsPerPageOptions={[15, 25, 50, 100]}
         highlightOnHover
         responsive
         striped

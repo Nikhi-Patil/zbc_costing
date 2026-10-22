@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import API_BASE_URL from "../../config/api";
+import * as XLSX from "xlsx";
+import { Download } from "lucide-react";
 
 function PartMaster() {
   const [parts, setParts] = useState([]);
@@ -104,7 +106,7 @@ function PartMaster() {
     },
     headRow: {
       style: {
-        minHeight: "48px",
+        minHeight: "40px",
         backgroundColor: "#19244a",
         borderBottom: "1px solid #d7d7d7",
       },
@@ -122,7 +124,7 @@ function PartMaster() {
     },
     rows: {
       style: {
-        minHeight: "48px",
+        minHeight: "35px",
         fontSize: "13px",
         borderBottom: "1px solid #d7d7d7",
         "&:hover": {
@@ -168,31 +170,85 @@ function PartMaster() {
     );
   });
 
+  const handleDownloadExcel = () => {
+    if (filteredParts.length === 0) {
+      alert("No part records available to export.");
+      return;
+    }
+
+    const exportData = filteredParts.map((part) => ({
+      ID: part.id,
+      "Part Name": part.part_name || "-",
+      "Part No": part.part_no || "-",
+      "FG Code": part.fg_code || "-",
+      "IM Code": part.im_code || "-",
+      "Inter Unit/Dept Code": part.inter_code || "-",
+      Unit: part.unit || "-",
+      Department: part.department_name || "-",
+      "Sub Department": part.sub_department_name || "-",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    worksheet["!cols"] = [
+      { wch: 8 },
+      { wch: 30 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 24 },
+      { wch: 12 },
+      { wch: 22 },
+      { wch: 24 },
+    ];
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Part Master");
+
+    XLSX.writeFile(
+      workbook,
+      `Part_Master_${new Date().toISOString().slice(0, 10)}.xlsx`,
+    );
+  };
+
   return (
     <div className="part-master">
       <div className="part-master-toolbar">
         <h2>Part Master</h2>
 
-        <div className="part-master-search">
-          <input
-            type="text"
-            placeholder="Search parts..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            aria-label="Search parts"
-          />
+        <div className="part-master-actions">
+          <div className="part-master-search">
+            <input
+              type="text"
+              placeholder="Search parts..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              aria-label="Search parts"
+            />
 
-          {searchText && (
-            <button
-              type="button"
-              className="part-master-search-clear"
-              onClick={() => setSearchText("")}
-              aria-label="Clear search"
-              title="Clear search"
-            >
-              ×
-            </button>
-          )}
+            {searchText && (
+              <button
+                type="button"
+                className="part-master-search-clear"
+                onClick={() => setSearchText("")}
+                aria-label="Clear search"
+                title="Clear search"
+              >
+                ×
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="part-master-export-btn"
+            onClick={handleDownloadExcel}
+            disabled={loading || filteredParts.length === 0}
+          >
+            <Download size={16} />
+            Download Excel
+          </button>
         </div>
       </div>
 
@@ -205,8 +261,8 @@ function PartMaster() {
         customStyles={customStyles}
         progressPending={loading}
         pagination
-        paginationPerPage={10}
-        paginationRowsPerPageOptions={[10, 25, 50, 100]}
+        paginationPerPage={15}
+        paginationRowsPerPageOptions={[15, 25, 50, 100]}
         highlightOnHover
         responsive
         striped

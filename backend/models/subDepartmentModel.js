@@ -24,7 +24,7 @@ const SubDepartment = {
             params.push(unitId);
         }
         query += `
-            ORDER BY s.id DESC
+            ORDER BY s.id ASC
         `;
         const [rows] = await adminDb.query(
             query,

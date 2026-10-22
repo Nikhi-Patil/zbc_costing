@@ -1,94 +1,50 @@
-/* =========================================================
-
-
-
-  BOP MANAGEMENT
-
-
-
-  Clean stylesheet for BopManagement.jsx
-
-
-
- ========================================================= */
-
+/* BOP MANAGEMENT */
 .bop-management {
   width: 100%;
-
   min-height: 100vh;
-
   padding: 0px;
-
   box-sizing: border-box;
-
   background: #f5f7fb;
-
   color: #1f2937;
-
   font-family: "Times New Roman", Times, serif;
 }
 
-/* ---------------------------------------------------------
-
-
-
-  COMMON SECTIONS
-
-
-
- --------------------------------------------------------- */
-
+/* COMMON SECTIONS */
 .bop-management-selector,
 .bop-management-content {
   background: #ffffff;
-
   border: 1px solid #e3e8ef;
-
   border-radius: 12px;
-
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
 .bop-management-selector {
   position: relative;
-
   z-index: 100;
-
   margin-bottom: 20px;
-
   padding: 0;
-
   overflow: visible;
 }
 
 .bop-management-content {
   position: relative;
-
   overflow: hidden;
 }
 
 .bop-management-content-header {
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
-
   gap: 15px;
-
   padding: 6px 14px;
-
   border-bottom: 1px solid #e5e7eb;
-
   background: #fafbfc;
 }
 
 .bop-management-selector-title,
 .bop-management-content-title {
   margin: 0;
-
   color: #172033;
-
   font-weight: 700;
 }
 
@@ -102,90 +58,54 @@
 
 .bop-management-content-description {
   margin: 4px 0 0;
-
   color: #6b7280;
-
   font-size: 13px;
 }
 
 .bop-management-actions {
   display: flex;
-
   align-items: center;
-
   justify-content: flex-end;
-
   gap: 8px;
-
   flex-wrap: wrap;
 }
 
-/* ---------------------------------------------------------
-
-
-
-  PART SELECTOR
-
-
-
- --------------------------------------------------------- */
-
+/* PART SELECTOR */
 .bop-management-selector-row {
   display: grid;
-
   grid-template-columns: minmax(260px, 420px);
-
   align-items: end;
-
   gap: 14px;
-
   padding: 14px;
-
   overflow: visible;
 }
 
 .bop-management-field {
   display: flex;
-
   flex-direction: column;
-
   gap: 6px;
-
   overflow: visible;
 }
 
 .bop-management-field label {
   color: #374151;
-
   font-size: 13px;
-
   font-weight: 700;
 }
 
 .bop-management-field select,
 .bop-management-field input {
   width: 100%;
-
   height: 40px;
-
   box-sizing: border-box;
-
   padding: 0 12px;
-
   border: 1px solid #cfd6df;
-
   border-radius: 6px;
-
   background: #ffffff;
-
   color: #1f2937;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 14px;
-
   outline: none;
-
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -194,133 +114,77 @@
 .bop-management-field select:focus,
 .bop-management-field input:focus {
   border-color: #2563eb;
-
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .bop-management-field select:disabled {
   background: #f8fafc;
-
   color: #64748b;
-
   cursor: not-allowed;
 }
 
-/* ---------------------------------------------------------
-
-
-
-  PART INFORMATION
-
-
-
- --------------------------------------------------------- */
-
+/* PART INFORMATION */
 .bop-part-information {
   display: grid;
-
   grid-template-columns:
     minmax(150px, 1fr)
     minmax(180px, 1.3fr)
     minmax(150px, 1fr);
-
   gap: 14px;
-
   margin-bottom: 20px;
 }
 
 .bop-part-info-card {
   min-height: 72px;
-
   padding: 13px 16px;
-
   box-sizing: border-box;
-
   background: #ffffff;
-
   border: 1px solid #e3e8ef;
-
   border-radius: 10px;
-
   box-shadow: 0 2px 7px rgba(15, 23, 42, 0.035);
 }
 
 .bop-part-info-label {
   display: block;
-
   margin-bottom: 5px;
-
   color: #7a8494;
-
   font-size: 12px;
-
   font-weight: 700;
-
   letter-spacing: 0.3px;
-
   text-transform: uppercase;
 }
 
 .bop-part-info-value {
   display: block;
-
   color: #1f2937;
-
   font-size: 16px;
-
   font-weight: 700;
-
   word-break: break-word;
 }
 
-/* ---------------------------------------------------------
-
-
-
-  DATA TABLE WRAPPER
-
-
-
- --------------------------------------------------------- */
-
+/* DATA TABLE WRAPPER */
 .bop-table-wrapper {
   width: 100%;
-
   overflow-x: auto;
-
   overflow-y: visible;
-
   position: relative;
 }
 
 /* BOP detail table inputs */
-
 .bop-table-wrapper input,
 .bop-table-wrapper select {
   width: 100%;
-
   min-width: 0;
-
   height: 30px;
-
   box-sizing: border-box;
-
   padding: 0 9px;
-
   border: 1px solid #cbd5e1;
-
   border-radius: 6px;
-
   background: #ffffff;
-
   color: #1f2937;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 14px;
-
   outline: none;
-
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -329,48 +193,31 @@
 .bop-table-wrapper input:focus,
 .bop-table-wrapper select:focus {
   border-color: #2563eb;
-
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.09);
 }
 
 .bop-table-wrapper input:disabled,
 .bop-table-wrapper select:disabled {
   background: #f8fafc;
-
   color: #64748b;
-
   cursor: not-allowed;
 }
 
 .bop-row-delete {
   width: 30px;
-
   height: 30px;
-
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
-
   padding: 0;
-
   border: 1px solid #fecaca;
-
   border-radius: 6px;
-
   background: #ffffff;
-
   color: #dc2626;
-
   font-family: Arial, sans-serif;
-
   font-size: 18px;
-
   line-height: 1;
-
   cursor: pointer;
-
   transition:
     background 0.2s ease,
     border-color 0.2s ease;
@@ -378,73 +225,44 @@
 
 .bop-row-delete:hover:not(:disabled) {
   background: #fef2f2;
-
   border-color: #fca5a5;
 }
 
 .bop-row-delete:disabled {
   opacity: 0.55;
-
   cursor: not-allowed;
 }
 
-/* ---------------------------------------------------------
-
-
-
-  EXISTING CONFIGURATIONS
-
-
-
- --------------------------------------------------------- */
-
+/* EXISTING CONFIGURATIONS */
 .existing-bop-configurations {
   margin-top: 0;
 }
-
 .bop-existing-table-tools {
   display: flex;
-
   align-items: center;
-
   justify-content: flex-end;
-
   min-width: 0;
-
   flex: 0 0 auto;
 }
 
 .bop-existing-search {
   position: relative;
-
   width: 320px;
-
   max-width: 100%;
 }
 
 .bop-existing-search input {
   width: 100%;
-
   height: 36px;
-
   box-sizing: border-box;
-
   padding: 0 36px 0 12px;
-
   border: 1px solid #cbd5e1;
-
   border-radius: 6px;
-
   outline: none;
-
   background: #ffffff;
-
   color: #334155;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 13px;
-
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -452,7 +270,6 @@
 
 .bop-existing-search input:focus {
   border-color: #2563eb;
-
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -462,37 +279,21 @@
 
 .bop-existing-search-clear {
   position: absolute;
-
   top: 50%;
-
   right: 6px;
-
   width: 25px;
-
   height: 25px;
-
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
-
   transform: translateY(-50%);
-
   padding: 0;
-
   border: 0;
-
   background: transparent;
-
   color: #64748b;
-
   font-family: Arial, sans-serif;
-
   font-size: 18px;
-
   line-height: 1;
-
   cursor: pointer;
 }
 
@@ -501,42 +302,28 @@
 }
 
 /* Existing configuration DataTable */
-
 .existing-bop-configurations .bop-table-wrapper .rdt_Table {
   width: 100%;
-
   min-width: 1060px;
-
   background: transparent;
-
   font-family: "Times New Roman", Times, serif;
 }
 
 .existing-bop-configurations .bop-table-wrapper .rdt_TableHeadRow {
   min-height: 42px;
-
   background: #19224a;
-
   border-bottom: 1px solid #cbd8e8;
 }
 
 .existing-bop-configurations .bop-table-wrapper .rdt_TableCol {
   padding-left: 8px;
-
   padding-right: 8px;
-
   color: #173d70;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 11px;
-
   font-weight: 700;
-
   white-space: normal;
-
   line-height: 1.15;
-
   border-right: 1px solid #dce5f0;
 }
 
@@ -546,13 +333,9 @@
 
 .existing-bop-configurations .bop-table-wrapper .rdt_TableRow {
   min-height: 42px;
-
   color: #475569;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 12px;
-
   border-bottom: 1px solid #edf1f5;
 }
 
@@ -562,31 +345,20 @@
 
 .existing-bop-configurations .bop-table-wrapper .rdt_TableCell {
   padding-left: 8px;
-
   padding-right: 8px;
-
   color: #475569;
-
   font-family: "Times New Roman", Times, serif;
-
   white-space: nowrap;
-
   overflow: hidden;
-
   text-overflow: ellipsis;
-
   border-right: 1px solid #edf1f5;
 }
 
 .existing-bop-configurations .bop-table-wrapper .rdt_Pagination {
   min-height: 42px;
-
   border-top: 1px solid #e7ebf0;
-
   color: #64748b;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 12px;
 }
 
@@ -594,47 +366,25 @@
   font-family: "Times New Roman", Times, serif;
 }
 
-/* ---------------------------------------------------------
-
-
-
-  LOADING / EMPTY / MESSAGES
-
-
-
- --------------------------------------------------------- */
-
+/* LOADING / EMPTY / MESSAGES */
 .bop-management-loading {
   min-height: 150px;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   gap: 9px;
-
   color: #64748b;
-
   font-size: 14px;
-
   font-weight: 700;
 }
 
 .bop-loading-spinner {
   width: 18px;
-
   height: 18px;
-
   margin-right: 1px;
-
   border: 2px solid #dbe3ed;
-
   border-top-color: #2563eb;
-
   border-radius: 50%;
-
   animation: bop-spin 0.75s linear infinite;
 }
 
@@ -646,119 +396,76 @@
 
 .bop-management-empty {
   padding: 45px 25px;
-
   text-align: center;
-
   color: #64748b;
 }
 
 .bop-management-empty-icon {
   width: 48px;
-
   height: 48px;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   margin: 0 auto 12px;
-
   border-radius: 50%;
-
   background: #f1f5f9;
-
   color: #64748b;
-
   font-size: 22px;
 }
 
 .bop-management-empty-title {
   margin: 0 0 5px;
-
   color: #374151;
-
   font-size: 17px;
-
   font-weight: 700;
 }
 
 .bop-management-empty-text {
   margin: 0;
-
   color: #6b7280;
-
   font-size: 14px;
 }
 
 .bop-management-message {
   margin-bottom: 16px;
-
   padding: 11px 14px;
-
   border-radius: 8px;
-
   font-size: 14px;
-
   font-weight: 700;
 }
 
 .bop-management-message.success {
   background: #f0fdf4;
-
   border: 1px solid #bbf7d0;
-
   color: #166534;
 }
 
 .bop-management-message.error {
   background: #fef2f2;
-
   border: 1px solid #fecaca;
-
   color: #b91c1c;
 }
 
 .bop-management-message.info {
   background: #eff6ff;
-
   border: 1px solid #bfdbfe;
-
   color: #1d4ed8;
 }
 
-/* ---------------------------------------------------------
-
-
-
-  FOOTER
-
-
-
- --------------------------------------------------------- */
-
+/* FOOTER */
 .bop-management-footer {
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
-
   gap: 15px;
-
   padding: 6px 16px;
-
   border-top: 1px solid #e5e7eb;
-
   background: #fafbfc;
 }
 
 .bop-management-total {
   color: #475569;
-
   font-size: 13px;
-
   font-weight: 700;
 }
 
@@ -766,162 +473,92 @@
   color: #172033;
 }
 
-/* ---------------------------------------------------------
-
-
-
-  TOM SELECT
-
-
-
-  The dropdown is appended to <body>, so dropdown styles
-
-
-
-  intentionally use global .ts-dropdown selectors.
-
-
-
- --------------------------------------------------------- */
-
+/* TOM SELECT */
 .bop-management .ts-wrapper {
   width: 100%;
-
   position: relative;
-
   font-family: "Times New Roman", Times, serif;
 }
 
 .bop-management .ts-control {
   min-height: 40px;
-
   width: 100%;
-
   box-sizing: border-box;
-
   padding: 7px 12px;
-
   border: 1px solid #ced4da;
-
   border-radius: 6px;
-
   background: #ffffff;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 14px;
-
   line-height: 22px;
-
   box-shadow: none;
 }
 
 .bop-management .ts-control:focus-within {
   border-color: #2563eb;
-
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .bop-management .ts-control input {
   font-family: "Times New Roman", Times, serif;
-
   font-size: 14px;
 }
 
 .ts-dropdown {
   z-index: 999999 !important;
-
   box-sizing: border-box;
-
   background: #ffffff;
-
   border: 1px solid #ced4da;
-
   border-radius: 6px;
-
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 14px;
 }
 
 .ts-dropdown .dropdown-input {
   display: block;
-
   width: 100%;
-
   height: 38px;
-
   box-sizing: border-box;
-
   margin: 0;
-
   padding: 7px 12px;
-
   border: 0;
-
   border-bottom: 1px solid #dbe1e8;
-
   outline: none;
-
   background: #ffffff;
-
   color: #1f2937;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 14px;
-
   line-height: 22px;
 }
 
 .ts-dropdown .ts-dropdown-content {
   max-height: 270px;
-
   overflow-y: auto;
 }
 
 .ts-dropdown .option {
   min-height: 36px;
-
   box-sizing: border-box;
-
   padding: 8px 12px;
-
   color: #1f2937;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 14px;
-
   line-height: 20px;
-
   cursor: pointer;
 }
 
 .ts-dropdown .option.active {
   background: #1677ff;
-
   color: #ffffff;
 }
 
 .bop-management .ts-control .item {
   font-family: "Times New Roman", Times, serif;
-
   font-size: 14px;
 }
 
-/* ---------------------------------------------------------
-
-
-
-  SCROLLBAR
-
-
-
- --------------------------------------------------------- */
-
+/* SCROLLBAR */
 .bop-table-wrapper::-webkit-scrollbar {
   height: 8px;
 }
@@ -932,7 +569,6 @@
 
 .bop-table-wrapper::-webkit-scrollbar-thumb {
   background: #c5ccd6;
-
   border-radius: 10px;
 }
 
@@ -940,16 +576,7 @@
   background: #aeb7c4;
 }
 
-/* ---------------------------------------------------------
-
-
-
-  RESPONSIVE
-
-
-
- --------------------------------------------------------- */
-
+/* RESPONSIVE */
 @media (max-width: 1100px) {
   .bop-part-information {
     grid-template-columns: repeat(2, minmax(160px, 1fr));
@@ -967,13 +594,11 @@
 
   .bop-management-content-header {
     align-items: flex-start;
-
     flex-direction: column;
   }
 
   .bop-management-actions {
     width: 100%;
-
     justify-content: flex-start;
   }
 
@@ -991,7 +616,6 @@
 
   .bop-management-footer {
     align-items: flex-start;
-
     flex-direction: column;
   }
 }
@@ -1019,26 +643,14 @@
 
   .bop-management-actions {
     flex-direction: column;
-
     align-items: stretch;
   }
 }
 
-/* =========================================================
-
-
-
-  EXISTING BOP CONFIGURATION HEADER
-
-
-
- ========================================================= */
-
+/* EXISTING BOP CONFIGURATION HEADER */
 .existing-bop-configurations .bop-table-wrapper .rdt_TableHeadRow {
   min-height: 42px !important;
-
   height: auto !important;
-
   align-items: stretch !important;
 }
 
@@ -1047,98 +659,59 @@
   .rdt_TableHeadRow
   .rdt_TableCol {
   min-height: 42px !important;
-
   height: auto !important;
-
   padding: 5px 6px !important;
-
   display: flex !important;
-
   align-items: center !important;
-
   justify-content: center !important;
-
   white-space: normal !important;
-
   overflow: visible !important;
-
   text-overflow: clip !important;
-
   text-align: center !important;
-
   line-height: 1.15 !important;
 }
 
 /* RDT sortable wrapper */
-
 .existing-bop-configurations
   .bop-table-wrapper
   .rdt_TableHeadRow
   .rdt_TableCol_Sortable {
   width: 100% !important;
-
   min-width: 0 !important;
-
   display: flex !important;
-
   align-items: center !important;
-
   justify-content: center !important;
-
   white-space: normal !important;
-
   overflow: visible !important;
-
   text-overflow: clip !important;
 }
 
 /* Our actual header text */
-
 .existing-bop-configurations .bop-table-wrapper .bop-header-text {
   display: block !important;
-
   width: 100% !important;
-
   min-width: 0 !important;
-
   white-space: normal !important;
-
   overflow: visible !important;
-
   text-overflow: clip !important;
-
   word-break: normal !important;
-
   overflow-wrap: break-word !important;
-
   text-align: center !important;
-
   line-height: 1.15 !important;
 }
 
 .bop-edit-icon-btn {
   width: 32px;
-
   height: 32px;
-
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
-
   padding: 0;
-
   border: 1px solid #cbd5e1;
-
   border-radius: 6px;
-
   background: #ffffff;
-
   color: #2563eb;
-
   cursor: pointer;
-
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
@@ -1148,9 +721,7 @@
 
 .bop-edit-icon-btn:hover:not(:disabled) {
   background: #eff6ff;
-
   border-color: #93c5fd;
-
   color: #1d4ed8;
 }
 
@@ -1160,86 +731,51 @@
 
 .bop-edit-icon-btn:disabled {
   opacity: 0.55;
-
   cursor: not-allowed;
 }
 
-/* =========================================
-
-
-
-  BOP PAGE HEADER — MATCH MOLDING
-
-
-
-========================================= */
-
+/* BOP PAGE HEADER — MATCH MOLDING */
 .bop-management .bop-page-header-wrap {
   margin: 0 0 22px;
-
   padding: 0;
-
   background: transparent;
-
   border: none;
-
   border-radius: 0;
-
   box-shadow: none;
-
   overflow: visible;
-
   z-index: 1;
 }
 
 .bop-management .bop-page-header {
   width: 100%;
-
   min-height: 38px;
-
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
-
   gap: 18px;
-
   padding: 0;
-
   border: none;
-
   background: transparent;
-
   box-sizing: border-box;
 }
 
 .bop-management .bop-page-title {
   margin: 0;
-
   color: #173d70;
-
   font-size: 27px;
-
   font-weight: 700;
-
   line-height: 1.2;
 }
 
 .bop-management .bop-management-actions {
   display: flex;
-
   align-items: center;
-
   justify-content: flex-end;
-
   gap: 10px;
-
   flex-wrap: wrap;
 }
 
 /* Refresh icon animation */
-
 @keyframes bop-refresh-spin {
   to {
     transform: rotate(360deg);
@@ -1251,72 +787,48 @@
 }
 
 /* Responsive header */
-
 @media (max-width: 600px) {
   .bop-management .bop-page-header {
     align-items: flex-start;
-
     flex-direction: column;
-
     gap: 12px;
   }
 
   .bop-management .bop-management-actions {
     width: 100%;
-
     justify-content: flex-start;
   }
 }
 
 /* BOP SEARCH FIELD WITH LUCIDE ICON */
-
 .bop-existing-search {
   position: relative;
-
   display: flex;
-
   align-items: center;
-
   width: 280px;
-
   max-width: 100%;
 }
 
 .bop-existing-search .bop-search-icon {
   position: absolute;
-
   left: 11px;
-
   color: #64748b;
-
   pointer-events: none;
-
   flex-shrink: 0;
 }
 
 .bop-existing-search input {
   width: 100%;
-
   height: 34px;
-
   padding: 0 34px 0 35px;
-
   border: 1px solid #cbd5e1;
-
   border-radius: 6px;
-
   background: #fff;
-
   color: #1f2937;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 14px;
-
   outline: none;
-
   box-sizing: border-box;
-
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -1324,7 +836,6 @@
 
 .bop-existing-search input:focus {
   border-color: #2563eb;
-
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
@@ -1334,23 +845,14 @@
 
 .bop-existing-search .bop-existing-search-clear {
   position: absolute;
-
   right: 8px;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   padding: 2px;
-
   border: none;
-
   background: transparent;
-
   color: #64748b;
-
   cursor: pointer;
 }
 
@@ -1364,73 +866,45 @@
   }
 }
 
-/* =========================================================
-
-  EXISTING BOP CONFIGURATIONS — TABLE POLISH
-
-  Scoped only to the existing-configurations table.
-
- ========================================================= */
-
+/* EXISTING BOP CONFIGURATIONS — TABLE POLISH */
 .existing-bop-configurations {
   border: 1px solid #d9e2ef;
-
   border-radius: 10px;
-
   background: #ffffff;
-
   box-shadow: 0 3px 12px rgba(15, 23, 42, 0.045);
 }
 
 .existing-bop-configurations > .bop-management-content-header {
   min-height: 58px;
-
   padding: 12px 16px;
-
   gap: 16px;
-
   background: #ffffff;
-
   border-bottom: 1px solid #e2e8f0;
 }
 
 .existing-bop-configurations .bop-management-content-title {
   color: #173d70;
-
   font-size: 18px;
-
   font-weight: 700;
-
   line-height: 1.25;
 }
 
 .existing-bop-configurations .bop-table-wrapper {
   width: 100%;
-
   min-width: 0;
-
   overflow-x: auto;
-
   overflow-y: hidden;
-
   background: #ffffff;
-
   border: 0;
-
   border-radius: 0 0 10px 10px;
-
   scrollbar-width: thin;
-
   scrollbar-color: #b8c6d9 #f1f5f9;
 }
 
 .existing-bop-configurations .bop-table-wrapper .rdt_Table {
   width: 100%;
-
   min-width: 1060px;
-
   background: #ffffff;
-
   font-family: "Times New Roman", Times, serif;
 }
 
@@ -1440,35 +914,22 @@
 
 .existing-bop-configurations .bop-table-wrapper .rdt_TableHeadRow {
   min-height: 44px !important;
-
   background: #eaf2fb !important;
-
   border-bottom: 1px solid #cbd8e8 !important;
 }
 
 .existing-bop-configurations .bop-table-wrapper .rdt_TableCol {
   min-height: 44px;
-
   padding: 8px 10px !important;
-
   color: #173d70 !important;
-
   background: #eaf2fb !important;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 12px;
-
   font-weight: 700;
-
   line-height: 1.25;
-
   white-space: normal !important;
-
   overflow: visible !important;
-
   text-overflow: clip !important;
-
   border-right: 1px solid #d7e2ef;
 }
 
@@ -1478,25 +939,17 @@
 
 .existing-bop-configurations .bop-table-wrapper .rdt_TableCol_Sortable {
   width: 100%;
-
   min-width: 0;
-
   display: flex;
-
   align-items: center;
-
   gap: 5px;
-
   white-space: normal !important;
-
   overflow: visible !important;
 }
 
 .existing-bop-configurations .bop-table-wrapper .rdt_TableCol_Sortable > span {
   min-width: 0;
-
   white-space: normal !important;
-
   overflow-wrap: anywhere;
 }
 
@@ -1506,17 +959,11 @@
 
 .existing-bop-configurations .bop-table-wrapper .rdt_TableRow {
   min-height: 44px;
-
   background: #ffffff;
-
   color: #334155;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 13px;
-
   border-bottom: 1px solid #e8edf4 !important;
-
   transition: background-color 0.15s ease;
 }
 
@@ -1530,23 +977,14 @@
 
 .existing-bop-configurations .bop-table-wrapper .rdt_TableCell {
   min-width: 0;
-
   padding: 8px 10px !important;
-
   color: #334155;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 13px;
-
   line-height: 1.35;
-
   white-space: nowrap;
-
   overflow: hidden;
-
   text-overflow: ellipsis;
-
   border-right: 1px solid #edf1f7;
 }
 
@@ -1556,41 +994,27 @@
 
 .existing-bop-configurations .bop-table-wrapper .rdt_Pagination {
   min-height: 48px;
-
   padding: 4px 12px;
-
   border-top: 1px solid #e2e8f0;
-
   background: #ffffff;
-
   color: #64748b;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 12px;
 }
 
 .existing-bop-configurations .bop-table-wrapper .rdt_Pagination select {
   min-height: 30px;
-
   padding: 3px 24px 3px 8px;
-
   border: 1px solid #cbd5e1;
-
   border-radius: 5px;
-
   background-color: #ffffff;
-
   color: #334155;
-
   font-family: "Times New Roman", Times, serif;
-
   font-size: 12px;
 }
 
 .existing-bop-configurations .bop-table-wrapper .rdt_Pagination button {
   color: #475569;
-
   fill: #475569;
 }
 
@@ -1599,7 +1023,6 @@
   .rdt_Pagination
   button:disabled {
   color: #cbd5e1;
-
   fill: #cbd5e1;
 }
 
@@ -1614,7 +1037,6 @@
 @media (max-width: 768px) {
   .existing-bop-configurations > .bop-management-content-header {
     align-items: stretch;
-
     padding: 12px;
   }
 
@@ -1628,11 +1050,7 @@
   }
 }
 
-/* =========================================================
-   BOP PAGE — MATCH MOLDING PAGE BUTTONS AND TABLES
-   Scoped overrides only; existing page functionality remains unchanged.
-   ========================================================= */
-
+/* BOP PAGE — MATCH MOLDING PAGE BUTTONS AND TABLES */
 .bop-management {
   padding: 5px;
   background: #f5f7fa;
@@ -1985,28 +1403,22 @@
   }
 }
 
-/* =========================================
-   BOP BUTTONS — COMPOUND MONTHLY HOVER
-========================================= */
+/* BOP BUTTONS — COMPOUND MONTHLY HOVER */
 .bop-management .bop-btn {
   height: 30px;
   padding: 0 12px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-
   border-radius: 6px;
   font-family: "Times New Roman", Times, serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
-
   cursor: pointer;
   box-shadow: none;
-
   transition:
     background-color 0.2s ease,
     color 0.2s ease,
@@ -2081,28 +1493,21 @@
   box-shadow: none;
 }
 
-/* =========================================
-   BOP ACTION BUTTONS — COMPOUND STYLE
-========================================= */
-
+/* BOP ACTION BUTTONS — COMPOUND STYLE */
 .bop-management .bop-edit-icon-btn,
 .bop-management .bop-action-btn {
   width: 32px;
   height: 32px;
   padding: 0;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   background: #ffffff;
   color: #2563eb;
   border: 1px solid #2563eb;
   border-radius: 5px;
-
   cursor: pointer;
   box-shadow: none;
-
   transition:
     background-color 0.2s ease,
     color 0.2s ease,
@@ -2167,19 +1572,15 @@
   width: 30px;
   height: 30px;
   padding: 0;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   background: #ffffff;
   color: #dc3545;
   border: 1px solid #ffb5b5;
   border-radius: 6px;
-
   cursor: pointer;
   box-shadow: none;
-
   transition:
     background-color 0.2s ease,
     color 0.2s ease,
@@ -2214,10 +1615,7 @@
   background: #133537 !important;
 }
 
-/* =========================================
-   BOP TABLE — CENTER HEADER TEXT
-========================================= */
-
+/* BOP TABLE — CENTER HEADER TEXT */
 .bop-management .rdt_TableHeadRow {
   align-items: stretch !important;
 }

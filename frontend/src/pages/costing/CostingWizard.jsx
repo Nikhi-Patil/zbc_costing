@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import { months, generateFinancialYears } from "../../utils/costingUtils";
+import { useParams, useNavigate } from "react-router-dom";
 
 import Stepper from "../../components/costing/Stepper";
 import WizardButtons from "../../components/costing/WizardButtons";
@@ -22,7 +22,6 @@ const getTodayDate = () => {
 function CostingWizard() {
   const { transactionId: urlTransactionId } = useParams();
   const financialYears = generateFinancialYears();
-
   const defaultFinancialYear =
     financialYears.find((fy) => fy.selected)?.value ||
     financialYears[0]?.value ||
@@ -39,6 +38,7 @@ function CostingWizard() {
   const [transactionId, setTransactionId] = useState(urlTransactionId || "");
   const [transactionStatus, setTransactionStatus] = useState("");
   const totalSteps = 4;
+  const navigate = useNavigate();
 
   const isViewMode = Boolean(urlTransactionId) && transactionStatus === "FINAL";
   // FORM DATA
@@ -215,12 +215,21 @@ function CostingWizard() {
 
   const fetchTransaction = async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/molding/${id}`);
+      const user = getUser();
+      const userName = user?.user_name || user?.username || user?.name || "";
+      if (!userName) {
+        throw new Error(
+          "Unable to identify the logged-in user. Please log in again.",
+        );
+      }
+      const response = await fetch(
+        `${API_BASE_URL}/molding/${id}?userName=${encodeURIComponent(userName)}`,
+      );
       const result = await response.json();
       if (!response.ok || !result.success) {
-        throw new Error(result.message || "Transaction not found");
+        throw new Error(result.message || "Unable to load transaction");
       }
-      const data = result.data || {};
+      const data = result.data;
       const status = String(data.status || "")
         .trim()
         .toUpperCase();
@@ -266,7 +275,9 @@ function CostingWizard() {
         runningCavity: data.running_cavity ?? prev.runningCavity,
         cycleTime: data.cycle_time ?? prev.cycleTime,
         shiftTimeEfficiency:
-          data.shift_time_efficiency ?? prev.shiftTimeEfficiency,
+          data.shift_time_efficiency == null
+            ? ""
+            : String(data.shift_time_efficiency),
         efficiency: data.efficiency ?? prev.efficiency,
         totalShots: data.total_shots ?? prev.totalShots,
         totalProductionPerShift:
@@ -368,6 +379,14 @@ function CostingWizard() {
 
   const saveDraft = async () => {
     try {
+      const user = getUser();
+
+      const userName = user?.user_name || user?.username || user?.name || "";
+
+      if (!userName) {
+        alert("Unable to identify the logged-in user. Please log in again.");
+        return null;
+      }
       const response = await fetch(`${API_BASE_URL}/molding/draft`, {
         method: "POST",
         headers: {
@@ -375,6 +394,7 @@ function CostingWizard() {
         },
         body: JSON.stringify({
           transactionId: transactionId || null,
+          userName,
           formData: {
             ...formData,
             totalBopCost: totalBopCost.toFixed(2),
@@ -423,31 +443,44 @@ function CostingWizard() {
         return;
       }
 
-      // Save latest step first
+      const user = getUser();
+      const userName = user?.user_name || user?.username || user?.name || "";
+
+      if (!userName) {
+        alert("Unable to identify the logged-in user. Please log in again.");
+        return;
+      }
+
+      // Save the latest costing data before final submission.
       const saved = await saveDraft();
       if (!saved) {
         return;
       }
 
-      // Change DRAFT → FINAL
+      // Change DRAFT to FINAL.
       const response = await fetch(`${API_BASE_URL}/molding/submit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          transactionId: transactionId,
+          transactionId: saved,
+          userName,
         }),
       });
+
       const data = await response.json();
+
       if (!response.ok) {
         throw new Error(data.message || "Final submit failed");
       }
-      alert(`Costing submitted successfully: ${transactionId}`);
+
+      alert(`Costing submitted successfully: ${saved}`);
       console.log("Final:", data);
+      navigate("/molding");
     } catch (error) {
       console.error("Final submit error:", error);
-      alert("Failed to submit costing");
+      alert(`Failed to submit costing: ${error.message}`);
     }
   };
 
@@ -1160,7 +1193,6 @@ function CostingWizard() {
           financialYear,
           month,
         });
-
         return null;
       }
 
@@ -1188,7 +1220,6 @@ function CostingWizard() {
           financialYear,
           month,
         );
-
         return null;
       }
 
@@ -1201,7 +1232,6 @@ function CostingWizard() {
 
   const updateBop = async (id, field, value) => {
     const currentBop = bops.find((bop) => bop.id === id);
-
     if (!currentBop) return;
 
     // BOP MONTH CHANGED
@@ -1339,6 +1369,8 @@ function CostingWizard() {
   return (
     <div className="costing-wizard-page">
       {/* Stepper */}
+
+      {/* Stepper Header */}
       <div className="costing-wizard-stepper">
         <Stepper currentStep={currentStep} totalSteps={totalSteps} />
       </div>

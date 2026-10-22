@@ -10,4 +10,4 @@ const zbcDB = mysql.createPool({
     connectionLimit: 10
 });
 
-export default zbcDB ;
+export default zbcDB;

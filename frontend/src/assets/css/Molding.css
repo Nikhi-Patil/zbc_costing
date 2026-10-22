@@ -510,7 +510,6 @@
 }
 
 /* SALES MONTHLY FILTERS */
-
 .sales-monthly-report-filters {
   display: flex;
   align-items: flex-end;
@@ -558,7 +557,6 @@
 }
 
 /* Loading text shown while Sales Monthly is loading */
-
 .sales-monthly-filter-loading {
   align-self: center;
   margin: 0 2px 9px 0;
@@ -625,13 +623,7 @@
   }
 }
 
-/* =========================================================
-   MOLDING FILTERS - APPLY BUTTON
-   Works with the single Apply button controlling:
-   Financial Year, From Month, To Month, Customer,
-   Sub Category, Part No and Total Mfg P/L.
-   ========================================================= */
-
+/* MOLDING FILTERS - APPLY BUTTON */
 .molding-apply-filter-btn {
   height: 30px;
   min-width: 68px;
@@ -800,28 +792,20 @@
   outline: none;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
 }
-/* =========================================================
-   MOLDING - REACT DATA TABLE
-   ========================================================= */
 
+/*MOLDING - REACT DATA TABLE */
 .molding-data-table {
   width: 100%;
   border: none;
   font-size: 13px;
 }
 
-/* ---------------------------------------------------------
-   DATA TABLE WRAPPER
-   --------------------------------------------------------- */
-
+/* DATA TABLE WRAPPER */
 .molding-data-table > div {
   border: none !important;
 }
 
-/* ---------------------------------------------------------
-   HEADER
-   --------------------------------------------------------- */
-
+/* HEADER */
 .molding-data-table .rdt_TableHeadRow {
   min-height: 55px !important;
   height: auto !important;
@@ -846,10 +830,7 @@
   opacity: 0.9;
 }
 
-/* ---------------------------------------------------------
-   BODY ROW
-   --------------------------------------------------------- */
-
+/* BODY ROW */
 .molding-data-table .rdt_TableRow {
   min-height: 30px !important;
   height: 30px !important;
@@ -864,10 +845,7 @@
   cursor: default;
 }
 
-/* ---------------------------------------------------------
-   CELLS
-   --------------------------------------------------------- */
-
+/* CELLS */
 .molding-data-table .rdt_TableCell {
   padding: 0 3px !important;
   border-right: 1px solid #cccccc !important;
@@ -881,9 +859,7 @@
 .molding-data-table .rdt_TableCell:last-child {
   border-right: none;
 }
-/* ---------------------------------------------------------
-   TEXT CELLS
-   --------------------------------------------------------- */
+/* TEXT CELLS */
 .transaction-id {
   font-size: 11px !important;
   padding: 6px 5px !important;
@@ -897,7 +873,6 @@
 
 .molding-data-table .transaction-id {
   font-size: 11px;
-
   font-weight: 600;
   color: #2563eb;
   white-space: nowrap;
@@ -920,10 +895,7 @@
   text-align: left;
 }
 
-/* ---------------------------------------------------------
-   NUMBER / MONEY
-   --------------------------------------------------------- */
-
+/* NUMBER / MONEY */
 .molding-data-table .part-cost,
 .molding-data-table .sell-cost,
 .molding-data-table .profit-loss,
@@ -932,10 +904,7 @@
   white-space: nowrap;
 }
 
-/* ---------------------------------------------------------
-   PROFIT / LOSS
-   --------------------------------------------------------- */
-
+/* PROFIT / LOSS */
 .molding-data-table .profit {
   color: #008000;
   font-weight: 600;
@@ -948,10 +917,7 @@
   font-size: 13px;
 }
 
-/* ---------------------------------------------------------
-   STATUS
-   --------------------------------------------------------- */
-
+/* STATUS */
 .molding-data-table .status-cell {
   text-align: center;
 }
@@ -984,10 +950,7 @@
   color: #1d4ed8;
 }
 
-/* ---------------------------------------------------------
-   OPEN BUTTON
-   --------------------------------------------------------- */
-
+/* OPEN BUTTON */
 .molding-data-table .action-cell {
   text-align: center;
 }
@@ -1011,10 +974,7 @@
   color: #ffffff;
 }
 
-/* ---------------------------------------------------------
-   PAGINATION
-   --------------------------------------------------------- */
-
+/* PAGINATION */
 .molding-data-table .rdt_Pagination {
   min-height: 35px !important;
   border-top: 1px solid #e5e7eb !important;
@@ -1038,10 +998,7 @@
   background: #f1f3f5;
 }
 
-/* ---------------------------------------------------------
-   NO DATA
-   --------------------------------------------------------- */
-
+/* NO DATA */
 .molding-data-table .rdt_TableBody .rdt_TableRow {
   min-height: 30px;
 }
@@ -1050,10 +1007,7 @@
   white-space: nowrap;
 }
 
-/* ---------------------------------------------------------
-   HORIZONTAL SCROLL
-   --------------------------------------------------------- */
-
+/* HORIZONTAL SCROLL */
 .molding-table-card {
   overflow: hidden;
 }
@@ -1062,10 +1016,8 @@
   width: 100% !important;
   min-width: 0 !important;
 }
-/* ---------------------------------------------------------
-   RESPONSIVE
-   --------------------------------------------------------- */
 
+/* RESPONSIVE */
 @media (max-width: 1200px) {
   .molding-data-table {
     font-size: 12px;
@@ -1202,10 +1154,8 @@
   outline: none;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
 }
-/* =========================================================
-   FINAL MOLDING HEADER LAYOUT
-   ========================================================= */
 
+/* FINAL MOLDING HEADER LAYOUT */
 .molding-header-1 {
   width: 100%;
   display: flex;
@@ -1328,11 +1278,7 @@
   box-sizing: border-box;
 }
 
-/* =========================================================
-   MOLDING APPLY BUTTON - LOADING ANIMATION
-   Unique to the Molding page
-   ========================================================= */
-
+/* MOLDING APPLY BUTTON - LOADING ANIMATION */
 .molding-apply-filter-btn:disabled {
   opacity: 0.75;
   cursor: not-allowed;
@@ -1351,10 +1297,8 @@
 .rdt_cellBase {
   color: black;
 }
-/* ================================
-   TABLE HEADER
-================================ */
 
+/* TABLE HEADER */
 .table-header {
   display: flex;
   align-items: center;
@@ -1368,10 +1312,7 @@
   gap: 18px;
 }
 
-/* ================================
-   MOLDING SEARCH
-================================ */
-
+/* MOLDING SEARCH */
 .moldingb-search-box {
   position: relative;
   width: 260px;
@@ -1421,21 +1362,16 @@
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-
   width: 22px;
   height: 22px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border: none;
   background: transparent;
   color: #64748b;
-
   font-size: 18px;
   line-height: 1;
-
   cursor: pointer;
   padding: 0;
 }
@@ -1481,11 +1417,9 @@
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 22px;
   height: 22px;
   padding: 0;
@@ -1516,17 +1450,14 @@
   font-size: 12px !important;
   font-weight: 600 !important;
   padding: 4px 5px !important;
-
   white-space: normal !important;
   overflow: visible !important;
   text-overflow: unset !important;
   line-height: 1.2 !important;
   text-align: center !important;
 }
-/* =========================================================
-   FORCE REACT DATA TABLE HEADERS TO WRAP
-   ========================================================= */
 
+/* FORCE REACT DATA TABLE HEADERS TO WRAP */
 .molding-data-table .rdt_TableHeadRow .rdt_TableCol {
   white-space: normal !important;
   overflow: visible !important;
@@ -1537,15 +1468,12 @@
 .molding-data-table .rdt_TableHeadRow .rdt_TableCol .rdt_TableCol_Sortable {
   width: 100% !important;
   min-width: 0 !important;
-
   white-space: normal !important;
   overflow: visible !important;
   text-overflow: unset !important;
-
   word-break: normal !important;
   overflow-wrap: break-word !important;
   line-height: 1.15 !important;
-
   text-align: center !important;
 }
 
@@ -1562,10 +1490,8 @@
   line-height: 1.15 !important;
   text-align: center !important;
 }
-/* =========================================================
-   MOLDING TABLE - EXPAND WITH SIDEBAR
-   ========================================================= */
 
+/* MOLDING TABLE - EXPAND WITH SIDEBAR */
 .molding-data-table {
   width: 100% !important;
   max-width: 100% !important;
@@ -1606,10 +1532,8 @@
   max-width: 100% !important;
   overflow-x: auto !important;
 }
-/* =========================================================
-   MOLDING TABLE - HEADER / CELL ALIGNMENT
-   ========================================================= */
 
+/* MOLDING TABLE - HEADER / CELL ALIGNMENT */
 .molding-data-table .rdt_TableCol,
 .molding-data-table .rdt_TableCell {
   box-sizing: border-box !important;
@@ -1681,4 +1605,71 @@
 }
 .molding-data-table .rdt_TableCol_Sortable svg {
   display: none !important;
+}
+
+/* MOLDING FILTERS - INCLUDE APPLY BUTTON IN SAME ROW */
+.molding-page .molding-table-filters {
+  display: grid !important;
+  grid-template-columns:
+    minmax(130px, 1.1fr)
+    repeat(2, minmax(110px, 1fr))
+    repeat(3, minmax(120px, 1.1fr))
+    minmax(130px, 0.9fr)
+    minmax(100px, 0.75fr);
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  align-items: end;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.molding-page .molding-table-filters > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.molding-page .molding-table-filters .sales-monthly-filter-group {
+  width: 100%;
+  min-width: 0;
+}
+
+.molding-page .molding-table-filters select {
+  width: 100% !important;
+  min-width: 0;
+  max-width: 100%;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+.molding-page .molding-table-filters .molding-apply-filter-btn {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  align-self: end;
+  margin: 0;
+  padding: 0 8px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Smaller desktops and laptops */
+@media (max-width: 1250px) {
+  .molding-page .molding-table-filters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+  .molding-page .molding-table-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 420px) {
+  .molding-page .molding-table-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

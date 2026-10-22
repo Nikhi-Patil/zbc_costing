@@ -6,7 +6,6 @@ import {
     deleteCostingEntry
 } from "../models/costingEntryModel.js";
 
-
 /* CREATE COSTING ENTRY */
 export const saveCostingEntry = async (req, res) => {
 
