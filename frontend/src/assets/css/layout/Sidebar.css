@@ -2,13 +2,10 @@
     position: fixed;
     top: 50px;
     left: 0;
-
     width: 210px;
     height: calc(100vh - 50px);
-
     background: #15243a;
     overflow-y: auto;
-
     transition: width 0.3s ease;
 }
 

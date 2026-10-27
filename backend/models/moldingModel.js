@@ -2,307 +2,170 @@ import zbcDB from "../config/zbcDB.js";
 import adminDB from "../config/adminDB.js";
 
 const getBopMonthlyRate = async ({ bopErpCode, supplierId, financialYear, month }) => {
-    if (
-        !bopErpCode ||
-        !supplierId ||
-        !financialYear ||
-        !month
-    ) {
-        return null;
-    }
+    if (!bopErpCode || !supplierId || !financialYear || !month) return null;
 
     const [rows] = await zbcDB.query(
-        `
-        SELECT rate
-        FROM bop_monthly_report
-        WHERE TRIM(bop_erp_code) = TRIM(?)
-          AND supplier_id = ?
-          AND financial_year = ?
-          AND month = ?
-        ORDER BY id ASC
-        LIMIT 1
-        `,
-        [
-            String(bopErpCode).trim(),
-            Number(supplierId),
-            financialYear,
-            Number(month),
-        ],
+        `SELECT rate
+         FROM bop_monthly_report
+         WHERE TRIM(bop_erp_code) = TRIM(?)
+           AND supplier_id = ?
+           AND financial_year = ?
+           AND month = ?
+         ORDER BY id ASC
+         LIMIT 1`,
+        [String(bopErpCode).trim(), Number(supplierId), financialYear, Number(month)]
     );
-
-    return rows.length > 0 && rows[0].rate !== null
-        ? Number(rows[0].rate)
-        : null;
+    return rows.length > 0 && rows[0].rate !== null ? Number(rows[0].rate) : null;
 };
 
 const generateTransactionId = async () => {
     const [rows] = await zbcDB.query(`
-    SELECT transaction_id
-    FROM molding_table
-    WHERE transaction_id REGEXP '^ML[0-9]+$'
-    ORDER BY CAST(SUBSTRING(transaction_id, 3) AS UNSIGNED) DESC
-    LIMIT 1
-  `);
+        SELECT transaction_id
+        FROM molding_table
+        WHERE transaction_id REGEXP '^ML[0-9]+$'
+        ORDER BY CAST(SUBSTRING(transaction_id, 3) AS UNSIGNED) DESC
+        LIMIT 1
+    `);
+    const lastNumber = rows.length ? Number.parseInt(rows[0].transaction_id.substring(2), 10) : 0;
+    return `ML${String((Number.isNaN(lastNumber) ? 0 : lastNumber) + 1).padStart(3, "0")}`;
+};
 
-    let nextNumber = 1;
+const FORM_COLUMN_MAP = {
+    financialYear: "financial_year",
+    month: "month",
+    effectiveDate: "effective_date",
+    customerName: "customer_name",
+    productionUnit: "production_unit",
+    billingUnit: "billing_unit",
+    subDepartment: "sub_department",
+    subCategory: "sub_category",
+    partNo: "part_no",
+    partName: "part_name",
+    fgcode: "fg_code",
+    imcode: "im_code",
+    imCode: "rm_im_code",
+    grossWeight: "gross_weight",
+    netWeight: "net_weight",
+    loadingper: "loading_per",
+    hasBop: "has_bop",
+    polymerName: "polymer_name",
+    compoundCode: "compound_code",
+    compMonth: "comp_month",
+    compoundRate: "compound_rate",
+    totalRmCost: "total_rm_cost",
+    processType: "process_type",
+    machineTonnage: "machine_tonnage",
+    shiftRate: "shift_rate",
+    totalCavity: "total_cavity",
+    runningCavity: "running_cavity",
+    cycleTime: "cycle_time",
+    shiftTimeEfficiency: "shift_time_efficiency",
+    efficiency: "efficiency",
+    totalShots: "total_shots",
+    totalProductionPerShift: "total_production_per_shift",
+    PlattenSize: "platten_size",
+    toolSize: "tool_size",
+    processCostA: "process_cost_a",
+    postCuring: "post_curing",
+    finishing: "finishing",
+    inspection: "inspection",
+    shotBlasting: "shot_blasting",
+    vapourDegreasing: "vapour_degreasing",
+    chromating: "chromating",
+    phospating: "phospating",
+    adhesive: "adhesive",
+    painting: "painting",
+    plating: "plating",
+    cylindricalGrinding: "cylindrical_grinding",
+    postCuringRequired: "post_curing_required",
+    finishingRequired: "finishing_required",
+    inspectionRequired: "inspection_required",
+    shotBlastingRequired: "shot_blasting_required",
+    vapourDegreasingRequired: "vapour_degreasing_required",
+    chromatingRequired: "chromating_required",
+    phospatingRequired: "phospating_required",
+    adhesiveRequired: "adhesive_required",
+    paintingRequired: "painting_required",
+    platingRequired: "plating_required",
+    cylindricalGrindingRequired: "cylindrical_grinding_required",
+    bopWeight: "bop_weight",
+    bopArea: "bop_area",
+    paintArea: "paint_area",
+    paintPerLit: "paint_per_lit",
+    finishedPartWeight: "finished_part_weight",
+    metalPartArea: "metal_part_area",
+    assemblyQty: "assembly_qty",
+    assemblyPerCost: "assembly_per_cost",
+    totalAssemblyCost: "total_assembly_cost",
+    processCostB: "process_cost_b",
+    conversionCost: "conversion_cost",
+    subtotalA: "subtotal_a",
+    subtotalB: "subtotal_b",
+    partCost: "part_cost",
+    iccOnRm: "icc_on_rm",
+    rejOnSubtotal: "rej_on_subtotal",
+    ohOnSubtotal: "oh_on_subtotal",
+    profitOnSubtotal: "profit_on_subtotal",
+    packagingOnSubtotal: "packaging_on_subtotal",
+    transportOnSubtotal: "transport_on_subtotal",
+    totalBopCost: "total_bop_cost",
+    finalRmCost: "final_rm_cost",
+    iccOnRmCost: "icc_on_rm_cost",
+    rejOnSubtotalCost: "rej_on_subtotal_cost",
+    ohOnSubtotalCost: "oh_on_subtotal_cost",
+    profitOnSubtotalCost: "profit_on_subtotal_cost",
+    packagingOnSubtotalCost: "packaging_on_subtotal_cost",
+    transportOnSubtotalCost: "transport_on_subtotal_cost",
+    customerSalesCost: "customer_sales_cost",
+    salesProfitLoss: "sales_profit_loss",
+    buyingType: "buying_type",
+    vendorName: "vendor_name",
+    buyingCost: "buying_cost",
+    buyingProfitLoss: "buying_profit_loss",
+    monthlyQuantity: "monthly_quantity",
+    monthlyProfitLoss: "monthly_profit_loss",
+};
 
-    if (rows.length > 0) {
-        const lastNumber = parseInt(
-            rows[0].transaction_id.substring(2),
-            10
+const toDbValue = (value) => value === undefined ? null : value;
+
+const saveBopCosting = async (connection, formData, bops) => {
+    if (!Array.isArray(bops) || bops.length === 0) return;
+    for (const bop of bops) {
+        if (!bop.id || String(bop.id).startsWith("saved-bop-")) continue;
+        const bopMonth = bop.bopmonth || null;
+        const qty = Number(bop.bopAssemblyQty ?? bop.assembly_qty ?? bop.assemblyQty ?? 0);
+        const rate = await getBopMonthlyRate({
+            bopErpCode: bop.bopFgCode,
+            supplierId: bop.supplierId,
+            financialYear: formData.financialYear,
+            month: bopMonth,
+        });
+        await connection.query(
+            `UPDATE bop_part_details
+             SET financial_year = ?, bop_month = ?, bop_rate = ?, bop_cost = ?,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?`,
+            [formData.financialYear || null, bopMonth, rate, rate === null ? null : qty * rate, bop.id]
         );
-
-        if (!Number.isNaN(lastNumber)) {
-            nextNumber = lastNumber + 1;
-        }
     }
-
-    return `ML${String(nextNumber).padStart(3, "0")}`;
 };
 
 export const createDraft = async (formData, bops, userName) => {
-    const connection =
-        await zbcDB.getConnection();
+    const connection = await zbcDB.getConnection();
     try {
         await connection.beginTransaction();
         const transactionId = await generateTransactionId();
-
-        const [result] = await connection.query(`
-                INSERT INTO molding_table (
-                    transaction_id,
-                    status,
-                    financial_year,
-                    month,
-                    effective_date,
-                    customer_name,
-                    production_unit,
-                    billing_unit,
-                    sub_department,
-                    sub_category,
-                    part_no,
-                    part_name,
-                    fg_code,
-                    im_code,
-                    gross_weight,
-                    net_weight,
-                    loading_per,
-                    has_bop,
-                    polymer_name,
-                    compound_code,
-                    rm_im_code,
-                    comp_month,
-                    compound_rate,
-                    total_rm_cost,
-                    process_type,
-                    machine_tonnage,
-                    shift_rate,
-                    total_cavity,
-                    running_cavity,
-                    cycle_time,
-                    shift_time_efficiency,
-                    efficiency,
-                    total_shots,
-                    total_production_per_shift,
-                    platten_size,
-                    tool_size,
-                    process_cost_a,
-                    post_curing,
-                    finishing,
-                    inspection,
-                    shot_blasting,
-                    vapour_degreasing,
-                    chromating,
-                    phospating,
-                    adhesive,
-                    painting,
-                    cylindrical_grinding,
-                    assembly_qty,
-                    assembly_per_cost,
-                    total_assembly_cost,
-                    process_cost_b,
-                    conversion_cost,
-                    subtotal_a,
-                    subtotal_b,
-                    part_cost,
-                    icc_on_rm,
-                    rej_on_subtotal,
-                    oh_on_subtotal,
-                    profit_on_subtotal,
-                    packaging_on_subtotal,
-                    transport_on_subtotal,
-                    total_bop_cost,
-                    final_rm_cost,
-                    icc_on_rm_cost,
-                    rej_on_subtotal_cost,
-                    oh_on_subtotal_cost,
-                    profit_on_subtotal_cost,
-                    packaging_on_subtotal_cost,
-                    transport_on_subtotal_cost,
-                    customer_sales_cost,
-                    sales_profit_loss,
-                    buying_type,
-                    vendor_name,
-                    buying_cost,
-                    buying_profit_loss,
-                    monthly_quantity,
-                    monthly_profit_loss,
-                    created_by,
-                    updated_by
-                )
-                VALUES (
-                    ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
-                    ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
-                    ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
-                    ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
-                    ?,?,?
-                )
-                `,
-            [
-                transactionId,
-                "DRAFT",
-                formData.financialYear,
-                formData.month,
-                formData.effectiveDate,
-                formData.customerName,
-                formData.productionUnit,
-                formData.billingUnit,
-                formData.subDepartment,
-                formData.subCategory,
-                formData.partNo,
-                formData.partName,
-                formData.fgcode,
-                formData.imCode,
-                formData.grossWeight,
-                formData.netWeight,
-                formData.loadingper,
-                formData.hasBop,
-                formData.polymerName,
-                formData.compoundCode,
-                formData.imCode,
-                formData.compMonth,
-                formData.compoundRate,
-                formData.totalRmCost,
-                formData.processType,
-                formData.machineTonnage,
-                formData.shiftRate,
-                formData.totalCavity,
-                formData.runningCavity,
-                formData.cycleTime,
-                formData.shiftTimeEfficiency,
-                formData.efficiency,
-                formData.totalShots,
-                formData.totalProductionPerShift,
-                formData.PlattenSize,
-                formData.toolSize,
-                formData.processCostA,
-                formData.postCuring,
-                formData.finishing,
-                formData.inspection,
-                formData.shotBlasting,
-                formData.vapourDegreasing,
-                formData.chromating,
-                formData.phospating,
-                formData.adhesive,
-                formData.painting,
-                formData.cylindricalGrinding,
-                formData.assemblyQty,
-                formData.assemblyPerCost,
-                formData.totalAssemblyCost,
-                formData.processCostB,
-                formData.conversionCost,
-                formData.subtotalA,
-                formData.subtotalB,
-                formData.partCost,
-                formData.iccOnRm,
-                formData.rejOnSubtotal,
-                formData.ohOnSubtotal,
-                formData.profitOnSubtotal,
-                formData.packagingOnSubtotal,
-                formData.transportOnSubtotal,
-                formData.totalBopCost,
-                formData.finalRmCost,
-                formData.iccOnRmCost,
-                formData.rejOnSubtotalCost,
-                formData.ohOnSubtotalCost,
-                formData.profitOnSubtotalCost,
-                formData.packagingOnSubtotalCost,
-                formData.transportOnSubtotalCost,
-                formData.customerSalesCost,
-                formData.salesProfitLoss,
-                formData.buyingType,
-                formData.vendorName,
-                formData.buyingCost,
-                formData.buyingProfitLoss,
-                formData.monthlyQuantity,
-                formData.monthlyProfitLoss,
-                userName,
-                userName
-            ],
+        const entries = Object.entries(FORM_COLUMN_MAP);
+        const columns = ["transaction_id", "status", ...entries.map(([, column]) => column), "created_by", "updated_by"];
+        const values = [transactionId, "DRAFT", ...entries.map(([key]) => toDbValue(formData[key])), userName, userName];
+        const placeholders = columns.map(() => "?").join(", ");
+        const [result] = await connection.query(
+            `INSERT INTO molding_table (${columns.join(", ")}) VALUES (${placeholders})`,
+            values
         );
-        const moldingId =
-            result.insertId;
-
-        /* SAVE BOP COSTING */
-        if (bops && bops.length > 0) {
-            for (const bop of bops) {
-                /* BOP DETAIL ID IS REQUIRED */
-                if (!bop.id) {
-                    continue;
-                }
-                const bopMonth = bop.bopmonth || null;
-                const bopAssemblyQty =
-                    Number(
-                        bop.bopAssemblyQty ??
-                        bop.assembly_qty ??
-                        bop.assemblyQty ??
-                        0,
-                    );
-
-                /* GET RATE FROM MONTHLY BOP REPORT */
-                const bopRate =
-                    await getBopMonthlyRate({
-                        bopErpCode: bop.bopFgCode,
-                        supplierId: bop.supplierId,
-                        financialYear: formData.financialYear,
-                        month: bopMonth,
-                    });
-
-                /* CALCULATE BOP COST */
-                const bopCost =
-                    bopRate === null
-                        ? null
-                        : bopAssemblyQty *
-                        bopRate;
-
-                /* UPDATE PERMANENT BOP DETAIL */
-                await connection.query(
-                    `
-                    UPDATE bop_part_details
-                    SET
-                        financial_year = ?,
-                        bop_month = ?,
-                        bop_rate = ?,
-                        bop_cost = ?,
-                        updated_at =
-                            CURRENT_TIMESTAMP
-                    WHERE id = ?
-                    `,
-                    [
-                        formData.financialYear ||
-                        null,
-                        bopMonth,
-                        bopRate,
-                        bopCost,
-                        bop.id,
-                    ],
-                );
-            }
-        }
+        await saveBopCosting(connection, formData, bops);
         await connection.commit();
-        return {
-            id: moldingId,
-            transactionId,
-        };
+        return { id: result.insertId, transactionId };
     } catch (error) {
         await connection.rollback();
         throw error;
@@ -312,238 +175,24 @@ export const createDraft = async (formData, bops, userName) => {
 };
 
 export const updateDraft = async (transactionId, formData, bops, userName) => {
-    const connection =
-        await zbcDB.getConnection();
+    const connection = await zbcDB.getConnection();
     try {
         await connection.beginTransaction();
-        const [result] =
-            await connection.query(
-                `
-                UPDATE molding_table
-                SET
-                    financial_year = ?,
-                    month = ?,
-                    effective_date = ?,
-                    customer_name = ?,
-                    production_unit = ?,
-                    billing_unit = ?,
-                    sub_department = ?,
-                    sub_category = ?,
-                    part_no = ?,
-                    part_name = ?,
-                    fg_code = ?,
-                    im_code = ?,
-                    gross_weight = ?,
-                    net_weight = ?,
-                    loading_per = ?,
-                    has_bop = ?,
-                    polymer_name = ?,
-                    compound_code = ?,
-                    rm_im_code = ?,
-                    comp_month = ?,
-                    compound_rate = ?,
-                    total_rm_cost = ?,
-                    process_type = ?,
-                    machine_tonnage = ?,
-                    shift_rate = ?,
-                    total_cavity = ?,
-                    running_cavity = ?,
-                    cycle_time = ?,
-                    shift_time_efficiency = ?,
-                    efficiency = ?,
-                    total_shots = ?,
-                    total_production_per_shift = ?,
-                    platten_size = ?,
-                    tool_size = ?,
-                    process_cost_a = ?,
-                    post_curing = ?,
-                    finishing = ?,
-                    inspection = ?,
-                    assembly_qty = ?,
-                    assembly_per_cost = ?,
-                    total_assembly_cost = ?,
-                    process_cost_b = ?,
-                    conversion_cost = ?,
-                    total_bop_cost = ?,
-                    final_rm_cost = ?,
-                    subtotal_a = ?,
-                    subtotal_b = ?,
-                    icc_on_rm = ?,
-                    rej_on_subtotal = ?,
-                    oh_on_subtotal = ?,
-                    profit_on_subtotal = ?,
-                    packaging_on_subtotal = ?,
-                    transport_on_subtotal = ?,
-                    icc_on_rm_cost = ?,
-                    rej_on_subtotal_cost = ?,
-                    oh_on_subtotal_cost = ?,
-                    profit_on_subtotal_cost = ?,
-                    packaging_on_subtotal_cost = ?,
-                    transport_on_subtotal_cost = ?,
-                    part_cost = ?,
-                    customer_sales_cost = ?,
-                    sales_profit_loss = ?,
-                    buying_type = ?,
-                    vendor_name=?,
-                    buying_cost = ?,
-                    buying_profit_loss = ?,
-                    monthly_quantity = ?,
-                    monthly_profit_loss = ?,
-                    shot_blasting = ?,
-                    vapour_degreasing = ?,
-                    chromating = ?,
-                    phospating = ?,
-                    adhesive = ?,
-                    painting = ?,
-                    cylindrical_grinding = ?,
-                    updated_by = ?
-                WHERE transaction_id = ?
-                AND status = 'DRAFT'
-                `,
-                [
-                    formData.financialYear,
-                    formData.month,
-                    formData.effectiveDate,
-                    formData.customerName,
-                    formData.productionUnit,
-                    formData.billingUnit,
-                    formData.subDepartment,
-                    formData.subCategory,
-                    formData.partNo,
-                    formData.partName,
-                    formData.fgcode,
-                    formData.imcode,
-                    formData.grossWeight,
-                    formData.netWeight,
-                    formData.loadingper,
-                    formData.hasBop,
-                    formData.polymerName,
-                    formData.compoundCode,
-                    formData.imCode,
-                    formData.compMonth,
-                    formData.compoundRate,
-                    formData.totalRmCost,
-                    formData.processType,
-                    formData.machineTonnage,
-                    formData.shiftRate,
-                    formData.totalCavity,
-                    formData.runningCavity,
-                    formData.cycleTime,
-                    formData.shiftTimeEfficiency,
-                    formData.efficiency,
-                    formData.totalShots,
-                    formData.totalProductionPerShift,
-                    formData.PlattenSize,
-                    formData.toolSize,
-                    formData.processCostA,
-                    formData.postCuring,
-                    formData.finishing,
-                    formData.inspection,
-                    formData.assemblyQty,
-                    formData.assemblyPerCost,
-                    formData.totalAssemblyCost,
-                    formData.processCostB,
-                    formData.conversionCost,
-                    formData.totalBopCost,
-                    formData.finalRmCost,
-                    formData.subtotalA,
-                    formData.subtotalB,
-                    formData.iccOnRm,
-                    formData.rejOnSubtotal,
-                    formData.ohOnSubtotal,
-                    formData.profitOnSubtotal,
-                    formData.packagingOnSubtotal,
-                    formData.transportOnSubtotal,
-                    formData.iccOnRmCost,
-                    formData.rejOnSubtotalCost,
-                    formData.ohOnSubtotalCost,
-                    formData.profitOnSubtotalCost,
-                    formData.packagingOnSubtotalCost,
-                    formData.transportOnSubtotalCost,
-                    formData.partCost,
-                    formData.customerSalesCost,
-                    formData.salesProfitLoss,
-                    formData.buyingType,
-                    formData.vendorName,
-                    formData.buyingCost,
-                    formData.buyingProfitLoss,
-                    formData.monthlyQuantity,
-                    formData.monthlyProfitLoss,
-                    formData.shotBlasting,
-                    formData.vapourDegreasing,
-                    formData.chromating,
-                    formData.phospating,
-                    formData.adhesive,
-                    formData.painting,
-                    formData.cylindricalGrinding,
-                    userName,
-                    transactionId,
-                ],
-            );
-
+        const entries = Object.entries(FORM_COLUMN_MAP);
+        const assignments = [...entries.map(([, column]) => `${column} = ?`), "updated_by = ?"];
+        const values = [...entries.map(([key]) => toDbValue(formData[key])), userName, transactionId];
+        const [result] = await connection.query(
+            `UPDATE molding_table
+             SET ${assignments.join(", ")}
+             WHERE transaction_id = ? AND status = 'DRAFT'`,
+            values
+        );
         if (result.affectedRows === 0) {
             throw new Error("Draft not found or already submitted");
         }
-
-        /* UPDATE BOP COSTING */
-        if (bops && bops.length > 0) {
-            for (const bop of bops) {
-                if (!bop.id) {
-                    continue;
-                }
-                const bopMonth = bop.bopmonth || null;
-                const bopAssemblyQty =
-                    Number(
-                        bop.bopAssemblyQty ??
-                        bop.assembly_qty ??
-                        bop.assemblyQty ??
-                        0,
-                    );
-
-                /* GET MONTHLY RATE */
-                const bopRate =
-                    await getBopMonthlyRate({
-                        bopErpCode: bop.bopFgCode,
-                        supplierId: bop.supplierId,
-                        financialYear: formData.financialYear,
-                        month: bopMonth,
-                    });
-
-                /* CALCULATE COST */
-                const bopCost =
-                    bopRate === null
-                        ? null
-                        : bopAssemblyQty *
-                        bopRate;
-
-                /* UPDATE BOP MASTER MAPPING */
-                await connection.query(
-                    `
-                    UPDATE bop_part_details
-                    SET
-                        financial_year = ?,
-                        bop_month = ?,
-                        bop_rate = ?,
-                        bop_cost = ?,
-                        updated_at =
-                            CURRENT_TIMESTAMP
-                    WHERE id = ?
-                    `,
-                    [
-                        formData.financialYear ||
-                        null,
-                        bopMonth,
-                        bopRate,
-                        bopCost,
-                        bop.id,
-                    ],
-                );
-            }
-        }
+        await saveBopCosting(connection, formData, bops);
         await connection.commit();
-        return {
-            transactionId,
-        };
+        return { transactionId };
     } catch (error) {
         await connection.rollback();
         throw error;
@@ -551,7 +200,6 @@ export const updateDraft = async (transactionId, formData, bops, userName) => {
         connection.release();
     }
 };
-
 
 export const submitFinal = async (transactionId, userName) => {
     const [result] = await zbcDB.query(

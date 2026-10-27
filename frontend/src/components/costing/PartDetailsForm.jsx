@@ -207,6 +207,22 @@ function PartDetailsForm({
         },
       });
     });
+
+    // Update customer field color when selected
+    const updateCustomerColor = () => {
+      const wrapper = tomSelect.wrapper;
+
+      if (tomSelect.getValue()) {
+        wrapper.classList.add("field-filled");
+      } else {
+        wrapper.classList.remove("field-filled");
+      }
+    };
+
+    tomSelect.on("change", updateCustomerColor);
+
+    // Apply color to an existing selection
+    updateCustomerColor();
     return () => {
       if (customerRef.current?.tomselect) {
         customerRef.current.tomselect.destroy();
@@ -595,7 +611,7 @@ function PartDetailsForm({
           <div className="row g-2 mt-1 form-row">
             <div className="col-md-3">
               <label className="form-label">
-                <b>Net Wt.</b>
+                <b>Net Wt. (gm)</b>
               </label>
               <input
                 type="number"
@@ -611,7 +627,7 @@ function PartDetailsForm({
 
             <div className="col-md-3">
               <label className="form-label">
-                <b>Gross Wt.</b>
+                <b>Gross Wt.(gm)</b>
               </label>
               <input
                 type="number"
@@ -629,15 +645,25 @@ function PartDetailsForm({
               <label className="form-label">
                 <b>Loading Wt. %</b>
               </label>
-              <input
-                type="text"
-                className={`form-control ${
-                  formData.loadingper ? "field-filled" : ""
-                }`}
-                name="loadingper"
-                value={formData.loadingper}
-                readOnly
-              />
+
+              <div className="input-group">
+                <input
+                  type="text"
+                  className={`form-control ${
+                    formData.loadingper ? "field-filled" : ""
+                  }`}
+                  name="loadingper"
+                  value={formData.loadingper ?? ""}
+                  readOnly
+                />
+                <span
+                  className={`input-group-text ${
+                    formData.loadingper ? "percentage-filled" : ""
+                  }`}
+                >
+                  %
+                </span>
+              </div>
             </div>
 
             <div className="col-md-3">

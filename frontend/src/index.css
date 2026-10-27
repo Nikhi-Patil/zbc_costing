@@ -216,7 +216,11 @@ body {
 
 .form-control {
   font-size: 12px;
+  padding: 4px 6px;
   border: var(--bs-border-width) solid #a6a7a8 !important;
+}
+.form-label {
+  margin-bottom: 6px;
 }
 
 b,
@@ -659,8 +663,8 @@ h5 {
 
 .ts-wrapper .ts-control {
   width: 100% !important;
-  min-height: 30.1px !important;
-  height: 30px !important;
+  min-height: 27.6px !important;
+  height: 27.6px !important;
   padding: 5.25px 10.5px !important;
   font-size: 12px !important;
   border: var(--bs-border-width) solid #8d8d8d !important;
@@ -978,4 +982,198 @@ h5 {
   font-weight: 800 !important;
   color: #1e00ff;
   font-size: 14px !important;
+}
+
+/* MTRB optional process header */
+.mtrb-process-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 6px;
+  min-width: 0;
+}
+
+.mtrb-process-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Yes / No radio group */
+.mtrb-process-options {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mtrb-process-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.mtrb-process-option input[type="radio"] {
+  margin: 0;
+  width: 13px;
+  height: 13px;
+  accent-color: #0d6efd;
+  cursor: pointer;
+}
+
+/* Cost input displayed after selecting Yes */
+.mtrb-process-cost {
+  width: 100%;
+  min-width: 0;
+  font-size: 12px;
+  border: 1px solid #a6a7a8;
+  border-radius: 4px;
+  padding: 4px 6px;
+  box-sizing: border-box;
+}
+
+.mtrb-process-cost:focus {
+  outline: none;
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .mtrb-process-header {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .mtrb-process-options {
+    gap: 10px;
+  }
+}
+.process-cost-table-section {
+  border: 1px solid #e1e6ed;
+  background: #fff;
+}
+.process-cost-table {
+  margin-bottom: 0;
+  min-width: 900px;
+  font-size: 12px;
+}
+.process-cost-table thead th {
+  background: #f3f6fa;
+  color: #344054;
+  font-weight: 700;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.process-cost-table tbody td {
+  padding: 2px 6px;
+  vertical-align: middle;
+}
+.process-rate-readonly,
+.process-cost-readonly {
+  background: #f8fafc !important;
+  color: #344054;
+  font-weight: 600;
+  text-align: right;
+  min-width: 90px;
+}
+.process-cost-readonly {
+  color: #126b45;
+}
+.process-required-toggle {
+  display: inline-flex;
+  padding: 2px 6px;
+  gap: 2px;
+  background: #f1f4f8;
+  border-radius: 0px;
+}
+.process-required-option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 2px 7px;
+  margin: 0;
+  border-radius: 14px;
+  font-size: 10px;
+  cursor: pointer;
+  color: #475467;
+}
+.process-required-option input {
+  margin: 0;
+  accent-color: #1677d2;
+}
+.process-required-option.active {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
+  color: #175cd3;
+  font-weight: 700;
+}
+.process-table-input {
+  min-width: 120px;
+}
+.process-table-input label {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 10px;
+}
+.process-table-input-group {
+  display: flex;
+  gap: 8px;
+}
+.process-table-input-group > * {
+  flex: 1;
+  min-width: 110px;
+}
+@media (max-width: 768px) {
+  .process-cost-table-section {
+    padding: 8px;
+  }
+  .process-cost-table-section > .d-flex {
+    align-items: flex-start !important;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+/* Default percentage span */
+.input-group .input-group-text {
+  background-color: #f1f3f5 !important;
+  color: #343a40;
+  border: 1px solid #a6a7a8 !important;
+  border-left: none !important;
+  border-radius: 0 4px 4px 0 !important;
+  padding: 4px 10px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+/* Span when Loading Wt. % has a value */
+.input-group .input-group-text.percentage-filled {
+  background-color: #cbffd0 !important;
+  color: #1e00ff !important;
+  border-left: none !important;
+}
+
+/* Customer field when a value is selected */
+.ts-wrapper.field-filled .ts-control {
+  background-color: #cbffd0 !important;
+  color: #1e00ff !important;
+  font-weight: 600 !important;
+}
+
+.ts-wrapper.field-filled .ts-control .item {
+  color: #1e00ff !important;
+  font-weight: 600 !important;
+}
+
+/* Customer field when empty */
+.ts-wrapper:not(.field-filled) .ts-control {
+  background-color: #fff !important;
+  border: 1px solid #a6a7a8 !important;
 }

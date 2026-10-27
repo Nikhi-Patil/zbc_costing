@@ -898,7 +898,7 @@ const BopManagement = () => {
           <button
             type="button"
             className="bop-delete-btn"
-            onClick={() => handleDelete(row)}
+            onClick={() => deleteBopRow(rowIndex)}
             title="Delete"
           >
             <X size={15} />

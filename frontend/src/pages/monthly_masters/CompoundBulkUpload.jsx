@@ -367,6 +367,7 @@ const CompoundBulkUpload = () => {
         });
 
         setRows(parsedRows);
+        setLoading(false);
 
         showToast(
           `${parsedRows.length} row(s) loaded successfully.`,
@@ -453,68 +454,73 @@ const CompoundBulkUpload = () => {
   const handleSave = async () => {
     if (!rows.length) {
       showToast("Please upload an Excel file first.", "error");
-
       return;
     }
 
     if (invalidRows.length > 0) {
       showToast(
-        `Cannot upload.\n${invalidRows.length} row(s) have validation errors.`,
+        `Cannot upload. ${invalidRows.length} row(s) have validation errors.`,
         "error",
       );
-
-      setCurrentInvalidIndex(-1);
-
-      setTimeout(() => {
-        goToNextInvalidRow();
-      }, 100);
-
       return;
     }
+
+    const uploadData = validRows.map((row) => ({
+      rowNumber: row.rowNumber,
+      imCode: String(row.imCode).trim(),
+      productionUnit: String(row.productionUnit).trim(),
+      financial_year: String(row.financialYear).trim(),
+      month: Number(row.month),
+      qty: Number(row.qty),
+      rate: Number(row.rate),
+    }));
 
     try {
       setLoading(true);
 
-      const uploadData = validRows.map((row) => ({
-        rowNumber: row.rowNumber,
-
-        imCode: String(row.imCode).trim(),
-
-        productionUnit: String(row.productionUnit).trim(),
-
-        financial_year: String(row.financialYear).trim(),
-
-        month: Number(row.month),
-
-        qty: Number(row.qty),
-
-        rate: Number(row.rate),
-      }));
+      console.log("[COMPOUND BULK] Sending request:", {
+        url: `${API_BASE_URL}/monthly-compound-rate/bulk`,
+        rows: uploadData,
+      });
 
       const response = await fetch(
         `${API_BASE_URL}/monthly-compound-rate/bulk`,
         {
           method: "POST",
-
           headers: {
             "Content-Type": "application/json",
           },
-
-          body: JSON.stringify({
-            rows: uploadData,
-          }),
+          body: JSON.stringify({ rows: uploadData }),
         },
       );
 
-      const result = await response.json();
+      const responseText = await response.text();
+
+      let result;
+
+      try {
+        result = JSON.parse(responseText);
+      } catch {
+        console.error("[COMPOUND BULK] Non-JSON response:", responseText);
+
+        throw new Error(
+          `Server returned an invalid response (HTTP ${response.status}). Check the backend logs.`,
+        );
+      }
+
+      console.log("[COMPOUND BULK] HTTP status:", response.status);
+      console.log("[COMPOUND BULK] Response:", result);
 
       if (!response.ok || !result.success) {
-        throw new Error(result.message || "Compound bulk upload failed");
+        throw new Error(
+          result.message ||
+            result.error ||
+            `Save failed with HTTP ${response.status}`,
+        );
       }
 
       showToast(
-        result.message ||
-          `${uploadData.length} record(s) uploaded successfully.`,
+        result.message || `${uploadData.length} record(s) saved successfully.`,
         "success",
       );
 
@@ -522,9 +528,9 @@ const CompoundBulkUpload = () => {
         navigate("/monthly-master/compound");
       }, 1200);
     } catch (error) {
-      console.error("Compound bulk upload error:", error);
+      console.error("[COMPOUND BULK] Save error:", error);
 
-      showToast(error.message || "Compound bulk upload failed", "error");
+      showToast(error.message || "Compound bulk upload failed.", "error");
     } finally {
       setLoading(false);
     }

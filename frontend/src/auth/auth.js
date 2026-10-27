@@ -93,29 +93,35 @@ export const getEmployeeSubDepartments = async (email, unit) => {
 };
 
 // LOGIN
+
 export const loginUser = async ({
   email,
   password,
   unit,
   sub_department,
 }) => {
+  const payload = { email, password };
+
+  if (unit != null && unit !== "") payload.unit = unit;
+  if (sub_department != null && sub_department !== "") {
+    payload.sub_department = sub_department;
+  }
+
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      email,
-      password,
-      unit,
-      sub_department,
-    }),
+    body: JSON.stringify(payload),
   });
+
   const data = await getResponseData(response);
+
   if (!response.ok || !data.success) {
     throw new Error(data.message || "Login failed");
   }
-  // Save session permanently until Logout
+
   login(data.user);
   return data;
 };

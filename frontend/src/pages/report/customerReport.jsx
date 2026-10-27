@@ -347,7 +347,11 @@ function CustomerReport() {
           type="button"
           className="cr-value-link cr-profit-link"
           onClick={() =>
-            setSelectedCategory({ customer: row.customer_name, category: null })
+            setSelectedCategory({
+              customer: row.customer_name,
+              category: null,
+              filter: "profit",
+            })
           }
         >
           {formatCurrency(row.profitValue)} <span aria-hidden="true">↑</span>
@@ -365,7 +369,11 @@ function CustomerReport() {
           type="button"
           className="cr-value-link cr-loss-link"
           onClick={() =>
-            setSelectedCategory({ customer: row.customer_name, category: null })
+            setSelectedCategory({
+              customer: row.customer_name,
+              category: null,
+              filter: "loss",
+            })
           }
         >
           {formatCurrency(row.lossValue)} <span aria-hidden="true">↓</span>
@@ -485,22 +493,49 @@ function CustomerReport() {
 
   const detailRows = useMemo(() => {
     if (!selectedCategory) return [];
+
     const customer = customers.find(
       (item) => item.customer_name === selectedCategory.customer,
     );
+
     if (!customer) return [];
+
     const category = selectedCategory.category;
+
     const list = category
       ? customer.categories.find((item) => item.sub_category === category)
           ?.parts || []
       : customer.parts;
-    return [...list].sort(
+
+    const filteredList = list.filter((part) => {
+      if (selectedCategory.filter === "profit") {
+        return part.monthly_profit_loss_value > 0;
+      }
+
+      if (selectedCategory.filter === "loss") {
+        return part.monthly_profit_loss_value < 0;
+      }
+
+      return true;
+    });
+
+    return [...filteredList].sort(
       (a, b) => b.monthly_profit_loss_value - a.monthly_profit_loss_value,
     );
   }, [customers, selectedCategory]);
 
   const detailTitle = selectedCategory
-    ? `${selectedCategory.customer}${selectedCategory.category ? ` — ${selectedCategory.category}` : " — Part List"}`
+    ? [
+        selectedCategory.customer,
+        selectedCategory.category,
+        selectedCategory.filter === "profit"
+          ? "Profit Parts"
+          : selectedCategory.filter === "loss"
+            ? "Loss Parts"
+            : "All Parts",
+      ]
+        .filter(Boolean)
+        .join(" — ")
     : "";
 
   const ExpandedCustomer = ({ data: customer }) => (
@@ -563,9 +598,19 @@ function CustomerReport() {
             name: "Profit Value",
             selector: (row) => row.profitValue,
             cell: (row) => (
-              <span className="cr-positive">
-                {formatCurrency(row.profitValue)}
-              </span>
+              <button
+                type="button"
+                className="cr-value-link cr-profit-link"
+                onClick={() =>
+                  setSelectedCategory({
+                    customer: customer.customer_name,
+                    category: row.sub_category,
+                    filter: "profit",
+                  })
+                }
+              >
+                {formatCurrency(row.profitValue)} ↑
+              </button>
             ),
             center: true,
             width: "150px",
@@ -574,9 +619,19 @@ function CustomerReport() {
             name: "Loss Value",
             selector: (row) => row.lossValue,
             cell: (row) => (
-              <span className="cr-negative">
-                {formatCurrency(row.lossValue)}
-              </span>
+              <button
+                type="button"
+                className="cr-value-link cr-loss-link"
+                onClick={() =>
+                  setSelectedCategory({
+                    customer: customer.customer_name,
+                    category: row.sub_category,
+                    filter: "loss",
+                  })
+                }
+              >
+                {formatCurrency(row.lossValue)} ↓
+              </button>
             ),
             center: true,
             width: "150px",
@@ -713,7 +768,13 @@ function CustomerReport() {
           >
             <div className="cr-detail-header">
               <div>
-                <h2>Part List</h2>
+                <h2>
+                  {selectedCategory?.filter === "profit"
+                    ? "Profit Parts"
+                    : selectedCategory?.filter === "loss"
+                      ? "Loss Parts"
+                      : "Part List"}
+                </h2>
                 <p>{detailTitle}</p>
               </div>
               <button
@@ -777,6 +838,7 @@ const customerTableStyles = {
   },
   cells: { style: { padding: "0px 0px" } },
 };
+
 const categoryTableStyles = {
   ...customerTableStyles,
   headRow: { style: { minHeight: "32px", backgroundColor: "#fff" } },
@@ -797,6 +859,7 @@ const categoryTableStyles = {
     },
   },
 };
+
 const detailTableStyles = {
   ...customerTableStyles,
   tableWrapper: { style: { maxHeight: "calc(100vh - 210px)" } },

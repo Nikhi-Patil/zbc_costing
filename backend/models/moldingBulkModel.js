@@ -13,6 +13,81 @@ const text = (value) => {
     return String(value ?? "").trim();
 };
 
+const normalizePartNo = (value) =>
+    String(value ?? "").trim().toLowerCase();
+
+export const findDuplicatePartNoErrors = async (entries) => {
+    const errors = [];
+    const seenPartNos = new Map();
+    const partNos = [];
+
+    // Check duplicate Part Nos within the uploaded Excel
+    entries.forEach((entry, index) => {
+        const partNo = normalizePartNo(entry.partNo ?? entry.part_no);
+        if (!partNo) return;
+
+        const excelRow = entry.excelRow ?? index + 2;
+
+        if (seenPartNos.has(partNo)) {
+            const firstRow = seenPartNos.get(partNo);
+
+            errors.push({
+                row: excelRow,
+                message: `Duplicate Part No '${entry.partNo ?? entry.part_no}' in Excel. First occurrence is at Excel row ${firstRow}.`,
+            });
+        } else {
+            seenPartNos.set(partNo, excelRow);
+        }
+
+        partNos.push(partNo);
+    });
+
+    if (partNos.length === 0) {
+        return errors;
+    }
+
+    // Check Part Nos already present in the database
+    const uniquePartNos = [...new Set(partNos)];
+
+    const [existingRows] = await zbcDB.query(
+        `SELECT part_no, transaction_id
+     FROM molding_table
+     WHERE LOWER(TRIM(part_no)) IN (?)`,
+        [uniquePartNos]
+    );
+
+    const existingByPartNo = new Map();
+
+    existingRows.forEach((row) => {
+        const key = normalizePartNo(row.part_no);
+
+        if (!existingByPartNo.has(key)) {
+            existingByPartNo.set(key, []);
+        }
+
+        existingByPartNo.get(key).push(row.transaction_id);
+    });
+
+    entries.forEach((entry, index) => {
+        const partNo = normalizePartNo(entry.part_no);
+
+        if (!partNo) return;
+
+        const transactionIds = existingByPartNo.get(partNo);
+
+        if (transactionIds?.length) {
+            errors.push({
+                row: entry.excelRow ?? index + 2,
+                message:
+                    `Part No '${entry.part_no}' already exists in transaction(s): ` +
+                    [...new Set(transactionIds)].join(", "),
+            });
+        }
+    });
+
+    return errors;
+};
+
 const round2 = (value) => {
     return Number(n(value).toFixed(2));
 };
@@ -855,8 +930,8 @@ export const calculateMoldingBulk = async (entries) => {
     if (entries.length > 5000) {
         throw new Error("Maximum 5000 rows can be uploaded at once.");
     }
+    const errors = await findDuplicatePartNoErrors(entries);
     const calculatedRows = [];
-    const errors = [];
     for (let index = 0; index < entries.length; index += 1) {
         const entry = entries[index];
         try {
@@ -883,6 +958,7 @@ export const calculateMoldingBulk = async (entries) => {
 };
 
 export const bulkCreateMolding = async (entries, userName) => {
+
     if (!userName || !String(userName).trim()) {
         throw new Error("Logged-in username is required for bulk upload.");
     }
@@ -894,10 +970,10 @@ export const bulkCreateMolding = async (entries, userName) => {
     if (entries.length > 5000) {
         throw new Error("Maximum 5000 rows can be uploaded at once.");
     }
+    const errors = await findDuplicatePartNoErrors(entries);
 
     /* IMPORTANT: Calculate every row FIRST. We do not begin DB write transaction until every row is valid.*/
     const calculatedRows = [];
-    const errors = [];
     for (let index = 0; index < entries.length; index++) {
         const entry = entries[index];
         try {

@@ -32,16 +32,26 @@ export const verifyEmployee = async (req, res) => {
         message: "Email and Password are required",
       });
     }
-    const cleanEmail = String(email).trim();
 
     // Employee
     const [rows] = await adminDB.query(`
-        SELECT id,user_name,email,password,unit,sub_department,status
-        FROM employee_master
-        WHERE LOWER(TRIM(email)) = LOWER(?)
-        LIMIT 1`,
-      [cleanEmail]
-    );
+      SELECT
+        e.id,
+        e.user_name,
+        e.email,
+        e.password,
+        e.unit,
+        e.department,
+        e.sub_department,
+        e.status,
+        e.designation_id,
+        d.designation
+      FROM employee_master e
+      LEFT JOIN designation_master d
+        ON CAST(e.designation_id AS UNSIGNED) = d.id
+      WHERE LOWER(TRIM(e.email)) = LOWER(?)
+      LIMIT 1
+    `, [String(email).trim()]);
 
     if (rows.length === 0) {
       return res.status(401).json({
@@ -67,6 +77,30 @@ export const verifyEmployee = async (req, res) => {
       });
     }
 
+    const designation = String(employee.designation || "")
+      .trim()
+      .toLowerCase();
+
+    if (designation === "vp" || designation === "admin") {
+      return res.json({
+        success: true,
+        message: "Credentials verified successfully",
+        directLogin: true,
+        user: {
+          id: employee.id,
+          user_name: employee.user_name,
+          email: employee.email,
+          designation,
+          designation_id: employee.designation_id,
+          status: employee.status,
+          unit: null,
+          unit_name: null,
+          department: employee.department,
+          sub_department: null,
+          sub_department_name: null,
+        },
+      });
+    }
     // Employee units
     const unitIds = getIdList(employee.unit);
 
@@ -136,14 +170,24 @@ export const getEmployeeSubDepartments = async (req, res) => {
     }
 
     // Employee
-    const [employeeRows] =
-      await adminDB.query(`
-          SELECT id,user_name,email,unit,department,sub_department,status
-          FROM employee_master
-          WHERE LOWER(TRIM(email)) = LOWER(?)
-          LIMIT 1 `,
-        [String(email).trim()]
-      );
+    const [employeeRows] = await adminDB.query(`
+      SELECT
+        e.id,
+        e.user_name,
+        e.email,
+        e.password,
+        e.unit,
+        e.department,
+        e.sub_department,
+        e.status,
+        e.designation_id,
+        d.designation
+      FROM employee_master e
+      LEFT JOIN designation_master d
+        ON CAST(e.designation_id AS UNSIGNED) = d.id
+      WHERE LOWER(TRIM(e.email)) = LOWER(?)
+      LIMIT 1
+    `, [String(email).trim()]);
 
     if (employeeRows.length === 0) {
       return res.status(404).json({
@@ -287,8 +331,103 @@ export const getEmployeeSubDepartments = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password, unit, sub_department } = req.body;
-    // Required
-    if (!email || !password || !unit || !sub_department) {
+
+    // Initially require only email and password
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and Password are required",
+      });
+    }
+
+
+
+    // ZBC module
+    const misModuleId = Number(req.misModule?.id);
+    if (!Number.isInteger(misModuleId) || misModuleId <= 0) {
+      return res.status(403).json({
+        success: false,
+        message: "ZBC module access is not available",
+      });
+    }
+
+    // Employee
+    const [employeeRows] = await adminDB.query(`
+  SELECT
+    e.id,
+    e.user_name,
+    e.email,
+    e.password,
+    e.unit,
+    e.department,
+    e.sub_department,
+    e.status,
+    e.designation_id,
+    d.designation
+  FROM employee_master e
+  LEFT JOIN designation_master d
+    ON CAST(e.designation_id AS UNSIGNED) = d.id
+  WHERE LOWER(TRIM(e.email)) = LOWER(?)
+  LIMIT 1
+`, [String(email).trim()]);
+
+    if (employeeRows.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Email or Password",
+      });
+    }
+    const employee = employeeRows[0];
+
+    // Password
+    if (String(employee.password) !== String(password)) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Email or Password",
+      });
+    }
+
+    const designation = String(employee.designation || "")
+      .trim()
+      .toLowerCase();
+
+    // VP and Admin: email + password only
+    if (["vp", "admin"].includes(designation)) {
+      req.session.user = {
+        id: employee.id,
+        user_name: employee.user_name,
+        email: employee.email,
+        designation,
+        unit: null,
+        sub_department: null,
+      };
+
+      await new Promise((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+
+      return res.json({
+        success: true,
+        message: "Login successful",
+        user: {
+          id: employee.id,
+          user_name: employee.user_name,
+          email: employee.email,
+          designation,
+          status: employee.status,
+          unit: null,
+          unit_name: null,
+          sub_department: null,
+          sub_department_name: null,
+        },
+      });
+    }
+
+    // All other roles must provide Unit and Sub Department
+    if (!unit || !sub_department) {
       return res.status(400).json({
         success: false,
         message: "Email, Password, Unit and Sub Department are required",
@@ -311,41 +450,6 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // ZBC module
-    const misModuleId = Number(req.misModule?.id);
-    if (!Number.isInteger(misModuleId) || misModuleId <= 0) {
-      return res.status(403).json({
-        success: false,
-        message: "ZBC module access is not available",
-      });
-    }
-
-    // Employee
-    const [employeeRows] =
-      await adminDB.query(`
-        SELECT id,user_name,email,password,unit,sub_department,status
-        FROM employee_master
-        WHERE LOWER(TRIM(email)) = LOWER(?)
-        LIMIT 1 `,
-        [String(email).trim()]
-      );
-
-    if (employeeRows.length === 0) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid Email or Password",
-      });
-    }
-    const employee = employeeRows[0];
-
-    // Password
-    if (String(employee.password) !== String(password)) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid Email or Password",
-      });
-    }
-
     // Active
     if (!isActive(employee.status)) {
       return res.status(403).json({
@@ -353,6 +457,7 @@ export const loginUser = async (req, res) => {
         message: "Employee account is inactive",
       });
     }
+
 
     // USER ACCESS
     const [accessRows] =
@@ -438,6 +543,25 @@ export const loginUser = async (req, res) => {
       });
     }
     const unitName = unitRows[0].unit;
+    req.session.user = {
+      id: employee.id,
+      user_name: employee.user_name,
+      email: employee.email,
+      unit: selectedUnit,
+      sub_department: selectedSubDepartment,
+    };
+
+    // Save session before returning successful login
+    await new Promise((resolve, reject) => {
+      req.session.save((error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    });
+
 
     // LOGIN SUCCESS
     return res.json({

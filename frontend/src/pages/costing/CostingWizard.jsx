@@ -11,6 +11,13 @@ import BottomLineForm from "../../components/costing/BottomLineForm";
 import API_BASE_URL from "../../config/api";
 import { getUser } from "../../auth/auth";
 
+const getOptionalProcessAnswer = (value) => {
+  if (value === "" || value === null || value === undefined) return "No";
+
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount !== 0 ? "Yes" : "No";
+};
+
 const getTodayDate = () => {
   const today = new Date();
   const year = today.getFullYear();
@@ -89,6 +96,36 @@ function CostingWizard() {
     adhesive: "",
     painting: "",
     cylindricalGrinding: "",
+    plating: "",
+    // Required selections used by ProcessDetailsForm.
+    postCuringRequired: "No",
+    finishingRequired: "No",
+    inspectionRequired: "No",
+    shotBlastingRequired: "No",
+    vapourDegreasingRequired: "No",
+    chromatingRequired: "No",
+    phospatingRequired: "No",
+    adhesiveRequired: "No",
+    paintingRequired: "No",
+    platingRequired: "No",
+    cylindricalGrindingRequired: "No",
+    // Inputs used by margin-master-based process calculations
+    bopWeight: "",
+    bopArea: "",
+    paintArea: "",
+    paintPerLit: "",
+    finishedPartWeight: "",
+    metalPartArea: "",
+    // Rates fetched from Margin Master (not user-editable)
+    postCuringRate: 0,
+    shotBlastingRate: 0,
+    vapourDegreasingRate: 0,
+    chromatingRate: 0,
+    phospatingRate: 0,
+    adhesiveRate: 0,
+    paintingRate: 0,
+    platingRate: 0,
+    cylindricalGrindingRate: 0,
     assemblyQty: "",
     assemblyPerCost: "",
     totalAssemblyCost: "",
@@ -150,11 +187,6 @@ function CostingWizard() {
 
   // LOAD MARGIN MASTER DEFAULTS
   useEffect(() => {
-    // Do not overwrite an existing costing
-    if (urlTransactionId) {
-      return;
-    }
-
     const fetchMargins = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/margins`);
@@ -175,35 +207,54 @@ function CostingWizard() {
         setFormData((prev) => ({
           ...prev,
 
-          iccOnRm:
-            marginMap["icc"] !== undefined
-              ? String(marginMap["icc"])
-              : prev.iccOnRm,
+          // Process rates are always loaded from Margin Master, including when
+          // reopening a saved transaction.
+          postCuringRate:
+            marginMap["post curing charges"] ?? prev.postCuringRate,
+          shotBlastingRate: marginMap["shot blasting"] ?? prev.shotBlastingRate,
+          vapourDegreasingRate:
+            marginMap["vapour degreasing"] ?? prev.vapourDegreasingRate,
+          chromatingRate: marginMap["chromating"] ?? prev.chromatingRate,
+          phospatingRate: marginMap["phospating"] ?? prev.phospatingRate,
+          adhesiveRate: marginMap["adhesive"] ?? prev.adhesiveRate,
+          paintingRate: marginMap["painting"] ?? prev.paintingRate,
+          platingRate: marginMap["plating"] ?? prev.platingRate,
+          cylindricalGrindingRate:
+            marginMap["cylindrical grinding"] ?? prev.cylindricalGrindingRate,
 
-          rejOnSubtotal:
-            marginMap["rejection"] !== undefined
-              ? String(marginMap["rejection"])
-              : prev.rejOnSubtotal,
+          ...(urlTransactionId
+            ? {}
+            : {
+                iccOnRm:
+                  marginMap["icc"] !== undefined
+                    ? String(marginMap["icc"])
+                    : prev.iccOnRm,
 
-          ohOnSubtotal:
-            marginMap["over head (o/h)"] !== undefined
-              ? String(marginMap["over head (o/h)"])
-              : prev.ohOnSubtotal,
+                rejOnSubtotal:
+                  marginMap["rejection"] !== undefined
+                    ? String(marginMap["rejection"])
+                    : prev.rejOnSubtotal,
 
-          profitOnSubtotal:
-            marginMap["profit"] !== undefined
-              ? String(marginMap["profit"])
-              : prev.profitOnSubtotal,
+                ohOnSubtotal:
+                  marginMap["over head (o/h)"] !== undefined
+                    ? String(marginMap["over head (o/h)"])
+                    : prev.ohOnSubtotal,
 
-          packagingOnSubtotal:
-            marginMap["packaging"] !== undefined
-              ? String(marginMap["packaging"])
-              : prev.packagingOnSubtotal,
+                profitOnSubtotal:
+                  marginMap["profit"] !== undefined
+                    ? String(marginMap["profit"])
+                    : prev.profitOnSubtotal,
 
-          transportOnSubtotal:
-            marginMap["transport"] !== undefined
-              ? String(marginMap["transport"])
-              : prev.transportOnSubtotal,
+                packagingOnSubtotal:
+                  marginMap["packaging"] !== undefined
+                    ? String(marginMap["packaging"])
+                    : prev.packagingOnSubtotal,
+
+                transportOnSubtotal:
+                  marginMap["transport"] !== undefined
+                    ? String(marginMap["transport"])
+                    : prev.transportOnSubtotal,
+              }),
         }));
       } catch (error) {
         console.error("Failed to load margin defaults:", error);
@@ -288,6 +339,27 @@ function CostingWizard() {
         postCuring: data.post_curing ?? prev.postCuring,
         finishing: data.finishing ?? prev.finishing,
         inspection: data.inspection ?? prev.inspection,
+        postCuringRequired: getOptionalProcessAnswer(
+          data.post_curing ?? data.postCuring,
+        ),
+        finishingRequired: getOptionalProcessAnswer(data.finishing),
+        inspectionRequired: getOptionalProcessAnswer(data.inspection),
+        shotBlastingRequired: getOptionalProcessAnswer(
+          data.shot_blasting ?? data.shotBlasting,
+        ),
+        vapourDegreasingRequired: getOptionalProcessAnswer(
+          data.vapour_degreasing ?? data.vapourDegreasing,
+        ),
+        chromatingRequired: getOptionalProcessAnswer(data.chromating),
+        phospatingRequired: getOptionalProcessAnswer(
+          data.phospating ?? data.phosphating,
+        ),
+        adhesiveRequired: getOptionalProcessAnswer(data.adhesive),
+        paintingRequired: getOptionalProcessAnswer(data.painting),
+        platingRequired: getOptionalProcessAnswer(data.plating),
+        cylindricalGrindingRequired: getOptionalProcessAnswer(
+          data.cylindrical_grinding ?? data.cylindricalGrinding,
+        ),
         shotBlasting:
           data.shot_blasting ?? data.shotBlasting ?? prev.shotBlasting,
         vapourDegreasing:
@@ -302,6 +374,17 @@ function CostingWizard() {
           data.cylindrical_grinding ??
           data.cylindricalGrinding ??
           prev.cylindricalGrinding,
+        plating: data.plating ?? prev.plating,
+        bopWeight: data.bop_weight ?? data.bopWeight ?? prev.bopWeight,
+        bopArea: data.bop_area ?? data.bopArea ?? prev.bopArea,
+        paintArea: data.paint_area ?? data.paintArea ?? prev.paintArea,
+        paintPerLit: data.paint_per_lit ?? data.paintPerLit ?? prev.paintPerLit,
+        finishedPartWeight:
+          data.finished_part_weight ??
+          data.finishedPartWeight ??
+          prev.finishedPartWeight,
+        metalPartArea:
+          data.metal_part_area ?? data.metalPartArea ?? prev.metalPartArea,
         assemblyQty: data.assembly_qty ?? prev.assemblyQty,
         assemblyPerCost: data.assembly_per_cost ?? prev.assemblyPerCost,
         totalAssemblyCost: data.total_assembly_cost ?? prev.totalAssemblyCost,
@@ -1003,39 +1086,85 @@ function CostingWizard() {
 
   useEffect(() => {
     const assemblyPerCost = parseFloat(formData.assemblyPerCost) || 0;
-    const postCuring = parseFloat(formData.postCuring) || 0;
-    const finishing = parseFloat(formData.finishing) || 0;
-    const inspection = parseFloat(formData.inspection) || 0;
-    const shotBlasting = parseFloat(formData.shotBlasting) || 0;
-    const vapourDegreasing = parseFloat(formData.vapourDegreasing) || 0;
-    const chromating = parseFloat(formData.chromating) || 0;
-    const phospating = parseFloat(formData.phospating) || 0;
-    const adhesive = parseFloat(formData.adhesive) || 0;
-    const painting = parseFloat(formData.painting) || 0;
-    const cylindricalGrinding = parseFloat(formData.cylindricalGrinding) || 0;
-    const processCostA = parseFloat(formData.processCostA) || 0;
+    const finishing = Number(formData.finishing) || 0;
+    const inspection = Number(formData.inspection) || 0;
+    const netWeight = Number(formData.netWeight) || 0;
+    const bopWeight = Number(formData.bopWeight) || 0;
+    const bopArea = Number(formData.bopArea) || 0;
+    const paintArea = Number(formData.paintArea) || 0;
+    const paintPerLit = Number(formData.paintPerLit) || 0;
+    const finishedPartWeight = Number(formData.finishedPartWeight) || 0;
+    const metalPartArea = Number(formData.metalPartArea) || 0;
+
+    const postCuring =
+      formData.postCuringRequired === "Yes"
+        ? ((Number(formData.postCuringRate) || 0) * netWeight) / 1000
+        : 0;
+    const shotBlasting =
+      formData.shotBlastingRequired === "Yes"
+        ? (Number(formData.shotBlastingRate) || 0) * bopWeight
+        : 0;
+    const vapourDegreasing =
+      formData.vapourDegreasingRequired === "Yes"
+        ? (Number(formData.vapourDegreasingRate) || 0) * bopWeight
+        : 0;
+    const chromating =
+      formData.chromatingRequired === "Yes"
+        ? (Number(formData.chromatingRate) || 0) * bopWeight
+        : 0;
+    const phospating =
+      formData.phospatingRequired === "Yes"
+        ? (Number(formData.phospatingRate) || 0) * bopWeight
+        : 0;
+    const adhesive =
+      formData.adhesiveRequired === "Yes"
+        ? (Number(formData.adhesiveRate) || 0) * bopArea
+        : 0;
+    const painting =
+      formData.paintingRequired === "Yes"
+        ? (((Number(formData.paintingRate) || 0) * paintArea) / 1000) *
+          paintPerLit
+        : 0;
+    const plating =
+      formData.platingRequired === "Yes"
+        ? ((Number(formData.platingRate) || 0) * finishedPartWeight)/1000
+        : 0;
+    const cylindricalGrinding =
+      formData.cylindricalGrindingRequired === "Yes"
+        ? (Number(formData.cylindricalGrindingRate) || 0) * metalPartArea
+        : 0;
     const totalAssemblyCost =
       formData.hasBop === "Yes" ? totalAssemblyQty * assemblyPerCost : 0;
 
-    // Process Cost B
     const processCostB =
-      postCuring +
       finishing +
       inspection +
+      postCuring +
       shotBlasting +
       vapourDegreasing +
       chromating +
       phospating +
       adhesive +
       painting +
+      plating +
       cylindricalGrinding +
       totalAssemblyCost;
 
+    const processCostA = parseFloat(formData.processCostA) || 0;
     // Total Conversion Cost
     const conversionCost = processCostA + processCostB;
 
     setFormData((prev) => ({
       ...prev,
+      postCuring: postCuring.toFixed(2),
+      shotBlasting: shotBlasting.toFixed(2),
+      vapourDegreasing: vapourDegreasing.toFixed(2),
+      chromating: chromating.toFixed(2),
+      phospating: phospating.toFixed(2),
+      adhesive: adhesive.toFixed(2),
+      painting: painting.toFixed(2),
+      plating: plating.toFixed(2),
+      cylindricalGrinding: cylindricalGrinding.toFixed(2),
       totalAssemblyCost: totalAssemblyCost.toFixed(2),
       processCostB: processCostB.toFixed(2),
       conversionCost: conversionCost.toFixed(2),
@@ -1044,7 +1173,33 @@ function CostingWizard() {
     totalAssemblyQty,
     formData.hasBop,
     formData.assemblyPerCost,
-    formData.postCuring,
+    formData.postCuringRequired,
+    formData.finishing,
+    formData.inspection,
+    formData.postCuringRate,
+    formData.netWeight,
+    formData.bopWeight,
+    formData.bopArea,
+    formData.paintArea,
+    formData.paintPerLit,
+    formData.finishedPartWeight,
+    formData.metalPartArea,
+    formData.shotBlastingRequired,
+    formData.shotBlastingRate,
+    formData.vapourDegreasingRequired,
+    formData.vapourDegreasingRate,
+    formData.chromatingRequired,
+    formData.chromatingRate,
+    formData.phospatingRequired,
+    formData.phospatingRate,
+    formData.adhesiveRequired,
+    formData.adhesiveRate,
+    formData.paintingRequired,
+    formData.paintingRate,
+    formData.platingRequired,
+    formData.platingRate,
+    formData.cylindricalGrindingRequired,
+    formData.cylindricalGrindingRate,
     formData.finishing,
     formData.inspection,
     formData.shotBlasting,

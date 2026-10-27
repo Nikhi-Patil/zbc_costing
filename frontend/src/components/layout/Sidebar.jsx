@@ -98,7 +98,7 @@ function Sidebar({ isOpen }) {
                 </li>
 
                 {/* Customer Wise Report */}
-                <li>
+                {/* <li>
                   <NavLink
                     to="/customer-report"
                     className={({ isActive }) =>
@@ -109,7 +109,7 @@ function Sidebar({ isOpen }) {
 
                     <span className="sidebar-manue">Customer Wise Report</span>
                   </NavLink>
-                </li>
+                </li> */}
               </ul>
             )}
           </li>

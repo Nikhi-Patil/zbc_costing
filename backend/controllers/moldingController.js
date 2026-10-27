@@ -35,18 +35,37 @@ export const saveDraft = async (req, res) => {
             });
         }
 
-        if (!formData) {
+        if (!formData || typeof formData !== "object" || Array.isArray(formData)) {
             return res.status(400).json({
                 success: false,
-                message: "Form data is required."
+                message: "Valid form data is required."
             });
+        }
+
+        // Keep Required selections and costs consistent with ProcessDetailsForm.
+        // If a Required flag was not sent by an older client, infer it from its cost.
+        const processFields = [
+            "postCuring", "finishing", "inspection", "shotBlasting",
+            "vapourDegreasing", "chromating", "phospating", "adhesive",
+            "painting", "plating", "cylindricalGrinding"
+        ];
+        const normalizedFormData = { ...formData };
+        for (const field of processFields) {
+            const requiredKey = `${field}Required`;
+            const supplied = normalizedFormData[requiredKey];
+            const inferred = Number(normalizedFormData[field] || 0) !== 0 ? "Yes" : "No";
+            normalizedFormData[requiredKey] =
+                supplied === "Yes" || supplied === "No" ? supplied : inferred;
+            if (normalizedFormData[requiredKey] === "No") {
+                normalizedFormData[field] = 0;
+            }
         }
 
         let result;
         if (transactionId) {
-            result = await updateDraft(transactionId, formData, bops, loggedInUser);
+            result = await updateDraft(transactionId, normalizedFormData, bops, loggedInUser);
         } else {
-            result = await createDraft(formData, bops, loggedInUser);
+            result = await createDraft(normalizedFormData, bops, loggedInUser);
         }
         return res.status(200).json({
             success: true,

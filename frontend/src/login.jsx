@@ -6,9 +6,9 @@ import {
   verifyEmployee,
   getEmployeeSubDepartments,
   loginUser,
-} from "../auth/auth";
+} from "./auth/auth";
 
-import "../assets/css/components/login.css";
+import "./assets/css/components/login.css";
 
 function Login() {
   const navigate = useNavigate();
@@ -41,14 +41,9 @@ function Login() {
     setError("");
     setSuccess("");
 
-    if (!email.trim()) {
-      setError("Please enter your email.");
-      return false;
-    }
-
-    if (!password) {
-      setError("Please enter your password.");
-      return false;
+    if (!email.trim() || !password) {
+      setError("Please enter your email and password.");
+      return;
     }
 
     try {
@@ -56,34 +51,37 @@ function Login() {
 
       const data = await verifyEmployee(email.trim(), password);
 
-      // Verification successful
+      const designation = String(
+        data.designation ?? data.user?.designation ?? "",
+      )
+        .trim()
+        .toLowerCase();
+
+      console.log("[LOGIN] Verified designation:", designation);
+
+      if (["vp", "admin"].includes(designation)) {
+        const result = await loginUser({
+          email: email.trim(),
+          password,
+        });
+
+        // Both VP and Admin go to the VP dashboard
+        navigate("/vp/dashboard", { replace: true });
+
+        return;
+      }
+
       setVerified(true);
-
-      // Store authorized units
       setUnits(data.units || []);
-
-      // Clear previous selections
       setUnitId("");
       setSubDepartmentId("");
       setSubDepartments([]);
-
       setSuccess(
-        "Credentials verified successfully. Please select your Unit and Sub Department.",
+        "Credentials verified. Please select your Unit and Sub Department.",
       );
-
-      return true;
     } catch (err) {
-      // Verification failed
-      setVerified(false);
-
-      setUnits([]);
-      setUnitId("");
-      setSubDepartmentId("");
-      setSubDepartments([]);
-
-      setError(err.message || "Invalid Email or Password.");
-
-      return false;
+      console.error("[LOGIN] Verification/login failed:", err);
+      setError(err.message || "Login failed.");
     } finally {
       setLoading(false);
     }

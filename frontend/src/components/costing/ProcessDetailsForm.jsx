@@ -40,6 +40,276 @@ function ProcessDetailsForm({
     (machine) => machine.molding_process === formData.processType,
   );
 
+  const isMtrb =
+    String(formData.subCategoryName || "")
+      .trim()
+      .toUpperCase() === "MTRB";
+
+  const processRows = [
+    {
+      label: "Post Curing",
+      field: "postCuring",
+      rate: "postCuringRate",
+      measure: "netWeight",
+    },
+    ...(isMtrb
+      ? [
+          {
+            label: "Shot Blasting",
+            field: "shotBlasting",
+            rate: "shotBlastingRate",
+            measure: "bopWeight",
+          },
+          {
+            label: "Vapour Degreasing",
+            field: "vapourDegreasing",
+            rate: "vapourDegreasingRate",
+            measure: "bopWeight",
+          },
+          {
+            label: "Chromating",
+            field: "chromating",
+            rate: "chromatingRate",
+            measure: "bopWeight",
+          },
+          {
+            label: "Phospating",
+            field: "phospating",
+            rate: "phospatingRate",
+            measure: "bopWeight",
+          },
+          {
+            label: "Adhesive",
+            field: "adhesive",
+            rate: "adhesiveRate",
+            measure: "bopArea",
+          },
+          {
+            label: "Painting",
+            field: "painting",
+            rate: "paintingRate",
+            measure: "paintArea",
+          },
+          {
+            label: "Plating",
+            field: "plating",
+            rate: "platingRate",
+            measure: "finishedPartWeight",
+          },
+          {
+            label: "Cylindrical Grinding",
+            field: "cylindricalGrinding",
+            rate: "cylindricalGrindingRate",
+            measure: "metalPartArea",
+          },
+        ]
+      : []),
+  ];
+
+  const getRequiredValue = (fieldName) => {
+    const savedCost = formData[fieldName];
+    const inferred =
+      savedCost !== "" &&
+      savedCost !== null &&
+      savedCost !== undefined &&
+      Number.isFinite(Number(savedCost)) &&
+      Number(savedCost) !== 0
+        ? "Yes"
+        : "No";
+    return formData[`${fieldName}Required`] ?? inferred;
+  };
+
+  const handleOptionalProcessChange = (fieldName, value) => {
+    handleInputChange({
+      target: { name: `${fieldName}Required`, value },
+    });
+
+    // Clear the calculated cost when a process is switched off.
+    if (value === "No") {
+      handleInputChange({ target: { name: fieldName, value: "0" } });
+    }
+  };
+
+  const selectedBopWeightProcess = [
+    "shotBlasting",
+    "vapourDegreasing",
+    "chromating",
+    "phospating",
+  ].find((field) => getRequiredValue(field) === "Yes");
+
+  const renderMeasurement = (name, label, unit = "") => (
+    <div
+      className="process-table-input"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        width: "100%",
+        minWidth: 0,
+      }}
+    >
+      <label
+        htmlFor={`process-measure-${name}`}
+        className="small text-muted mb-0"
+        style={{ flex: "0 0 42%", whiteSpace: "normal" }}
+      >
+        {label}:
+      </label>
+
+      <div
+        className="input-group input-group-sm"
+        style={{ flex: "1 1 0", minWidth: 0 }}
+      >
+        <input
+          id={`process-measure-${name}`}
+          type="number"
+          min="0"
+          step="0.01"
+          className="form-control"
+          name={name}
+          value={formData[name] ?? ""}
+          onChange={handleInputChange}
+          readOnly={readOnly}
+          placeholder="Enter value"
+        />
+        {unit && <span className="input-group-text">{unit}</span>}
+      </div>
+    </div>
+  );
+
+  const renderProcessMeasurement = (row) => {
+    if (getRequiredValue(row.field) !== "Yes") {
+      return (
+        <div
+          style={{
+            textAlign: "center",
+            width: "100%",
+          }}
+        >
+          <span className="text-muted">—</span>
+        </div>
+      );
+    }
+    if (row.measure === "netWeight") {
+      return (
+        <div
+          className="process-table-input"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            width: "100%",
+            minWidth: 0,
+          }}
+        >
+          <label
+            className="small text-muted mb-0"
+            style={{
+              flex: "0 0 42%",
+              whiteSpace: "normal",
+            }}
+          >
+            Net Weight (gm) :
+          </label>
+
+          <div
+            className="input-group input-group-sm"
+            style={{ flex: "1 1 0", minWidth: 0 }}
+          >
+            <input
+              type="text"
+              className="form-control process-cost-readonly"
+              value={formData.netWeight ?? ""}
+              readOnly
+              aria-label="Net Weight"
+            />
+
+            <span className="input-group-text">gm</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (row.measure === "bopWeight") {
+      const isEditable = row.field === selectedBopWeightProcess;
+
+      return (
+        <div
+          className="process-table-input"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            width: "100%",
+            minWidth: 0,
+          }}
+        >
+          <label
+            className="small text-muted mb-0"
+            style={{
+              flex: "0 0 42%",
+              whiteSpace: "normal",
+            }}
+          >
+            BOP Weight (Kg) :
+          </label>
+
+          <div
+            className="input-group input-group-sm"
+            style={{ flex: "1 1 0", minWidth: 0 }}
+          >
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              className="form-control"
+              style={{ minWidth: 0 }}
+              name="bopWeight"
+              value={formData.bopWeight ?? ""}
+              onChange={isEditable ? handleInputChange : undefined}
+              readOnly={!isEditable || readOnly}
+              placeholder="Enter value"
+            />
+
+            <span className="input-group-text">Kg</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (row.measure === "bopArea")
+      return renderMeasurement("bopArea", "BOP Area (sq. cm)", "sq. cm");
+    if (row.measure === "paintArea") {
+      return (
+        <div
+          className="process-table-input-group"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+            width: "100%",
+          }}
+        >
+          {renderMeasurement("paintArea", "Area of Paint (sq. cm)", "sq. cm")}
+          {renderMeasurement("paintPerLit", "Paint Rate Per Ltr", "Ltr")}
+        </div>
+      );
+    }
+    if (row.measure === "finishedPartWeight")
+      return renderMeasurement(
+        "finishedPartWeight",
+        "Finished Part Weight (gm)",
+        "gm",
+      );
+    if (row.measure === "metalPartArea")
+      return renderMeasurement(
+        "metalPartArea",
+        "Area of Metal Part (sq. cm)",
+        "sq. cm",
+      );
+    return <span className="text-muted">—</span>;
+  };
+
   return (
     <fieldset
       disabled={readOnly}
@@ -62,7 +332,6 @@ function ProcessDetailsForm({
 
         <div className="card-body">
           {/* Row 1 */}
-
           <div className="row g-2 mt-1 process-row ">
             <div className="col-md-2">
               <label className="form-label">
@@ -168,7 +437,6 @@ function ProcessDetailsForm({
           </div>
 
           {/* Row 2 */}
-
           <div className="row g-2 mt-1 process-row">
             <div className="col-md-2">
               <label className="form-label">
@@ -258,178 +526,217 @@ function ProcessDetailsForm({
             </div>
           </div>
 
-          {/* Row 3 - Post Processing */}
-          <div className="row g-2 mt-1 process-row">
-            <div className="col-md-2">
-              <label className="form-label">
-                <b>Post Curing</b>
-              </label>
-              <input
-                type="number"
-                className={`form-control ${
-                  formData.postCuring ? "field-filled" : ""
-                }`}
-                name="postCuring"
-                value={formData.postCuring ?? ""}
-                onChange={handleInputChange}
-              />
+          {/* Process cost table */}
+          <div className="process-cost-table-section mt-3">
+            <div className="table-responsive">
+              <table className="table table-bordered table-hover align-middle process-cost-table">
+                <thead>
+                  <tr>
+                    <th
+                      style={{
+                        width: "22%",
+                        textAlign: "center",
+                        verticalAlign: "middle",
+                      }}
+                    >
+                      Process
+                    </th>
+                    <th
+                      style={{
+                        width: "10%",
+                        textAlign: "center",
+                        verticalAlign: "middle",
+                      }}
+                    >
+                      Required
+                    </th>
+                    <th
+                      style={{
+                        width: "13%",
+                        textAlign: "center",
+                        verticalAlign: "middle",
+                      }}
+                    >
+                      Rate
+                    </th>
+                    <th
+                      style={{
+                        width: "35%",
+                        textAlign: "center",
+                        verticalAlign: "middle",
+                      }}
+                    >
+                      Measurement Input
+                    </th>
+                    <th
+                      style={{
+                        width: "20%",
+                        textAlign: "center",
+                        verticalAlign: "middle",
+                      }}
+                    >
+                      Calculated Cost
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { label: "Finishing", field: "finishing" },
+                    { label: "Inspection", field: "inspection" },
+                  ].map((row) => {
+                    const requiredValue = getRequiredValue(row.field);
+                    const cost = Number(formData[row.field]) || 0;
+
+                    return (
+                      <tr key={row.field}>
+                        <td>
+                          <div className="fw-semibold">{row.label}</div>
+                        </td>
+                        <td>
+                          <div
+                            className="process-required-toggle"
+                            role="group"
+                            aria-label={`${row.label} required`}
+                          >
+                            {["Yes", "No"].map((option) => (
+                              <label
+                                className={`process-required-option ${requiredValue === option ? "active" : ""}`}
+                                key={option}
+                              >
+                                <input
+                                  type="radio"
+                                  name={`${row.field}Required`}
+                                  value={option}
+                                  checked={requiredValue === option}
+                                  onChange={() =>
+                                    handleOptionalProcessChange(
+                                      row.field,
+                                      option,
+                                    )
+                                  }
+                                />
+                                {option}
+                              </label>
+                            ))}
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ textAlign: "center", width: "100%" }}>
+                            <span className="text-muted">—</span>
+                          </div>
+                        </td>
+                        <td>
+                          {requiredValue === "Yes" ? (
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              className="form-control form-control-sm"
+                              name={row.field}
+                              value={formData[row.field] ?? ""}
+                              onChange={handleInputChange}
+                              placeholder={`Enter ${row.label} cost`}
+                            />
+                          ) : (
+                            <div style={{ textAlign: "center", width: "100%" }}>
+                              <span className="text-muted">—</span>
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          {requiredValue === "No" ? (
+                            <div style={{ textAlign: "center", width: "100%" }}>
+                              <span className="text-muted">—</span>
+                            </div>
+                          ) : (
+                            <input
+                              type="text"
+                              className="form-control form-control-sm process-cost-readonly"
+                              value={cost.toFixed(2)}
+                              readOnly
+                            />
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {processRows.map((row) => {
+                    const requiredValue = getRequiredValue(row.field);
+                    const rate = Number(formData[row.rate]) || 0;
+                    const cost = Number(formData[row.field]) || 0;
+                    return (
+                      <tr key={row.field}>
+                        <td>
+                          <div className="fw-semibold">{row.label}</div>
+                          <div className="small text-muted">{row.formula}</div>
+                        </td>
+                        <td>
+                          <div
+                            className="process-required-toggle"
+                            role="group"
+                            aria-label={`${row.label} required`}
+                          >
+                            {["Yes", "No"].map((option) => (
+                              <label
+                                className={`process-required-option ${requiredValue === option ? "active" : ""}`}
+                                key={option}
+                              >
+                                <input
+                                  type="radio"
+                                  name={`${row.field}Required`}
+                                  value={option}
+                                  checked={requiredValue === option}
+                                  onChange={() =>
+                                    handleOptionalProcessChange(
+                                      row.field,
+                                      option,
+                                    )
+                                  }
+                                />
+                                {option}
+                              </label>
+                            ))}
+                          </div>
+                        </td>
+                        <td>
+                          {requiredValue === "No" ? (
+                            <div style={{ textAlign: "center", width: "100%" }}>
+                              <span className="text-muted">—</span>
+                            </div>
+                          ) : (
+                            <input
+                              type="text"
+                              className="form-control form-control-sm process-rate-readonly"
+                              value={rate.toFixed(4)}
+                              readOnly
+                              aria-label={`${row.label} margin master rate`}
+                            />
+                          )}
+                        </td>
+                        <td>{renderProcessMeasurement(row)}</td>
+                        <td>
+                          {requiredValue === "No" ? (
+                            <div style={{ textAlign: "center", width: "100%" }}>
+                              <span className="text-muted">—</span>
+                            </div>
+                          ) : (
+                            <input
+                              type="text"
+                              className="form-control form-control-sm process-cost-readonly"
+                              value={cost.toFixed(2)}
+                              readOnly
+                              aria-label={`${row.label} calculated cost`}
+                            />
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-
-            <div className="col-md-2">
-              <label className="form-label">
-                <b>Finishing</b>
-              </label>
-              <input
-                type="number"
-                className={`form-control ${
-                  formData.finishing ? "field-filled" : ""
-                }`}
-                name="finishing"
-                value={formData.finishing ?? ""}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="col-md-2">
-              <label className="form-label">
-                <b>Inspection</b>
-              </label>
-              <input
-                type="number"
-                className={`form-control ${
-                  formData.inspection ? "field-filled" : ""
-                }`}
-                name="inspection"
-                value={formData.inspection ?? ""}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            {String(formData.subCategoryName || "")
-              .trim()
-              .toUpperCase() === "MTRB" && (
-              <>
-                <div className="col-md-2">
-                  <label className="form-label">
-                    <b>Shot Blasting</b>
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    className={`form-control ${
-                      formData.shotBlasting ? "field-filled" : ""
-                    }`}
-                    name="shotBlasting"
-                    value={formData.shotBlasting || ""}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div className="col-md-2">
-                  <label className="form-label">
-                    <b>Vapour Degreasing</b>
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    className={`form-control ${
-                      formData.vapourDegreasing ? "field-filled" : ""
-                    }`}
-                    name="vapourDegreasing"
-                    value={formData.vapourDegreasing || ""}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </>
-            )}
           </div>
 
-          {/* Row 4 - MTRB Additional Processes */}
-          {String(formData.subCategoryName || "")
-            .trim()
-            .toUpperCase() === "MTRB" && (
-            <div className="row g-2 mt-1 process-row">
-              <div className="col-md-2">
-                <label className="form-label">
-                  <b>Chromating</b>
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  className={`form-control ${
-                    formData.chromating ? "field-filled" : ""
-                  }`}
-                  name="chromating"
-                  value={formData.chromating || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-
-              <div className="col-md-2">
-                <label className="form-label">
-                  <b>Phospating</b>
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  className={`form-control ${
-                    formData.phospating ? "field-filled" : ""
-                  }`}
-                  name="phospating"
-                  value={formData.phospating || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-
-              <div className="col-md-2">
-                <label className="form-label">
-                  <b>Adhesive</b>
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  className={`form-control ${
-                    formData.adhesive ? "field-filled" : ""
-                  }`}
-                  name="adhesive"
-                  value={formData.adhesive || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-
-              <div className="col-md-2">
-                <label className="form-label">
-                  <b>Painting</b>
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  className={`form-control ${
-                    formData.painting ? "field-filled" : ""
-                  }`}
-                  name="painting"
-                  value={formData.painting || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-
-              <div className="col-md-2">
-                <label className="form-label">
-                  <b>Cylindrical Grinding</b>
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  className={`form-control ${
-                    formData.cylindricalGrinding ? "field-filled" : ""
-                  }`}
-                  name="cylindricalGrinding"
-                  value={formData.cylindricalGrinding || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-          )}
           {/* Row 5 - Assembly */}
           {formData.hasBop === "Yes" && (
             <div className="row g-2 mt-1 process-row">
