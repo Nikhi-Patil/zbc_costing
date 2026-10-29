@@ -50,7 +50,7 @@ function ProcessDetailsForm({
       label: "Post Curing",
       field: "postCuring",
       rate: "postCuringRate",
-      measure: "netWeight",
+      measure: "postCuringWeight",
     },
     ...(isMtrb
       ? [
@@ -118,6 +118,30 @@ function ProcessDetailsForm({
         : "No";
     return formData[`${fieldName}Required`] ?? inferred;
   };
+
+  // Post Curing = (Part Master Post Curing rate * Total Weight) / 1000.
+  // Total Weight = Net Weight + BOP Weight.
+  useEffect(() => {
+    if (getRequiredValue("postCuring") !== "Yes") return;
+
+    const netWeight = Number(formData.netWeight) || 0;
+    const bopWeight = Number(formData.bopWeight) || 0;
+    const postCuringRate = Number(formData.postCuringRate) || 0;
+    const totalWeight = netWeight + bopWeight;
+    const calculatedCost = ((postCuringRate * totalWeight) / 1000).toFixed(2);
+
+    if (String(formData.postCuring ?? "") !== calculatedCost) {
+      handleInputChange({
+        target: { name: "postCuring", value: calculatedCost },
+      });
+    }
+  }, [
+    formData.postCuringRequired,
+    formData.postCuring,
+    formData.postCuringRate,
+    formData.netWeight,
+    formData.bopWeight,
+  ]);
 
   const handleOptionalProcessChange = (fieldName, value) => {
     handleInputChange({
@@ -190,6 +214,114 @@ function ProcessDetailsForm({
         </div>
       );
     }
+    if (row.measure === "postCuringWeight") {
+      const netWeight = Number(formData.netWeight) || 0;
+      const bopWeight = Number(formData.bopWeight) || 0;
+      const totalWeight = netWeight + bopWeight;
+
+      return (
+        <div
+          className="process-table-input-group"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+            width: "100%",
+            minWidth: 0,
+          }}
+        >
+          {/* Net Weight label/input and BOP Weight label/input on the same row. */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "auto minmax(45px, 1fr) auto minmax(45px, 1fr)",
+              alignItems: "center",
+              columnGap: "5px",
+              width: "100%",
+              minWidth: 0,
+            }}
+          >
+            <label
+              htmlFor="process-measure-post-curing-net-weight"
+              className="small text-muted mb-0"
+              style={{ whiteSpace: "nowrap" }}
+            >
+              Net Weight:
+            </label>
+            <div className="input-group input-group-sm" style={{ minWidth: 0 }}>
+              <input
+                id="process-measure-post-curing-net-weight"
+                type="text"
+                className="form-control process-cost-readonly"
+                value={formData.netWeight ?? ""}
+                readOnly
+                aria-label="Net Weight"
+              />
+              <span className="input-group-text">gm</span>
+            </div>
+
+            <label
+              htmlFor="process-measure-post-curing-bop-weight"
+              className="small text-muted mb-0"
+              style={{ whiteSpace: "nowrap" }}
+            >
+              BOP Weight:
+            </label>
+            <div className="input-group input-group-sm" style={{ minWidth: 0 }}>
+              <input
+                id="process-measure-post-curing-bop-weight"
+                type="number"
+                min="0"
+                step="0.01"
+                className="form-control"
+                name="bopWeight"
+                value={formData.bopWeight ?? ""}
+                onChange={handleInputChange}
+                readOnly={readOnly}
+                placeholder="Enter"
+              />
+              <span className="input-group-text">gm</span>
+            </div>
+          </div>
+
+          {/* Total Weight is displayed on the row below. */}
+          <div
+            className="process-table-input"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              width: "100%",
+              minWidth: 0,
+            }}
+          >
+            <label
+              htmlFor="process-measure-post-curing-total-weight"
+              className="small text-muted mb-0"
+              style={{ flex: "0 0 42%", whiteSpace: "normal" }}
+            >
+              Total Weight (gm):
+            </label>
+            <div
+              className="input-group input-group-sm"
+              style={{ flex: "1 1 0", minWidth: 0 }}
+            >
+              <input
+                id="process-measure-post-curing-total-weight"
+                type="text"
+                className="form-control process-cost-readonly"
+                value={totalWeight.toFixed(2)}
+                readOnly
+                aria-label="Total Weight"
+              />
+              <span className="input-group-text">gm</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     if (row.measure === "netWeight") {
       return (
         <div
@@ -251,7 +383,7 @@ function ProcessDetailsForm({
               whiteSpace: "normal",
             }}
           >
-            BOP Weight (Kg) :
+            BOP Weight (gm) :
           </label>
 
           <div
@@ -271,7 +403,7 @@ function ProcessDetailsForm({
               placeholder="Enter value"
             />
 
-            <span className="input-group-text">Kg</span>
+            <span className="input-group-text">gm</span>
           </div>
         </div>
       );

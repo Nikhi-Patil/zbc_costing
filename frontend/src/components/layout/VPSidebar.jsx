@@ -1,27 +1,98 @@
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import {
   faGaugeHigh,
   faGears,
+  faDatabase,
   faChevronDown,
   faChevronRight,
+  faUsers,
+  faPuzzlePiece,
   faFlask,
+  faBoxesStacked,
   faChartSimple,
   faChartColumn,
-  faArrowsRotate
 } from "@fortawesome/free-solid-svg-icons";
 
 import "../../assets/css/layout/Sidebar.css";
 
 function VPSidebar({ isOpen }) {
-  const [monthlyOpen, setMonthlyOpen] = useState(false);
-  const [reportsOpen, setReportsOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState(null);
+  const sidebarRef = useRef(null);
+
+  // Open one branch at a time
+  const toggleMenu = (menuName) => {
+    setOpenMenu((current) => (current === menuName ? null : menuName));
+  };
+
+  // Close all expanded menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setOpenMenu(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Reusable expandable branch
+  const renderBranch = (menuName, label, icon, children) => (
+    <li key={menuName}>
+      <div
+        className={`menu report-menu ${openMenu === menuName ? "active" : ""}`}
+        onClick={() => toggleMenu(menuName)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleMenu(menuName);
+          }
+        }}
+      >
+        <FontAwesomeIcon icon={icon} />
+
+        <span className="sidebar-manue">{label}</span>
+
+        <FontAwesomeIcon
+          icon={openMenu === menuName ? faChevronDown : faChevronRight}
+          className="master-arrow"
+        />
+      </div>
+
+      {openMenu === menuName && <ul className="master-submenu">{children}</ul>}
+    </li>
+  );
+
+  // Reusable VP submenu link
+  const childLink = (to, icon, label) => (
+    <li key={to}>
+      <NavLink
+        to={to}
+        className={({ isActive }) => (isActive ? "menu active" : "menu")}
+      >
+        <FontAwesomeIcon icon={icon} />
+        <span className="sidebar-manue">{label}</span>
+      </NavLink>
+    </li>
+  );
+
   return (
-    <aside className={`sidebar ${isOpen ? "open" : "collapsed"}`}>
+    <aside
+      ref={sidebarRef}
+      className={`sidebar ${isOpen ? "open" : "collapsed"}`}
+    >
+      {/* MAIN NAVIGATION */}
       <nav className="sidebar-nav">
         <ul className="sidebar-list">
-          {/*  DASHBOARD */}
+          {/* Dashboard */}
           <li>
             <NavLink
               to="/vp/dashboard"
@@ -32,7 +103,7 @@ function VPSidebar({ isOpen }) {
             </NavLink>
           </li>
 
-          {/*  Molding */}
+          {/* Molding P/L */}
           <li>
             <NavLink
               to="/vp/molding"
@@ -43,7 +114,7 @@ function VPSidebar({ isOpen }) {
             </NavLink>
           </li>
 
-          {/*  Molding Report */}
+          {/* Molding Report */}
           <li>
             <NavLink
               to="/vp/molding-data"
@@ -54,69 +125,23 @@ function VPSidebar({ isOpen }) {
             </NavLink>
           </li>
 
-          {/* REPORTS */}
-          <li>
-            <div
-              className={`menu report-menu ${reportsOpen ? "active" : ""}`}
-              onClick={() => setReportsOpen((prev) => !prev)}
-            >
-              <FontAwesomeIcon icon={faChartColumn} />
+          {/* Reports */}
+          {renderBranch(
+            "reports",
+            "Reports",
+            faChartColumn,
+            <>
+              {childLink(
+                "/vp/compound-polymer-monthly-report",
+                faFlask,
+                "Monthly Polymer Report",
+              )}
 
-              <span className="sidebar-manue">Reports</span>
+              {/* Add other VP report links here if required */}
+            </>,
+          )}
 
-              <FontAwesomeIcon
-                icon={reportsOpen ? faChevronDown : faChevronRight}
-                className="master-arrow"
-              />
-            </div>
-
-            {reportsOpen && (
-              <ul className="master-submenu">
-                {/* Monthly Polymer Report */}
-                <li>
-                  <NavLink
-                    to="/vp/compound-polymer-monthly-report"
-                    className={({ isActive }) =>
-                      isActive ? "menu active" : "menu"
-                    }
-                  >
-                    <FontAwesomeIcon icon={faFlask} />
-
-                    <span className="sidebar-manue">
-                      Monthly Polymer Report
-                    </span>
-                  </NavLink>
-                </li>
-
-                {/* Customer Wise Report */}
-                {/* <li>
-                  <NavLink
-                    to="/vp/customer-report"
-                    className={({ isActive }) =>
-                      isActive ? "menu active" : "menu"
-                    }
-                  >
-                    <FontAwesomeIcon icon={faFlask} />
-
-                    <span className="sidebar-manue">Customer Wise Report</span>
-                  </NavLink>
-                </li> */}
-              </ul>
-            )}
-          </li>
-
-          {/*  Extrusion */}
-          {/* <li>
-            <NavLink
-              to="/vp/extrusion"
-              className={({ isActive }) => (isActive ? "menu active" : "menu")}
-            >
-              <FontAwesomeIcon icon={faArrowsRotate} />
-              <span className="sidebar-manue">Extrusion</span>
-            </NavLink>
-          </li> */}
-
-          {/*  BOM DETAILS */}
+          {/* BOM Details */}
           <li>
             <NavLink
               to="/vp/bop-management"
@@ -126,72 +151,73 @@ function VPSidebar({ isOpen }) {
               <span className="sidebar-manue">BOM Details</span>
             </NavLink>
           </li>
-          {/* MONTHLY MASTER */}
-          <li>
-            <div
-              className={`menu report-menu ${monthlyOpen ? "active" : ""}`}
-              onClick={() => setMonthlyOpen((prev) => !prev)}
-            >
-              <FontAwesomeIcon icon={faChartColumn} />
 
-              <span className="sidebar-manue">Monthly Master</span>
+          {/* Monthly Master */}
+          {renderBranch(
+            "monthly",
+            "Monthly Master",
+            faChartColumn,
+            <>
+              {childLink(
+                "/vp/monthly-master/compound",
+                faFlask,
+                "Monthly Compound Master",
+              )}
 
-              <FontAwesomeIcon
-                icon={monthlyOpen ? faChevronDown : faChevronRight}
-                className="master-arrow"
-              />
-            </div>
+              {childLink(
+                "/vp/monthly-master/bop",
+                faFlask,
+                "Monthly BOP Master",
+              )}
 
-            {monthlyOpen && (
-              <ul className="master-submenu">
-                {/* Monthly Compound */}
-                <li>
-                  <NavLink
-                    to="/vp/monthly-master/compound"
-                    className={({ isActive }) =>
-                      isActive ? "menu active" : "menu"
-                    }
-                  >
-                    <FontAwesomeIcon icon={faFlask} />
-
-                    <span className="sidebar-manue">
-                      Monthly Compound Master
-                    </span>
-                  </NavLink>
-                </li>
-
-                {/* Monthly BOP */}
-                <li>
-                  <NavLink
-                    to="/vp/monthly-master/bop"
-                    className={({ isActive }) =>
-                      isActive ? "menu active" : "menu"
-                    }
-                  >
-                    <FontAwesomeIcon icon={faFlask} />
-
-                    <span className="sidebar-manue">Monthly BOP Master</span>
-                  </NavLink>
-                </li>
-
-                {/* Monthly Sales */}
-                <li>
-                  <NavLink
-                    to="/vp/sales-monthly"
-                    className={({ isActive }) =>
-                      isActive ? "menu active" : "menu"
-                    }
-                  >
-                    <FontAwesomeIcon icon={faChartSimple} />
-
-                    <span className="sidebar-manue">Monthly Sales Report</span>
-                  </NavLink>
-                </li>
-              </ul>
-            )}
-          </li>
+              {childLink(
+                "/vp/sales-monthly",
+                faChartSimple,
+                "Monthly Sales Report",
+              )}
+            </>,
+          )}
         </ul>
       </nav>
+
+      {/* MASTERS AT THE BOTTOM */}
+      <div className="sidebar-bottom">
+        <div
+          className={`menu master-menu ${
+            openMenu === "masters" ? "active" : ""
+          }`}
+          onClick={() => toggleMenu("masters")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              toggleMenu("masters");
+            }
+          }}
+        >
+          <FontAwesomeIcon icon={faDatabase} />
+
+          <span className="sidebar-manue">Masters</span>
+
+          <FontAwesomeIcon
+            icon={openMenu === "masters" ? faChevronDown : faChevronRight}
+            className="master-arrow"
+          />
+        </div>
+
+        {openMenu === "masters" && (
+          <ul className="master-submenu master-submenu-up">
+            {childLink("/vp/customer-master", faUsers, "Customer Master")}
+
+            {childLink("/vp/part-master", faPuzzlePiece, "Part Master")}
+
+            {childLink("/vp/compound-master", faFlask, "Compound Master")}
+
+            {childLink("/vp/bop-master", faBoxesStacked, "BOP Master")}
+          </ul>
+        )}
+      </div>
     </aside>
   );
 }

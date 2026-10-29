@@ -1177,3 +1177,12 @@ h5 {
   background-color: #fff !important;
   border: 1px solid #a6a7a8 !important;
 }
+
+/* Align values consistently inside Process Details inputs */
+.process-table input,
+.process-table .form-control,
+.process-table-input input,
+.process-table-input-group input,
+.process-cost-readonly {
+  text-align: right !important;
+}

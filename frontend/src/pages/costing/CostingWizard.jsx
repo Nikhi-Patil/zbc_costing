@@ -97,18 +97,6 @@ function CostingWizard() {
     painting: "",
     cylindricalGrinding: "",
     plating: "",
-    // Required selections used by ProcessDetailsForm.
-    postCuringRequired: "No",
-    finishingRequired: "No",
-    inspectionRequired: "No",
-    shotBlastingRequired: "No",
-    vapourDegreasingRequired: "No",
-    chromatingRequired: "No",
-    phospatingRequired: "No",
-    adhesiveRequired: "No",
-    paintingRequired: "No",
-    platingRequired: "No",
-    cylindricalGrindingRequired: "No",
     // Inputs used by margin-master-based process calculations
     bopWeight: "",
     bopArea: "",
@@ -339,27 +327,32 @@ function CostingWizard() {
         postCuring: data.post_curing ?? prev.postCuring,
         finishing: data.finishing ?? prev.finishing,
         inspection: data.inspection ?? prev.inspection,
-        postCuringRequired: getOptionalProcessAnswer(
-          data.post_curing ?? data.postCuring,
-        ),
-        finishingRequired: getOptionalProcessAnswer(data.finishing),
-        inspectionRequired: getOptionalProcessAnswer(data.inspection),
-        shotBlastingRequired: getOptionalProcessAnswer(
-          data.shot_blasting ?? data.shotBlasting,
-        ),
-        vapourDegreasingRequired: getOptionalProcessAnswer(
-          data.vapour_degreasing ?? data.vapourDegreasing,
-        ),
-        chromatingRequired: getOptionalProcessAnswer(data.chromating),
-        phospatingRequired: getOptionalProcessAnswer(
-          data.phospating ?? data.phosphating,
-        ),
-        adhesiveRequired: getOptionalProcessAnswer(data.adhesive),
-        paintingRequired: getOptionalProcessAnswer(data.painting),
-        platingRequired: getOptionalProcessAnswer(data.plating),
-        cylindricalGrindingRequired: getOptionalProcessAnswer(
-          data.cylindrical_grinding ?? data.cylindricalGrinding,
-        ),
+        postCuringRequired:
+          data.post_curing_required ??
+          getOptionalProcessAnswer(data.post_curing),
+        finishingRequired:
+          data.finishing_required ?? getOptionalProcessAnswer(data.finishing),
+        inspectionRequired:
+          data.inspection_required ?? getOptionalProcessAnswer(data.inspection),
+        shotBlastingRequired:
+          data.shot_blasting_required ??
+          getOptionalProcessAnswer(data.shot_blasting),
+        vapourDegreasingRequired:
+          data.vapour_degreasing_required ??
+          getOptionalProcessAnswer(data.vapour_degreasing),
+        chromatingRequired:
+          data.chromating_required ?? getOptionalProcessAnswer(data.chromating),
+        phospatingRequired:
+          data.phospating_required ?? getOptionalProcessAnswer(data.phospating),
+        adhesiveRequired:
+          data.adhesive_required ?? getOptionalProcessAnswer(data.adhesive),
+        paintingRequired:
+          data.painting_required ?? getOptionalProcessAnswer(data.painting),
+        platingRequired:
+          data.plating_required ?? getOptionalProcessAnswer(data.plating),
+        cylindricalGrindingRequired:
+          data.cylindrical_grinding_required ??
+          getOptionalProcessAnswer(data.cylindrical_grinding),
         shotBlasting:
           data.shot_blasting ?? data.shotBlasting ?? prev.shotBlasting,
         vapourDegreasing:
@@ -1096,25 +1089,28 @@ function CostingWizard() {
     const finishedPartWeight = Number(formData.finishedPartWeight) || 0;
     const metalPartArea = Number(formData.metalPartArea) || 0;
 
+    // Post Curing = (Part Master rate * (Net Weight + BOP Weight)) / 1000.
+    const totalPostCuringWeight = netWeight + bopWeight;
     const postCuring =
       formData.postCuringRequired === "Yes"
-        ? ((Number(formData.postCuringRate) || 0) * netWeight) / 1000
+        ? ((Number(formData.postCuringRate) || 0) * totalPostCuringWeight) /
+          1000
         : 0;
     const shotBlasting =
       formData.shotBlastingRequired === "Yes"
-        ? (Number(formData.shotBlastingRate) || 0) * bopWeight
+        ? ((Number(formData.shotBlastingRate) || 0) * bopWeight) / 1000
         : 0;
     const vapourDegreasing =
       formData.vapourDegreasingRequired === "Yes"
-        ? (Number(formData.vapourDegreasingRate) || 0) * bopWeight
+        ? ((Number(formData.vapourDegreasingRate) || 0) * bopWeight) / 1000
         : 0;
     const chromating =
       formData.chromatingRequired === "Yes"
-        ? (Number(formData.chromatingRate) || 0) * bopWeight
+        ? ((Number(formData.chromatingRate) || 0) * bopWeight) / 1000
         : 0;
     const phospating =
       formData.phospatingRequired === "Yes"
-        ? (Number(formData.phospatingRate) || 0) * bopWeight
+        ? ((Number(formData.phospatingRate) || 0) * bopWeight) / 1000
         : 0;
     const adhesive =
       formData.adhesiveRequired === "Yes"
@@ -1127,7 +1123,7 @@ function CostingWizard() {
         : 0;
     const plating =
       formData.platingRequired === "Yes"
-        ? ((Number(formData.platingRate) || 0) * finishedPartWeight)/1000
+        ? ((Number(formData.platingRate) || 0) * finishedPartWeight) / 1000
         : 0;
     const cylindricalGrinding =
       formData.cylindricalGrindingRequired === "Yes"

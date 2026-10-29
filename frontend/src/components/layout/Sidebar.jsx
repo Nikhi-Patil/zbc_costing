@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGaugeHigh,
@@ -26,6 +26,22 @@ function Sidebar({ isOpen }) {
   const [masterOpen, setMasterOpen] = useState(false);
   const [monthlyOpen, setMonthlyOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
+
+  const masterRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (masterRef.current && !masterRef.current.contains(event.target)) {
+        setMasterOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   return (
     <aside className={`sidebar ${isOpen ? "open" : "collapsed"}`}>
       <nav className="sidebar-nav">
@@ -63,7 +79,7 @@ function Sidebar({ isOpen }) {
             </NavLink>
           </li>
 
-           {/* REPORTS */}
+          {/* REPORTS */}
           <li>
             <div
               className={`menu report-menu ${reportsOpen ? "active" : ""}`}
@@ -98,7 +114,7 @@ function Sidebar({ isOpen }) {
                 </li>
 
                 {/* Customer Wise Report */}
-                {/* <li>
+                <li>
                   <NavLink
                     to="/customer-report"
                     className={({ isActive }) =>
@@ -109,7 +125,7 @@ function Sidebar({ isOpen }) {
 
                     <span className="sidebar-manue">Customer Wise Report</span>
                   </NavLink>
-                </li> */}
+                </li>
               </ul>
             )}
           </li>
@@ -210,78 +226,75 @@ function Sidebar({ isOpen }) {
               </ul>
             )}
           </li>
-
-         
-          {/*  MASTERS */}
-          <li>
-            <div
-              className={`menu master-menu ${masterOpen ? "active" : ""}`}
-              onClick={() => setMasterOpen(!masterOpen)}
-            >
-              <FontAwesomeIcon icon={faDatabase} />
-              <span className="sidebar-manue">Masters</span>
-              <FontAwesomeIcon
-                icon={masterOpen ? faChevronDown : faChevronRight}
-                className="master-arrow"
-              />
-            </div>
-            {/* MASTER SUB MENU */}
-            {masterOpen && (
-              <ul className="master-submenu">
-                {/* Customer Master*/}
-                <li>
-                  <NavLink
-                    to="/customer-master"
-                    className={({ isActive }) =>
-                      isActive ? "menu active" : "menu"
-                    }
-                  >
-                    <FontAwesomeIcon icon={faUsers} />
-                    <span className="sidebar-manue">Customer Master</span>
-                  </NavLink>
-                </li>
-                {/* Part Master*/}
-                <li>
-                  <NavLink
-                    to="/part-master"
-                    className={({ isActive }) =>
-                      isActive ? "menu active" : "menu"
-                    }
-                  >
-                    <FontAwesomeIcon icon={faPuzzlePiece} />
-                    <span className="sidebar-manue">Part Master</span>
-                  </NavLink>
-                </li>
-                {/* Compound Master*/}
-                <li>
-                  <NavLink
-                    to="/compound-master"
-                    className={({ isActive }) =>
-                      isActive ? "menu active" : "menu"
-                    }
-                  >
-                    <FontAwesomeIcon icon={faFlask} />
-                    <span className="sidebar-manue">Compound Master</span>
-                  </NavLink>
-                </li>
-                {/* Bop Master*/}
-                <li>
-                  <NavLink
-                    to="/bop-master"
-                    className={({ isActive }) =>
-                      isActive ? "menu active" : "menu"
-                    }
-                  >
-                    <FontAwesomeIcon icon={faBoxesStacked} />
-                    <span className="sidebar-manue">Bop Master</span>
-                  </NavLink>
-                </li>
-                
-              </ul>
-            )}
-          </li>
         </ul>
       </nav>
+
+      <div className="sidebar-bottom" ref={masterRef}>
+        <div
+          className={`menu master-menu ${masterOpen ? "active" : ""}`}
+          onClick={() => setMasterOpen((prev) => !prev)}
+        >
+          <FontAwesomeIcon icon={faDatabase} />
+          <span className="sidebar-manue">Masters</span>
+          <FontAwesomeIcon
+            icon={masterOpen ? faChevronDown : faChevronRight}
+            className="master-arrow"
+          />
+        </div>
+
+        {/* Opens upward */}
+        {masterOpen && (
+          <ul className="master-submenu master-submenu-up">
+            <li>
+              <NavLink
+                to="/customer-master"
+                className={({ isActive }) =>
+                  isActive ? "menu active" : "menu"
+                }
+              >
+                <FontAwesomeIcon icon={faUsers} />
+                <span className="sidebar-manue">Customer Master</span>
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink
+                to="/part-master"
+                className={({ isActive }) =>
+                  isActive ? "menu active" : "menu"
+                }
+              >
+                <FontAwesomeIcon icon={faPuzzlePiece} />
+                <span className="sidebar-manue">Part Master</span>
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink
+                to="/compound-master"
+                className={({ isActive }) =>
+                  isActive ? "menu active" : "menu"
+                }
+              >
+                <FontAwesomeIcon icon={faFlask} />
+                <span className="sidebar-manue">Compound Master</span>
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink
+                to="/bop-master"
+                className={({ isActive }) =>
+                  isActive ? "menu active" : "menu"
+                }
+              >
+                <FontAwesomeIcon icon={faBoxesStacked} />
+                <span className="sidebar-manue">BOP Master</span>
+              </NavLink>
+            </li>
+          </ul>
+        )}
+      </div>
     </aside>
   );
 }

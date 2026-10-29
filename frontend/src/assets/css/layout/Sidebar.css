@@ -1,60 +1,203 @@
+/* SIDEBAR LAYOUT */
 .sidebar {
-    position: fixed;
-    top: 50px;
-    left: 0;
-    width: 210px;
-    height: calc(100vh - 50px);
-    background: #15243a;
-    overflow-y: auto;
-    transition: width 0.3s ease;
+  position: fixed;
+  top: 50px;
+  left: 0;
+  width: 210px;
+  height: calc(100vh - 50px);
+  background: #15243a;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  transition: width 0.3s ease;
+  z-index: 900;
 }
 
 .sidebar.collapsed {
-    width: 70px;
+  width: 70px;
 }
 
-.sidebar nav{
-    padding:15px 0;
+/* MAIN NAVIGATION */
+.sidebar-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 15px 0;
 }
 
-.menu{
-    display:flex;
-    align-items:center;
-    gap:15px;
-    padding:14px 10px;
-    color:white;
-    text-decoration:none;
-    transition:.3s;
+.sidebar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  background: #15243a;
 }
 
-.menu:hover{
-    background:#1d3557;
+.sidebar-list > li {
+  position: relative;
+  width: 100%;
+  list-style: none;
+  margin: 3px 0;
 }
 
-.menu.active{
-    background:#0d6efd;
-    max-width:97%;
+/* MAIN BRANCHES */
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 16px;
+  color: #f8fafc;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  border-left: 3px solid transparent;
+  transition: background 0.2s ease;
 }
 
-.menu svg{
-    min-width:22px;
+.sidebar-list > li > .menu {
+  font-size: 15px;
+  font-weight: 600;
 }
 
-.sidebar.collapsed span{
-    display:none;
+.menu:hover {
+  background: #1d3557;
 }
 
-dl, ol, ul {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    background-color: #15243a;
-}
-ol, ul {
-    padding-left: 0rem;
-    width: 210px;
+.menu.active {
+  background: #0d6efd;
+  border-left-color: #93c5fd;
 }
 
-.sidebar.collapsed ol, ul {
-    padding-left: 0rem;
-    width: auto;
+.menu svg {
+  min-width: 22px;
+}
+
+/* CHILD BRANCHES */
+.master-submenu {
+  position: static;
+  width: 100%;
+  list-style: none;
+  margin: 0;
+  padding: 5px 8px 8px 18px;
+  background: #101d30;
+  border-left: 1px solid #334761;
+  box-sizing: border-box;
+}
+
+.master-submenu > li {
+  width: 100%;
+  list-style: none;
+  margin: 2px 0;
+}
+
+.master-submenu .menu {
+  min-height: 40px;
+  padding: 10px 8px 10px 14px;
+  gap: 11px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #cbd5e1;
+  border-left: 2px solid transparent;
+  border-radius: 5px;
+}
+
+.master-submenu .menu svg {
+  min-width: 18px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.master-submenu .menu:hover {
+  background: #1d3557;
+  color: #fff;
+}
+
+.master-submenu .menu.active {
+  background: #203c60;
+  color: #fff;
+  border-left-color: #60a5fa;
+}
+
+.master-submenu .menu.active svg {
+  color: #93c5fd;
+}
+
+/* ==============================
+   BOTTOM MASTERS BRANCH
+============================== */
+
+.sidebar-bottom {
+  position: relative;
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 6px 0;
+  background: #15243a;
+  border-top: 1px solid #334761;
+}
+
+.sidebar-bottom > .master-menu {
+  min-height: 50px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Masters submenu opens upward */
+
+.sidebar-bottom > .master-submenu-up {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  width: 210px;
+  margin: 0;
+  padding: 6px 8px;
+  background: #101d30;
+  border: 1px solid #334761;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+  z-index: 1100;
+}
+
+/* ==============================
+   COLLAPSED SIDEBAR
+============================== */
+
+.sidebar.collapsed .sidebar-list > li > .menu .sidebar-manue,
+.sidebar.collapsed .sidebar-bottom > .master-menu .sidebar-manue {
+  display: none;
+}
+
+/* Keep labels visible in child menus */
+
+.sidebar.collapsed .master-submenu .sidebar-manue {
+  display: inline;
+}
+
+/* Masters submenu opens to the right */
+
+.sidebar.collapsed .sidebar-bottom > .master-submenu-up {
+  left: 70px;
+  bottom: 0;
+  width: 210px;
+  border-radius: 8px;
+}
+
+/* ==============================
+   SCROLLBAR
+============================== */
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: #40516a;
+  border-radius: 5px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: #15243a;
 }
