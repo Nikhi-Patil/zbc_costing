@@ -1,5 +1,30 @@
 import zbcDB from "../config/zbcDB.js";
 import adminDB from "../config/adminDB.js";
+
+
+import Bop from "../models/bopModel.js";
+
+/* GET ALL BOP MASTER RECORDS */
+export const getBops = async (req, res) => {
+    try {
+        const rows = await Bop.getBops();
+
+        return res.json({
+            success: true,
+            data: rows,
+        });
+
+    } catch (error) {
+        console.error("GET BOPS ERROR:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch BOP Master",
+            error: error.message,
+        });
+    }
+};
+
 const BopPart = {
     /* GET BOP CONFIGURATION FOR ONE PART */
     getByPartNo: async (partNo) => {
@@ -209,6 +234,7 @@ const BopPart = {
                     await adminDB.query(`
                         SELECT
                             id,
+                            part_id,
                             bop_part_name,
                             bop_part_no,
                             bop_erp_code,
@@ -216,21 +242,24 @@ const BopPart = {
                             supplier_id
                         FROM bop_master
                         WHERE id = ?
+                           AND TRIM(part_id) = TRIM(?)
                         LIMIT 1`,
-                        [bopId],
-                    );
+                        [
+                            bopId,
+                            String(part.id)
+                        ]);
                 if (bopRows.length === 0) {
                     throw new Error(
-                        `BOP master ID '${bopId}' was not found in row ${index + 1}.`,
+                        `BOP Master ID '${bopId}' does not belong to Part No. '${part.part_no}' in row ${index + 1}.`
                     );
                 }
-                const bopMaster =bopRows[0];
 
+                const bopMaster = bopRows[0];
                 /* VALIDATE SUPPLIER BELONGS TO BOP */
                 const allowedSupplierIds =
-                    String(bopMaster.supplier_id ||"")
+                    String(bopMaster.supplier_id || "")
                         .split(",")
-                        .map((id) =>id.trim())
+                        .map((id) => id.trim())
                         .filter(Boolean);
                 if (!allowedSupplierIds.includes(String(supplierId))
                 ) {
@@ -253,7 +282,7 @@ const BopPart = {
                     );
                 }
 
-                const supplierName =supplierRows[0].supplier_name || "";
+                const supplierName = supplierRows[0].supplier_name || "";
 
                 /* GET PREVIOUS COSTING */
                 const previousCosting =

@@ -1079,8 +1079,15 @@ function CostingWizard() {
 
   useEffect(() => {
     const assemblyPerCost = parseFloat(formData.assemblyPerCost) || 0;
-    const finishing = Number(formData.finishing) || 0;
-    const inspection = Number(formData.inspection) || 0;
+    const finishing =
+      formData.finishingRequired === "Yes"
+        ? Number(formData.finishing) || 0
+        : 0;
+
+    const inspection =
+      formData.inspectionRequired === "Yes"
+        ? Number(formData.inspection) || 0
+        : 0;
     const netWeight = Number(formData.netWeight) || 0;
     const bopWeight = Number(formData.bopWeight) || 0;
     const bopArea = Number(formData.bopArea) || 0;
@@ -1118,12 +1125,14 @@ function CostingWizard() {
         : 0;
     const painting =
       formData.paintingRequired === "Yes"
-        ? (((Number(formData.paintingRate) || 0) * paintArea) / 1000) *
-          paintPerLit
+        ? (((Number(formData.paintingRate) || 0) *
+            (Number(formData.metalPartArea) || 0)) /
+            1000) *
+          (Number(formData.paintPerLit) || 0)
         : 0;
     const plating =
       formData.platingRequired === "Yes"
-        ? ((Number(formData.platingRate) || 0) * finishedPartWeight) / 1000
+        ? ((Number(formData.platingRate) || 0) * totalPostCuringWeight) / 1000
         : 0;
     const cylindricalGrinding =
       formData.cylindricalGrindingRequired === "Yes"
@@ -1172,6 +1181,8 @@ function CostingWizard() {
     formData.postCuringRequired,
     formData.finishing,
     formData.inspection,
+    formData.finishingRequired,
+    formData.inspectionRequired,
     formData.postCuringRate,
     formData.netWeight,
     formData.bopWeight,

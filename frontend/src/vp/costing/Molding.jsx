@@ -481,15 +481,23 @@ const Molding = () => {
         `${API_BASE_URL}/molding?userName=${encodeURIComponent(
           getStoredUserName(),
         )}`,
+        {
+          credentials: "include",
+        },
       );
+
       const result = await response.json();
-      if (result.success) {
-        setTransactions(result.data);
-      } else {
-        console.error(result.message);
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || "Failed to fetch molding transactions",
+        );
       }
+
+      setTransactions(Array.isArray(result.data) ? result.data : []);
     } catch (error) {
       console.error("Error fetching molding transactions:", error);
+      setTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -506,7 +514,12 @@ const Molding = () => {
       try {
         setSalesMonthlyLoading(true);
         const response = await fetch(
-          `${API_BASE_URL}/sales-monthly?financialYear=${encodeURIComponent(salesFinancialYear)}`,
+          `${API_BASE_URL}/molding?userName=${encodeURIComponent(
+            getStoredUserName(),
+          )}`,
+          {
+            credentials: "include",
+          },
         );
         if (!response.ok) {
           throw new Error(

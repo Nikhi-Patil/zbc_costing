@@ -1,12 +1,25 @@
 import zbcDB from "../config/zbcDB.js";
 
 const getCurrentUserName = (req) =>
+    req.session?.user?.user_name ||
     req.user?.user_name ||
     req.user?.username ||
-    req.query?.userName ||
-    req.body?.userName ||
     null;
 
+const getUserRole = (req) =>
+    String(
+        req.session?.user?.designation ||
+        req.user?.designation ||
+        ""
+    ).trim().toLowerCase();
+
+const isAdminOrVP = (req) =>
+    [
+        "super admin",
+        "admin",
+        "vp",
+        "vice president",
+    ].includes(getUserRole(req));
 /* Create or update a monthly molding report record */
 export const saveMoldingMonthlyReport = async (req, res) => {
     try {
@@ -30,15 +43,9 @@ export const saveMoldingMonthlyReport = async (req, res) => {
             part_cost,
             customer_sales_cost,
             monthly_quantity,
-            userName,
-
         } = req.body;
 
-
-        const currentUser =
-            req.user?.user_name ||
-            req.user?.username ||
-            userName;
+        const currentUser = getCurrentUserName(req);
         // ------------------------------------
         // Required field validation
         // ------------------------------------
@@ -215,18 +222,25 @@ export const getMoldingMonthlyReport = async (req, res) => {
     FROM molding_monthly_report mm
     INNER JOIN molding_table m
         ON m.id = mm.molding_id
-    WHERE LOWER(TRIM(m.created_by)) = LOWER(TRIM(?))
-`;
+    WHERE 1 = 1`;
         const currentUser = getCurrentUserName(req);
+        const adminOrVP = isAdminOrVP(req);
 
-        if (!currentUser) {
+        if (!adminOrVP && !currentUser) {
             return res.status(401).json({
                 success: false,
                 message: "Unable to identify the logged-in user",
             });
         }
 
-        const params = [currentUser];
+        const params = [];
+
+        if (!adminOrVP) {
+            sql += `
+        AND LOWER(TRIM(m.created_by)) = LOWER(TRIM(?))
+    `;
+            params.push(currentUser);
+        }
 
         // ------------------------------------
         // Financial Year filter
@@ -309,53 +323,54 @@ export const getMoldingMonthlyReportByMolding = async (
             });
         }
         const currentUser = getCurrentUserName(req);
+        const adminOrVP = isAdminOrVP(req);
 
-        if (!currentUser) {
+        if (!adminOrVP && !currentUser) {
             return res.status(401).json({
                 success: false,
                 message: "Unable to identify the logged-in user",
             });
         }
 
+
         const sql = `
-      SELECT
-        id,
-
-        molding_id,
-        transaction_id,
-
-        part_no,
-        fg_code,
-        customer_name,
-        production_unit,
-        billing_unit,
-        sub_category,
-
-        financial_year,
-        month,
-        month_name,
-        month_index,
-
-        subtotal_a,
-        part_cost,
-        customer_sales_cost,
-        monthly_quantity,
-
-        created_at,
-        updated_at
-
-        FROM molding_monthly_report mm
-        INNER JOIN molding_table m
-            ON m.id = mm.molding_id
-        WHERE mm.molding_id = ?
-        AND LOWER(TRIM(m.created_by)) = LOWER(TRIM(?))        
-
-      ORDER BY
-        financial_year ASC,
-        month_index ASC,
-        id ASC
-    `;
-        const [rows] = await zbcDB.query(sql, [moldingId, currentUser]);
+    SELECT
+        mm.id,
+        mm.molding_id,
+        mm.transaction_id,
+        mm.part_no,
+        mm.fg_code,
+        mm.customer_name,
+        mm.production_unit,
+        mm.billing_unit,
+        mm.sub_category,
+        mm.financial_year,
+        mm.month,
+        mm.month_name,
+        mm.month_index,
+        mm.subtotal_a,
+        mm.part_cost,
+        mm.customer_sales_cost,
+        mm.monthly_quantity,
+        mm.created_at,
+        mm.updated_at
+    FROM molding_monthly_report mm
+    INNER JOIN molding_table m
+        ON m.id = mm.molding_id
+    WHERE mm.molding_id = ?
+    ${adminOrVP
+                ? ""
+                : "AND LOWER(TRIM(m.created_by)) = LOWER(TRIM(?))"
+            }
+    ORDER BY
+        mm.financial_year ASC,
+        mm.month_index ASC,
+        mm.id ASC
+`;
+        const [rows] = await zbcDB.query(
+            sql,
+            adminOrVP ? [moldingId] : [moldingId, currentUser]
+        );
 
         return res.status(200).json({
             success: true,
@@ -391,8 +406,9 @@ export const deleteMoldingMonthlyReport = async (
             });
         }
         const currentUser = getCurrentUserName(req);
+        const adminOrVP = isAdminOrVP(req);
 
-        if (!currentUser) {
+        if (!adminOrVP && !currentUser) {
             return res.status(401).json({
                 success: false,
                 message: "Unable to identify the logged-in user",
@@ -405,10 +421,16 @@ export const deleteMoldingMonthlyReport = async (
         INNER JOIN molding_table m
             ON m.id = mm.molding_id
         WHERE mm.id = ?
-        AND LOWER(TRIM(m.created_by)) = LOWER(TRIM(?))
-    `;
+        ${adminOrVP
+                ? ""
+                : "AND LOWER(TRIM(m.created_by)) = LOWER(TRIM(?))"}
+        `;
 
-        const [result] = await zbcDB.query(sql, [id, currentUser]);
+        const params = adminOrVP
+            ? [id]
+            : [id, currentUser];
+
+        const [result] = await zbcDB.query(sql, params);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -439,12 +461,8 @@ export const saveMoldingMonthlyReportBulk = async (req, res) => {
     const connection = await zbcDB.getConnection();
 
     try {
-        const { records, userName } = req.body;
-
-        const currentUser =
-            req.user?.user_name ||
-            req.user?.username ||
-            userName;
+        const { records } = req.body;
+        const currentUser = getCurrentUserName(req);
 
         if (!Array.isArray(records) || records.length === 0) {
             return res.status(400).json({

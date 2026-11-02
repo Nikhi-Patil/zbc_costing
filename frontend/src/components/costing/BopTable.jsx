@@ -267,11 +267,14 @@ const BopTable = ({
                     selectedSupplier?.supplier_name ??
                     "";
                   const commodity = bop.commodity ?? "";
-                  const assemblyQty =
-                    bop.bopAssemblyQty ??
-                    bop.assembly_qty ??
-                    bop.assemblyQty ??
-                    "";
+                  const assemblyQty = Math.round(
+                    Number(
+                      bop.bopAssemblyQty ??
+                        bop.assembly_qty ??
+                        bop.assemblyQty ??
+                        0,
+                    ),
+                  );
                   const bopMonth =
                     bop.bopmonth ?? bop.bopMonth ?? bop.month ?? "";
                   const bopRate = bop.bopRate ?? bop.bop_rate ?? "";
@@ -395,7 +398,7 @@ const BopTable = ({
                           value={assemblyQty}
                           readOnly={isRM}
                           min="0"
-                          step="0.01"
+                          step="1"
                           onChange={
                             isRM
                               ? undefined

@@ -449,47 +449,92 @@ const BopManagement = () => {
       const response = await fetch(
         `${API_BASE_URL}/part-bops/${encodeURIComponent(partNo)}`,
       );
+
       if (!response.ok) {
         throw new Error(
           `Failed to load BOP configuration (${response.status})`,
         );
       }
+
       const result = await response.json();
+
       const data = Array.isArray(result)
         ? result
         : Array.isArray(result.data)
           ? result.data
           : [];
 
-      /* NO EXISTING CONFIGURATION */
-      if (data.length === 0) {
-        setBopRows([]);
-        setMode("new");
+      /* PRIORITY 1: LOAD EXISTING CONFIGURATION */
+      if (data.length > 0) {
+        const normalized = data.map(normalizeBopRow);
+
+        const rowsWithSuppliers = normalized.map((row) => {
+          const master = bopsMaster.find(
+            (item) => Number(item.id) === Number(row.bopId),
+          );
+
+          return {
+            ...row,
+            bopId: String(row.bopId),
+            supplierId: String(row.supplierId || ""),
+            suppliers: getSupplierOptions(master),
+          };
+        });
+
+        setBopRows(rowsWithSuppliers);
+        setMode("edit");
         return;
       }
 
-      /* EXISTING CONFIGURATION */
-      const normalized = data.map(normalizeBopRow);
+      /* PRIORITY 2: FIND SELECTED PART IN PART MASTER */
+      const selectedPartRecord = parts.find(
+        (part) =>
+          String(part.part_no ?? part.partNo ?? "")
+            .trim()
+            .toLowerCase() === String(partNo).trim().toLowerCase(),
+      );
 
-      /* REBUILD SUPPLIER OPTIONS */
-      const rowsWithSuppliers = normalized.map((row) => {
-        const master = bopsMaster.find(
-          (item) => Number(item.id) === Number(row.bopId),
-        );
-        return {
-          ...row,
-          suppliers: getSupplierOptions(master),
-        };
-      });
-      setBopRows(rowsWithSuppliers);
-      setMode("edit");
+      if (!selectedPartRecord?.id) {
+        throw new Error("Part No. not found in Part Master.");
+      }
+
+      /* MATCH BOP MASTER USING PART MASTER ID */
+      const matchingBops = bopsMaster.filter(
+        (bop) =>
+          String(bop.part_id ?? "").trim() ===
+          String(selectedPartRecord.id).trim(),
+      );
+
+      /* PRIORITY 2: AUTO POPULATE MATCHING BOPS */
+      if (matchingBops.length > 0) {
+        const autoPopulatedRows = matchingBops.map((bop) => {
+          const suppliers = getSupplierOptions(bop);
+
+          return {
+            bopId: String(bop.id),
+            bopFgCode: bop.bop_erp_code || "",
+            bopPartNo: bop.bop_part_no || "",
+            bopPartName: bop.bop_part_name || "",
+            commodity: bop.commodity || "",
+            suppliers,
+            supplierId: suppliers.length === 1 ? String(suppliers[0].id) : "",
+            assemblyQty: "",
+          };
+        });
+
+        setBopRows(autoPopulatedRows);
+        setMode("new");
+
+        return;
+      }
+
+      /* PRIORITY 3: NO MATCH - EXISTING MANUAL FLOW */
+      setBopRows([]);
+      setMode("new");
     } catch (error) {
       console.error("LOAD PART BOP CONFIGURATION ERROR:", error);
+
       setBopRows([]);
-      setSelectedPartNo("");
-      setSelectedPart(null);
-      await loadExistingConfigurations();
-      setMode("list");
       showMessage(
         error.message || "Failed to load BOP configuration.",
         "error",
@@ -566,7 +611,6 @@ const BopManagement = () => {
       return;
     }
     setBopRows((previous) => [...previous, createEmptyBop()]);
-    setMode("edit");
     setMessage("");
     setMessageType("");
   };
@@ -574,8 +618,6 @@ const BopManagement = () => {
   /* DELETE BOP ROW */
   const deleteBopRow = (rowIndex) => {
     setBopRows((previous) => previous.filter((_, index) => index !== rowIndex));
-
-    setMode("edit");
   };
 
   /* VALIDATE */
@@ -809,11 +851,17 @@ const BopManagement = () => {
               {loadingBops ? "Loading..." : "Select BOP"}
             </option>
 
-            {bopsMaster.map((bop, index) => (
-              <option key={bop.id ?? index} value={bop.id}>
-                {bop.bop_erp_code}
-              </option>
-            ))}
+            {bopsMaster
+              .filter(
+                (bop) =>
+                  String(bop.part_id ?? "").trim() ===
+                  String(selectedPart?.id ?? "").trim(),
+              )
+              .map((bop) => (
+                <option key={bop.id} value={bop.id}>
+                  {bop.bop_erp_code}
+                </option>
+              ))}
           </select>
         );
       },
@@ -1115,7 +1163,12 @@ const BopManagement = () => {
             type="button"
             className="bop-edit-icon-btn"
             onClick={() => handleEditBop(partNo)}
-            disabled={loadingExistingConfigurations || loadingConfiguration}
+            disabled={
+              loadingExistingConfigurations ||
+              loadingConfiguration ||
+              loadingParts ||
+              loadingBops
+            }
             title="Edit BOP Configuration"
             aria-label="Edit BOP Configuration"
           >
@@ -1277,7 +1330,9 @@ const BopManagement = () => {
                 <select
                   ref={partSelectRef}
                   value={selectedPartNo}
-                  disabled={loadingParts || saving || mode === "edit"}
+                  disabled={
+                    loadingParts || loadingBops || saving || mode === "edit"
+                  }
                   onChange={(event) => handlePartChange(event.target.value)}
                 >
                   <option value="">

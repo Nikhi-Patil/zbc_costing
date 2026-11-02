@@ -13,12 +13,32 @@ import ExcelJS from "exceljs";
 
 const getCurrentUserName = (req) => {
     return (
+        req.session?.user?.user_name ||
         req.user?.user_name ||
         req.user?.username ||
         req.query?.userName ||
         req.body?.userName ||
         null
     );
+};
+
+const getUserRole = (req) => {
+    return String(
+        req.session?.user?.designation ||
+        req.user?.designation ||
+        ""
+    ).trim().toLowerCase();
+};
+
+const isAdminOrVP = (req) => {
+    const role = getUserRole(req);
+
+    return [
+        "super admin",
+        "admin",
+        "vp",
+        "vice president"
+    ].includes(role);
 };
 
 // SAVE DRAFT
@@ -118,29 +138,35 @@ export const getMoldingTransactions = async (req, res) => {
 
         const currentUser = getCurrentUserName(req);
 
-        if (!currentUser) {
+        const adminOrVP = isAdminOrVP(req);
+
+        if (!adminOrVP && !currentUser) {
             return res.status(401).json({
                 message: "Unable to identify the logged-in user",
             });
         }
         // 1. GET TRANSACTION DATA
-        const [moldingRows] =
-            await zbcDB.query(`
-                SELECT
-                    transaction_id,
-                    customer_name, 
-                    production_unit,
-                    billing_unit,
-                    sub_category,
-                    part_no,
-                    part_cost,
-                    customer_sales_cost,
-                    subtotal_a,
-                    monthly_quantity,
-                    status
-                FROM molding_table 
-                WHERE LOWER(TRIM(created_by)) = LOWER(TRIM(?))
-                ORDER BY id ASC`, [currentUser]);
+
+        const [moldingRows] = await zbcDB.query(`
+            SELECT
+                transaction_id,
+                customer_name,
+                production_unit,
+                billing_unit,
+                sub_category,
+                part_no,
+                part_cost,
+                customer_sales_cost,
+                subtotal_a,
+                monthly_quantity,
+                status
+            FROM molding_table
+            ${adminOrVP
+                ? ""
+                : "WHERE LOWER(TRIM(created_by)) = LOWER(TRIM(?))"}
+            ORDER BY id ASC`,
+            adminOrVP ? [] : [currentUser]
+        );
         // NO TRANSACTIONS
         if (moldingRows.length === 0) {
             return res.json({
@@ -244,20 +270,27 @@ export const getMoldingTransactionById = async (req, res) => {
     try {
         const { transactionId } = req.params;
         const currentUser = getCurrentUserName(req);
+        const adminOrVP = isAdminOrVP(req);
 
-        if (!currentUser || !String(currentUser).trim()) {
+        if (!adminOrVP && (!currentUser || !String(currentUser).trim())) {
             return res.status(401).json({
                 success: false,
                 message: "Unable to identify the logged-in user"
             });
         }
+
         const [rows] = await zbcDB.query(
-            `SELECT *
-             FROM molding_table
-             WHERE transaction_id = ?
-               AND LOWER(TRIM(created_by)) = LOWER(TRIM(?))
-             LIMIT 1`,
-            [transactionId, currentUser]
+            `
+            SELECT *
+            FROM molding_table
+            WHERE transaction_id = ?
+            ${adminOrVP
+                ? ""
+                : "AND LOWER(TRIM(created_by)) = LOWER(TRIM(?))"}
+            LIMIT 1`,
+            adminOrVP
+                ? [transactionId]
+                : [transactionId, currentUser]
         );
 
         if (rows.length === 0) {
@@ -314,20 +347,23 @@ export const getMoldingTransactionById = async (req, res) => {
 export const exportMoldingData = async (req, res) => {
     try {
         const currentUser = getCurrentUserName(req);
+        const adminOrVP = isAdminOrVP(req);
 
-        if (!currentUser) {
+        if (!adminOrVP && !currentUser) {
             return res.status(401).json({
-                success: false,
                 message: "Unable to identify the logged-in user",
             });
         }
+
         // 1. Fetch molding transactions
         const [moldingRows] = await zbcDB.query(`
             SELECT *
             FROM molding_table
-            WHERE LOWER(TRIM(created_by)) = LOWER(TRIM(?))
+            ${adminOrVP
+                ? ""
+                : "WHERE LOWER(TRIM(created_by)) = LOWER(TRIM(?))"}
             ORDER BY id ASC
-        `, [currentUser]);
+        `, adminOrVP ? [] : [currentUser]);
 
         // 2. Fetch BOP details
         const [bopRows] = await zbcDB.query(`
@@ -474,17 +510,24 @@ export const getAllMoldingData = async (req, res) => {
         // WHERE CONDITIONS
         const currentUser = getCurrentUserName(req);
 
-        if (!currentUser) {
+        const adminOrVP = isAdminOrVP(req);
+
+        if (!adminOrVP && !currentUser) {
             return res.status(401).json({
                 success: false,
                 message: "Unable to identify the logged-in user",
             });
         }
 
-        const whereParts = [
-            "LOWER(TRIM(m.created_by)) = LOWER(TRIM(?))"
-        ];
-        const whereParams = [currentUser];
+        const whereParts = [];
+        const whereParams = [];
+
+        if (!adminOrVP) {
+            whereParts.push(
+                "LOWER(TRIM(m.created_by)) = LOWER(TRIM(?))"
+            );
+            whereParams.push(currentUser);
+        }
 
         // MTRB / MOLDING FILTER
         let mtrbSubCategoryIds = [];
@@ -1029,8 +1072,9 @@ export const downloadMoldingExcel = async (req, res) => {
     try {
         const { transactionId } = req.params;
         const currentUser = getCurrentUserName(req);
+        const adminOrVP = isAdminOrVP(req);
 
-        if (!currentUser) {
+        if (!adminOrVP && !currentUser) {
             return res.status(401).json({
                 success: false,
                 message: "Unable to identify the logged-in user",
@@ -1048,9 +1092,13 @@ export const downloadMoldingExcel = async (req, res) => {
             SELECT *
             FROM molding_table
             WHERE transaction_id = ?
-            AND LOWER(TRIM(created_by)) = LOWER(TRIM(?))
+            ${adminOrVP
+                ? ""
+                : "AND LOWER(TRIM(created_by)) = LOWER(TRIM(?))"}
             LIMIT 1`,
-            [transactionId, currentUser]
+            adminOrVP
+                ? [transactionId]
+                : [transactionId, currentUser]
         );
         if (rows.length === 0) {
             return res.status(404).json({
@@ -1495,36 +1543,51 @@ export const getCustomerWiseMonthlyReport = async (req, res) => {
                 message: "financialYear and a valid month (1-12) are required.",
             });
         }
+        const currentUser = getCurrentUserName(req);
+        const adminOrVP = isAdminOrVP(req);
+
+        if (!adminOrVP && !currentUser) {
+            return res.status(401).json({
+                success: false,
+                message: "Unable to identify the logged-in user",
+            });
+        }
 
         // Monthly amounts/rates come from molding_monthly_report.
         const [rows] = await zbcDB.query(`
             SELECT
-            m.id AS molding_id,
-            m.transaction_id,
-            m.status,
-            m.customer_name AS customer_id,
-            m.production_unit AS production_unit_id,
-            m.billing_unit AS billing_unit_id,
-            m.sub_department AS sub_department_id,
-            m.sub_category AS sub_category_id,
-            m.part_no,
-            m.part_name,
-            m.fg_code,
-            mm.financial_year,
-            mm.month,
-            mm.month_name,
-            mm.subtotal_a,
-            mm.part_cost,
-            mm.customer_sales_cost,
-            mm.monthly_quantity
+                m.id AS molding_id,
+                m.transaction_id,
+                m.status,
+                m.customer_name AS customer_id,
+                m.production_unit AS production_unit_id,
+                m.billing_unit AS billing_unit_id,
+                m.sub_department AS sub_department_id,
+                m.sub_category AS sub_category_id,
+                m.part_no,
+                m.part_name,
+                m.fg_code,
+                mm.financial_year,
+                mm.month,
+                mm.month_name,
+                mm.subtotal_a,
+                mm.part_cost,
+                mm.customer_sales_cost,
+                mm.monthly_quantity
             FROM molding_table m
             INNER JOIN molding_monthly_report mm
-            ON mm.molding_id = m.id
-            AND mm.transaction_id = m.transaction_id
+                ON mm.molding_id = m.id
+                AND mm.transaction_id = m.transaction_id
             WHERE mm.financial_year = ?
-            AND mm.month = ?
-            ORDER BY m.customer_name, m.sub_category, m.part_no`,
-            [financialYear, month]
+                AND mm.month = ?
+                ${adminOrVP
+                ? ""
+                : "AND LOWER(TRIM(m.created_by)) = LOWER(TRIM(?))"}
+            ORDER BY m.customer_name, m.sub_category, m.part_no
+        `,
+            adminOrVP
+                ? [financialYear, month]
+                : [financialYear, month, currentUser]
         );
         if (!rows.length) {
             return res.json({ success: true, data: [] });

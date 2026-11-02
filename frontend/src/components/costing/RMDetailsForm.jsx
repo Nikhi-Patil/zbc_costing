@@ -77,10 +77,11 @@ function RMDetailsForm({
               bop.bopFgCode ?? bop.bop_erp_code ?? bop.bopErpCode ?? "";
             const supplierId = bop.supplierId ?? bop.supplier_id;
             const month = bop.bopmonth || "";
-            const qty =
+            const qty = Math.round(
               Number(
-                bop.bopAssemblyQty ?? bop.assembly_qty ?? bop.assemblyQty,
-              ) || 0;
+                bop.bopAssemblyQty ?? bop.assembly_qty ?? bop.assemblyQty ?? 0,
+              ) || 0,
+            );
             if (!bopErpCode || !supplierId || !month) {
               return {
                 ...bop,
@@ -166,12 +167,14 @@ function RMDetailsForm({
       currentRow.bopErpCode ??
       "";
     const supplierId = currentRow.supplierId ?? currentRow.supplier_id ?? "";
-    const qty =
+    const qty = Math.round(
       Number(
         currentRow.bopAssemblyQty ??
           currentRow.assembly_qty ??
-          currentRow.assemblyQty,
-      ) || 0;
+          currentRow.assemblyQty ??
+          0,
+      ) || 0,
+    );
 
     let newRate = "";
     let newCost = "0.00";

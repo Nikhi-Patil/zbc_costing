@@ -94,7 +94,7 @@ function ProcessDetailsForm({
             label: "Plating",
             field: "plating",
             rate: "platingRate",
-            measure: "finishedPartWeight",
+            measure: "postCuringWeight",
           },
           {
             label: "Cylindrical Grinding",
@@ -154,12 +154,25 @@ function ProcessDetailsForm({
     }
   };
 
-  const selectedBopWeightProcess = [
+  const metalAreaProcessSequence = ["painting", "cylindricalGrinding"];
+
+  const selectedMetalAreaProcess =
+    metalAreaProcessSequence.find(
+      (field) => getRequiredValue(field) === "Yes",
+    ) ?? null;
+  const bopWeightProcessSequence = [
     "shotBlasting",
     "vapourDegreasing",
     "chromating",
     "phospating",
-  ].find((field) => getRequiredValue(field) === "Yes");
+  ];
+
+  const selectedBopWeightProcess =
+    getRequiredValue("postCuring") === "Yes"
+      ? "postCuring"
+      : (bopWeightProcessSequence.find(
+          (field) => getRequiredValue(field) === "Yes",
+        ) ?? (getRequiredValue("plating") === "Yes" ? "plating" : null));
 
   const renderMeasurement = (name, label, unit = "") => (
     <div
@@ -214,106 +227,125 @@ function ProcessDetailsForm({
         </div>
       );
     }
-    if (row.measure === "postCuringWeight") {
+    if (row.field === "plating") {
       const netWeight = Number(formData.netWeight) || 0;
       const bopWeight = Number(formData.bopWeight) || 0;
       const totalWeight = netWeight + bopWeight;
 
+      const isBopWeightEditable = selectedBopWeightProcess === "plating";
+
       return (
-        <div
-          className="process-table-input-group"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "6px",
-            width: "100%",
-            minWidth: 0,
-          }}
-        >
-          {/* Net Weight label/input and BOP Weight label/input on the same row. */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "auto minmax(45px, 1fr) auto minmax(45px, 1fr)",
-              alignItems: "center",
-              columnGap: "5px",
-              width: "100%",
-              minWidth: 0,
-            }}
-          >
-            <label
-              htmlFor="process-measure-post-curing-net-weight"
-              className="small text-muted mb-0"
-              style={{ whiteSpace: "nowrap" }}
-            >
-              Net Weight:
-            </label>
-            <div className="input-group input-group-sm" style={{ minWidth: 0 }}>
+        <div className="process-table-input-group">
+          {/* Net Weight */}
+          <div className="process-table-input">
+            <label className="small text-muted mb-0">Net Weight:</label>
+            <div className="input-group input-group-sm">
               <input
-                id="process-measure-post-curing-net-weight"
                 type="text"
                 className="form-control process-cost-readonly"
-                value={formData.netWeight ?? ""}
+                value={netWeight.toFixed(2)}
                 readOnly
-                aria-label="Net Weight"
-              />
-              <span className="input-group-text">gm</span>
-            </div>
-
-            <label
-              htmlFor="process-measure-post-curing-bop-weight"
-              className="small text-muted mb-0"
-              style={{ whiteSpace: "nowrap" }}
-            >
-              BOP Weight:
-            </label>
-            <div className="input-group input-group-sm" style={{ minWidth: 0 }}>
-              <input
-                id="process-measure-post-curing-bop-weight"
-                type="number"
-                min="0"
-                step="0.01"
-                className="form-control"
-                name="bopWeight"
-                value={formData.bopWeight ?? ""}
-                onChange={handleInputChange}
-                readOnly={readOnly}
-                placeholder="Enter"
               />
               <span className="input-group-text">gm</span>
             </div>
           </div>
 
-          {/* Total Weight is displayed on the row below. */}
-          <div
-            className="process-table-input"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              width: "100%",
-              minWidth: 0,
-            }}
-          >
-            <label
-              htmlFor="process-measure-post-curing-total-weight"
-              className="small text-muted mb-0"
-              style={{ flex: "0 0 42%", whiteSpace: "normal" }}
-            >
-              Total Weight (gm):
-            </label>
-            <div
-              className="input-group input-group-sm"
-              style={{ flex: "1 1 0", minWidth: 0 }}
-            >
+          {/* BOP Weight */}
+          <div className="process-table-input">
+            <label className="small text-muted mb-0">BOP Weight:</label>
+            <div className="input-group input-group-sm">
               <input
-                id="process-measure-post-curing-total-weight"
+                type="number"
+                min="0"
+                step="0.01"
+                className={`form-control ${
+                  isBopWeightEditable ? "" : "process-cost-readonly"
+                }`}
+                name="bopWeight"
+                value={formData.bopWeight ?? ""}
+                onChange={isBopWeightEditable ? handleInputChange : undefined}
+                readOnly={!isBopWeightEditable || readOnly}
+                placeholder={isBopWeightEditable ? "Enter BOP weight" : ""}
+              />
+              <span className="input-group-text">gm</span>
+            </div>
+          </div>
+
+          {/* Total Weight */}
+          <div className="process-table-input">
+            <label className="small text-muted mb-0">Total Weight:</label>
+            <div className="input-group input-group-sm">
+              <input
                 type="text"
                 className="form-control process-cost-readonly"
                 value={totalWeight.toFixed(2)}
                 readOnly
-                aria-label="Total Weight"
+              />
+              <span className="input-group-text">gm</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // POST CURING: Net Weight + editable BOP Weight + Total Weight
+    // POST CURING: Same field layout as Plating
+    if (row.field === "postCuring") {
+      const netWeight = Number(formData.netWeight) || 0;
+      const bopWeight = Number(formData.bopWeight) || 0;
+      const totalWeight = netWeight + bopWeight;
+
+      const isBopWeightEditable = selectedBopWeightProcess === "postCuring";
+
+      return (
+        <div className="process-table-input-group">
+          {/* Net Weight */}
+          <div className="process-table-input">
+            <label className="small text-muted mb-0">Net Weight:</label>
+
+            <div className="input-group input-group-sm">
+              <input
+                type="text"
+                className="form-control process-cost-readonly"
+                value={netWeight.toFixed(2)}
+                readOnly
+              />
+              <span className="input-group-text">gm</span>
+            </div>
+          </div>
+
+          {/* BOP Weight */}
+          <div className="process-table-input">
+            <label className="small text-muted mb-0">BOP Weight:</label>
+
+            <div className="input-group input-group-sm">
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                className={`form-control ${
+                  isBopWeightEditable ? "" : "process-cost-readonly"
+                }`}
+                name="bopWeight"
+                value={formData.bopWeight ?? ""}
+                onChange={isBopWeightEditable ? handleInputChange : undefined}
+                readOnly={!isBopWeightEditable || readOnly}
+                placeholder={isBopWeightEditable ? "Enter BOP weight" : ""}
+              />
+              <span className="input-group-text">gm</span>
+            </div>
+          </div>
+
+          {/* Total Weight */}
+          <div className="process-table-input">
+            <label className="small text-muted mb-0">Total Weight:</label>
+
+            <div className="input-group input-group-sm">
+              <input
+                type="text"
+                className="form-control process-cost-readonly"
+                value={totalWeight.toFixed(2)}
+                readOnly
               />
               <span className="input-group-text">gm</span>
             </div>
@@ -412,18 +444,32 @@ function ProcessDetailsForm({
     if (row.measure === "bopArea")
       return renderMeasurement("bopArea", "BOP Area (sq. cm)", "sq. cm");
     if (row.measure === "paintArea") {
+      const isMetalAreaEditable = selectedMetalAreaProcess === "painting";
+
       return (
-        <div
-          className="process-table-input-group"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "6px",
-            width: "100%",
-          }}
-        >
-          {renderMeasurement("paintArea", "Area of Paint (sq. cm)", "sq. cm")}
-          {renderMeasurement("paintPerLit", "Paint Rate Per Ltr", "Ltr")}
+        <div className="process-table-input-group">
+          <div className="process-table-input">
+            <label className="small text-muted mb-0">Metal Area:</label>
+
+            <div className="input-group input-group-sm">
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                className={`form-control ${
+                  !isMetalAreaEditable ? "process-cost-readonly" : ""
+                }`}
+                name="metalPartArea"
+                value={formData.metalPartArea ?? ""}
+                onChange={isMetalAreaEditable ? handleInputChange : undefined}
+                readOnly={!isMetalAreaEditable || readOnly}
+                placeholder={isMetalAreaEditable ? "Enter metal area" : ""}
+              />
+              <span className="input-group-text">sq. cm</span>
+            </div>
+          </div>
+
+          {renderMeasurement("paintPerLit", "Paint Per Litre", "Ltr")}
         </div>
       );
     }
@@ -433,12 +479,33 @@ function ProcessDetailsForm({
         "Finished Part Weight (gm)",
         "gm",
       );
-    if (row.measure === "metalPartArea")
-      return renderMeasurement(
-        "metalPartArea",
-        "Area of Metal Part (sq. cm)",
-        "sq. cm",
+    if (row.measure === "metalPartArea") {
+      const isMetalAreaEditable =
+        selectedMetalAreaProcess === "cylindricalGrinding";
+
+      return (
+        <div className="process-table-input">
+          <label className="small text-muted mb-0">Metal Area:</label>
+
+          <div className="input-group input-group-sm">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              className={`form-control ${
+                !isMetalAreaEditable ? "process-cost-readonly" : ""
+              }`}
+              name="metalPartArea"
+              value={formData.metalPartArea ?? ""}
+              onChange={isMetalAreaEditable ? handleInputChange : undefined}
+              readOnly={!isMetalAreaEditable || readOnly}
+              placeholder={isMetalAreaEditable ? "Enter metal area" : ""}
+            />
+            <span className="input-group-text">sq. cm</span>
+          </div>
+        </div>
       );
+    }
     return <span className="text-muted">—</span>;
   };
 

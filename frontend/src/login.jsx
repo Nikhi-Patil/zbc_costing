@@ -34,9 +34,7 @@ function Login() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // =========================================================
   // VERIFY EMAIL + PASSWORD
-  // =========================================================
   const handleVerify = async () => {
     setError("");
     setSuccess("");
@@ -58,19 +56,24 @@ function Login() {
         .toLowerCase();
 
       console.log("[LOGIN] Verified designation:", designation);
+      console.log("[LOGIN] Direct login:", data.directLogin);
 
-      if (["vp", "admin"].includes(designation)) {
-        const result = await loginUser({
+      // Super Admin, Admin, and Vice President
+      // skip Unit and Sub Department selection.
+      if (
+        data.directLogin ||
+        ["super admin", "admin", "vp", "vice president"].includes(designation)
+      ) {
+        await loginUser({
           email: email.trim(),
           password,
         });
 
-        // Both VP and Admin go to the VP dashboard
         navigate("/vp/dashboard", { replace: true });
-
         return;
       }
 
+      // Regular users must select Unit and Sub Department.
       setVerified(true);
       setUnits(data.units || []);
       setUnitId("");

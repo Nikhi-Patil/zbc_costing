@@ -81,7 +81,9 @@ export const verifyEmployee = async (req, res) => {
       .trim()
       .toLowerCase();
 
-    if (designation === "vp" || designation === "admin") {
+    if (
+      ["super admin", "admin", "vp", "vice president"].includes(designation)
+    ) {
       return res.json({
         success: true,
         message: "Credentials verified successfully",
@@ -392,7 +394,9 @@ export const loginUser = async (req, res) => {
       .toLowerCase();
 
     // VP and Admin: email + password only
-    if (["vp", "admin"].includes(designation)) {
+    if (
+      ["super admin", "admin", "vp", "vice president"].includes(designation)
+    ) {
       req.session.user = {
         id: employee.id,
         user_name: employee.user_name,
@@ -547,6 +551,9 @@ export const loginUser = async (req, res) => {
       id: employee.id,
       user_name: employee.user_name,
       email: employee.email,
+      designation: String(employee.designation || "")
+        .trim()
+        .toLowerCase(),
       unit: selectedUnit,
       sub_department: selectedSubDepartment,
     };

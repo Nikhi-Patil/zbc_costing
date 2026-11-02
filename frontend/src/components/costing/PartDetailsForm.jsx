@@ -820,12 +820,12 @@ function PartDetailsForm({
                                 ? "field-filled"
                                 : ""
                             }`}
-                            value={
+                            value={Number(
                               bop.bopAssemblyQty ??
-                              bop.assemblyQty ??
-                              bop.assembly_qty ??
-                              ""
-                            }
+                                bop.assemblyQty ??
+                                bop.assembly_qty ??
+                                0,
+                            ).toFixed(0)}
                             readOnly
                             tabIndex={-1}
                           />
@@ -853,7 +853,7 @@ function PartDetailsForm({
                             ) || 0),
                           0,
                         )
-                        .toFixed(1)}
+                        .toFixed(0)}
                     </td>
                   </tr>
                 </tfoot>

@@ -956,7 +956,9 @@ export default function MoldingData() {
         params.set("search", trimmedSearch);
       }
       const url = `${API_BASE_URL}/molding/all?${params.toString()}`;
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        credentials: "include",
+      });
       if (!response.ok) throw new Error(`Server returned ${response.status}`);
       const result = await response.json();
       if (!result.success) {
@@ -1604,18 +1606,24 @@ export default function MoldingData() {
 
   const handleExportExcel = async () => {
     try {
-      fetch(
+      const response = await fetch(
         `${API_BASE_URL}/molding/export?userName=${encodeURIComponent(
           getStoredUserName(),
         )}`,
+        {
+          credentials: "include",
+        },
       );
+
       const result = await response.json();
-      if (!result.success) {
+
+      if (!response.ok || !result.success) {
         alert(
           result.message || result.error || "Failed to export molding data.",
         );
         return;
       }
+
       const moldingData = result.data || [];
       const bopData = result.bops || [];
       if (!moldingData || moldingData.length === 0) {

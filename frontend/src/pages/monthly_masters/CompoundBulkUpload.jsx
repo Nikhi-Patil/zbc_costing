@@ -451,6 +451,7 @@ const CompoundBulkUpload = () => {
   };
 
   // UPLOAD
+  // UPLOAD
   const handleSave = async () => {
     if (!rows.length) {
       showToast("Please upload an Excel file first.", "error");
@@ -475,52 +476,85 @@ const CompoundBulkUpload = () => {
       rate: Number(row.rate),
     }));
 
+    const BATCH_SIZE = 100;
+    const TIMEOUT_MS = 60000;
+    const url = `${API_BASE_URL}/monthly-compound-rate/bulk`;
+
+    // Sends one batch and always resolves or throws (never hangs)
+    const postBatch = async (batchRows, batchNumber) => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rows: batchRows }),
+          signal: controller.signal,
+        });
+
+        const responseText = await response.text();
+
+        let result;
+        try {
+          result = JSON.parse(responseText);
+        } catch {
+          console.error("[COMPOUND BULK] Non-JSON response:", responseText);
+          throw new Error(
+            `Batch ${batchNumber}: invalid server response (HTTP ${response.status}).`,
+          );
+        }
+
+        if (!response.ok || !result.success) {
+          throw new Error(
+            `Batch ${batchNumber}: ${
+              result.message || result.error || `HTTP ${response.status}`
+            }`,
+          );
+        }
+
+        return result;
+      } catch (error) {
+        if (error.name === "AbortError") {
+          throw new Error(
+            `Batch ${batchNumber}: server did not respond within ${
+              TIMEOUT_MS / 1000
+            } seconds.`,
+          );
+        }
+        throw error;
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+
     try {
       setLoading(true);
 
-      console.log("[COMPOUND BULK] Sending request:", {
-        url: `${API_BASE_URL}/monthly-compound-rate/bulk`,
-        rows: uploadData,
+      const totalBatches = Math.ceil(uploadData.length / BATCH_SIZE);
+
+      console.log("[COMPOUND BULK] Upload started:", {
+        totalRows: uploadData.length,
+        totalBatches,
+        url,
       });
 
-      const response = await fetch(
-        `${API_BASE_URL}/monthly-compound-rate/bulk`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ rows: uploadData }),
-        },
-      );
+      for (let i = 0; i < uploadData.length; i += BATCH_SIZE) {
+        const batchNumber = i / BATCH_SIZE + 1;
+        const batch = uploadData.slice(i, i + BATCH_SIZE);
 
-      const responseText = await response.text();
+        await postBatch(batch, batchNumber);
 
-      let result;
-
-      try {
-        result = JSON.parse(responseText);
-      } catch {
-        console.error("[COMPOUND BULK] Non-JSON response:", responseText);
-
-        throw new Error(
-          `Server returned an invalid response (HTTP ${response.status}). Check the backend logs.`,
-        );
-      }
-
-      console.log("[COMPOUND BULK] HTTP status:", response.status);
-      console.log("[COMPOUND BULK] Response:", result);
-
-      if (!response.ok || !result.success) {
-        throw new Error(
-          result.message ||
-            result.error ||
-            `Save failed with HTTP ${response.status}`,
+        console.log(
+          `[COMPOUND BULK] Batch ${batchNumber}/${totalBatches} saved (${Math.min(
+            i + BATCH_SIZE,
+            uploadData.length,
+          )}/${uploadData.length} rows)`,
         );
       }
 
       showToast(
-        result.message || `${uploadData.length} record(s) saved successfully.`,
+        `${uploadData.length} record(s) saved successfully.`,
         "success",
       );
 
@@ -529,7 +563,6 @@ const CompoundBulkUpload = () => {
       }, 1200);
     } catch (error) {
       console.error("[COMPOUND BULK] Save error:", error);
-
       showToast(error.message || "Compound bulk upload failed.", "error");
     } finally {
       setLoading(false);

@@ -9,7 +9,6 @@ function PrivateRoute() {
   }
 
   const storedUser = localStorage.getItem("user");
-
   let user = {};
 
   try {
@@ -22,15 +21,18 @@ function PrivateRoute() {
     .trim()
     .toLowerCase();
 
-  const isVPAdmin = ["vp", "admin"].includes(designation);
+  const isVPAdmin = ["super admin", "admin", "vp", "vice president"].includes(
+    designation,
+  );
+
   const isVPRoute = location.pathname.startsWith("/vp/");
 
-  // VP and Admin use the same dedicated section.
+  // Super Admin, Admin, and Vice President use VP pages.
   if (isVPAdmin && !isVPRoute) {
     return <Navigate to="/vp/dashboard" replace />;
   }
 
-  // Normal users cannot access VP/Admin pages.
+  // Regular users cannot access VP pages.
   if (!isVPAdmin && isVPRoute) {
     return <Navigate to="/dashboard" replace />;
   }
