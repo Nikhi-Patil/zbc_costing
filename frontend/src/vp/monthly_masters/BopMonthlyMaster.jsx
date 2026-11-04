@@ -49,7 +49,7 @@ const BopMonthlyMaster = () => {
     "";
   /* STATE */
   const [financialYear, setFinancialYear] = useState(currentFinancialYear);
-  const [viewType, setViewType] = useState("qty");
+  const [viewType, setViewType] = useState("rate");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -66,6 +66,7 @@ const BopMonthlyMaster = () => {
         `${API_BASE_URL}/monthly-bop-rate?financial_year=${encodeURIComponent(
           financialYear,
         )}`,
+        { credentials: "include" },
       );
 
       const result = await response.json();
@@ -87,7 +88,7 @@ const BopMonthlyMaster = () => {
   /* GROUP DATA */
   const groupedData = useMemo(() => {
     const grouped = data.reduce((acc, row) => {
-      const key = `${row.bop_id}-${row.supplier_id}-${row.financial_year}`;
+      const key = `${row.bop_id}-${row.supplier_id}-${row.unit_id}-${row.financial_year}`;
 
       if (!acc[key]) {
         acc[key] = {
@@ -106,6 +107,8 @@ const BopMonthlyMaster = () => {
           supplier_id: row.supplier_id,
 
           supplier_name: row.supplier_name,
+          unit_id: row.unit_id,
+          unit_name: row.unit_name,
 
           financial_year: row.financial_year,
 
@@ -140,6 +143,7 @@ const BopMonthlyMaster = () => {
         row.bop_part_no,
         row.bop_erp_code,
         row.supplier_name,
+        row.unit_name,
       ].some((value) =>
         String(value || "")
           .toLowerCase()
@@ -209,6 +213,13 @@ const BopMonthlyMaster = () => {
           <div className="bop-wrap-cell">{row.supplier_name || "-"}</div>
         ),
       },
+      {
+        name: "Production Unit",
+        selector: (row) => row.unit_name || "",
+        sortable: true,
+        width: "110px",
+        cell: (row) => <div className="bop-wrap-cell">{row.unit_name || "-"}</div>,
+      },
     ];
 
     /* MONTH COLUMNS */
@@ -219,9 +230,9 @@ const BopMonthlyMaster = () => {
         if (!monthData) {
           return 0;
         }
-        return viewType === "qty"
-          ? Number(monthData.qty) || 0
-          : Number(monthData.rate) || 0;
+        return viewType === "rate"
+          ? Number(monthData.rate) || 0
+          : Number(monthData.qty) || 0;
       },
       sortable: true,
       width: "55px",
@@ -232,17 +243,17 @@ const BopMonthlyMaster = () => {
           rate: null,
         };
 
-        if (viewType === "qty") {
-          return monthData.qty === null
+        if (viewType === "rate") {
+          return monthData.rate === null
             ? "-"
-            : Number(monthData.qty).toLocaleString("en-IN");
+            : Number(monthData.rate).toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              });
         }
-        return monthData.rate === null
+        return monthData.qty === null
           ? "-"
-          : Number(monthData.rate).toLocaleString("en-IN", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            });
+          : Number(monthData.qty).toLocaleString("en-IN");
       },
     }));
 
@@ -323,6 +334,7 @@ const BopMonthlyMaster = () => {
       "BOP Part No",
       "BOP ERP Code",
       "Supplier Name",
+      "Production Unit",
     ];
 
     const headers = [
@@ -340,6 +352,7 @@ const BopMonthlyMaster = () => {
         row.bop_part_no || "-",
         row.bop_erp_code || "-",
         row.supplier_name || "-",
+        row.unit_name || "-",
         ...months.map((month) => {
           const monthData = row.months?.[month.value];
 
@@ -361,6 +374,7 @@ const BopMonthlyMaster = () => {
         { wch: 18 },
         { wch: 18 },
         { wch: 25 },
+        { wch: 18 },
         ...months.map(() => ({ wch: 14 })),
       ];
 
@@ -425,8 +439,8 @@ const BopMonthlyMaster = () => {
               value={viewType}
               onChange={(e) => setViewType(e.target.value)}
             >
-              <option value="qty">Qty</option>
               <option value="rate">Rate</option>
+              <option value="qty">Qty</option>
             </select>
           </div>
         </div>
@@ -436,7 +450,7 @@ const BopMonthlyMaster = () => {
           <button
             type="button"
             className="bop-add-rate-btn"
-            onClick={() => navigate("/monthly-master/bop/add-rate")}
+            onClick={() => navigate("/vp/monthly-master/bop/add-rate")}
           >
             <Plus size={16} strokeWidth={2} />
             <span>Add Rate</span>
@@ -445,7 +459,7 @@ const BopMonthlyMaster = () => {
           <button
             type="button"
             className="bop-bulk-upload-btn"
-            onClick={() => navigate("/monthly-master/bop/bulk-upload")}
+            onClick={() => navigate("/vp/monthly-master/bop/bulk-upload")}
           >
             <FileSpreadsheet size={16} strokeWidth={2} />
             <span>Bulk Upload</span>

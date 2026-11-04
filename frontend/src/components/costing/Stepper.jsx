@@ -4,7 +4,7 @@ import { ChevronLeft } from "lucide-react";
 
 const steps = ["Part Details", "RM Details", "Process Details", "Bottom Line"];
 
-function Stepper({ currentStep }) {
+function Stepper({ currentStep, backPath = "/molding" }) {
   const navigate = useNavigate();
 
   return (
@@ -38,11 +38,10 @@ function Stepper({ currentStep }) {
             );
           })}
 
-          {/* Back button after Bottom Line */}
           <button
             type="button"
             className="wizard-back-btn"
-            onClick={() => navigate("/molding")}
+            onClick={() => navigate(backPath)}
           >
             <ChevronLeft size={16} />
             Back

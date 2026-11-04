@@ -63,6 +63,25 @@ const createEmptyForm = (financialYear) => ({
   sellRate: "",
 });
 
+const getStoredSalesUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "{}");
+  } catch {
+    return {};
+  }
+};
+const storedSalesUser = getStoredSalesUser();
+const canManageAllSalesUnits = [
+  "vp",
+  "vice president",
+  "admin",
+  "super admin",
+].includes(
+  String(storedSalesUser.designation || "")
+    .trim()
+    .toLowerCase(),
+);
+
 const SalesMonthlyEntry = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -118,7 +137,9 @@ const SalesMonthlyEntry = () => {
   const fetchParts = async () => {
     setPartsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/parts`);
+      const response = await fetch(`${API_BASE_URL}/parts`, {
+        credentials: "include",
+      });
       if (!response.ok) {
         throw new Error(
           `Unable to load Part Master. Status: ${response.status}`,
@@ -146,7 +167,9 @@ const SalesMonthlyEntry = () => {
   const fetchUnits = async () => {
     setUnitsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/units`);
+      const response = await fetch(`${API_BASE_URL}/units`, {
+        credentials: "include",
+      });
       if (!response.ok) {
         throw new Error(
           `Unable to load Unit Master. Status: ${response.status}`,
@@ -155,6 +178,18 @@ const SalesMonthlyEntry = () => {
       const result = await response.json();
       const data = extractArray(result).filter((unit) => getUnitName(unit));
       setUnits(data);
+      if (!canManageAllSalesUnits) {
+        const sessionUnit = data.find(
+          (item) =>
+            Number(item?.id ?? item?._id) === Number(storedSalesUser.unit),
+        );
+        if (sessionUnit) {
+          setFormData((previous) => ({
+            ...previous,
+            unit: getUnitName(sessionUnit),
+          }));
+        }
+      }
     } catch (error) {
       console.error("Unit Master error:", error);
       setUnits([]);
@@ -171,7 +206,9 @@ const SalesMonthlyEntry = () => {
     }
     setLoadingEntry(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/sales-monthly/${editId}`);
+      const response = await fetch(`${API_BASE_URL}/sales-monthly/${editId}`, {
+        credentials: "include",
+      });
       if (!response.ok) {
         throw new Error(`Unable to load entry. Status: ${response.status}`);
       }
@@ -396,6 +433,7 @@ const SalesMonthlyEntry = () => {
 
       const response = await fetch(url, {
         method: isEditing ? "PUT" : "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -540,7 +578,7 @@ const SalesMonthlyEntry = () => {
                   </label>
                   <select
                     value={formData.unit}
-                    disabled={unitsLoading || saving}
+                    disabled={unitsLoading || saving || !canManageAllSalesUnits}
                     onChange={(e) => handleFormChange("unit", e.target.value)}
                     className={`form-control ${
                       formData.unit ? "field-filled" : ""
@@ -549,18 +587,25 @@ const SalesMonthlyEntry = () => {
                     <option value="">
                       {unitsLoading ? "Loading Units..." : "Select Unit"}
                     </option>
-                    {units.map((unit) => {
-                      const unitName = getUnitName(unit);
-                      if (!unitName) {
-                        return null;
-                      }
-                      const unitId = unit?.id ?? unit?._id ?? unitName;
-                      return (
-                        <option key={unitId} value={unitName}>
-                          {unitName}
-                        </option>
-                      );
-                    })}
+                    {units
+                      .filter(
+                        (unit) =>
+                          canManageAllSalesUnits ||
+                          Number(unit?.id ?? unit?._id) ===
+                            Number(storedSalesUser.unit),
+                      )
+                      .map((unit) => {
+                        const unitName = getUnitName(unit);
+                        if (!unitName) {
+                          return null;
+                        }
+                        const unitId = unit?.id ?? unit?._id ?? unitName;
+                        return (
+                          <option key={unitId} value={unitName}>
+                            {unitName}
+                          </option>
+                        );
+                      })}
                   </select>
 
                   {errors.unit && (

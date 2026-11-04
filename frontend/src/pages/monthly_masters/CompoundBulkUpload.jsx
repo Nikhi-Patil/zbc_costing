@@ -27,6 +27,24 @@ const CompoundBulkUpload = () => {
     type: "success",
   });
   const [currentInvalidIndex, setCurrentInvalidIndex] = useState(-1);
+  const loggedInUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  })();
+  const userRole = String(loggedInUser.designation || "")
+    .trim()
+    .toLowerCase();
+  const canChooseAnyUnit = [
+    "vp",
+    "vice president",
+    "admin",
+    "super admin",
+  ].includes(userRole);
+  const loggedInUnitId = Number(loggedInUser.unit);
+  const loggedInUnitName = String(loggedInUser.unit_name || "").trim();
   const invalidRowRefs = useRef({});
 
   // TOAST
@@ -72,8 +90,8 @@ const CompoundBulkUpload = () => {
   const loadMasterData = async () => {
     try {
       const [compoundResponse, unitResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/compounds`),
-        fetch(`${API_BASE_URL}/units`),
+        fetch(`${API_BASE_URL}/compounds`, { credentials: "include" }),
+        fetch(`${API_BASE_URL}/units`, { credentials: "include" }),
       ]);
 
       if (!compoundResponse.ok) {
@@ -155,6 +173,11 @@ const CompoundBulkUpload = () => {
       errors.push(
         `Production Unit "${productionUnit}" not found in Unit Master`,
       );
+    } else if (
+      !canChooseAnyUnit &&
+      Number(findUnit(productionUnit)?.id) !== loggedInUnitId
+    ) {
+      errors.push("You can upload records only for your login unit");
     }
 
     // FINANCIAL YEAR
@@ -257,7 +280,12 @@ const CompoundBulkUpload = () => {
     const template = [
       {
         "IM Code": "",
-        "Production Unit": "",
+        "Production Unit": canChooseAnyUnit
+          ? ""
+          : loggedInUnitName ||
+            unitMaster.find((unit) => Number(unit.id) === loggedInUnitId)
+              ?.unit ||
+            "",
         "Financial Year": "",
         Month: "",
         Qty: "",
@@ -354,7 +382,16 @@ const CompoundBulkUpload = () => {
 
             imCode: String(values["im code"] ?? "").trim(),
 
-            productionUnit: String(values["production unit"] ?? "").trim(),
+            productionUnit: (() => {
+              const excelUnit = String(values["production unit"] ?? "").trim();
+              if (excelUnit || canChooseAnyUnit) return excelUnit;
+              return (
+                loggedInUnitName ||
+                unitMaster.find((unit) => Number(unit.id) === loggedInUnitId)
+                  ?.unit ||
+                ""
+              );
+            })(),
 
             financialYear: String(values["financial year"] ?? "").trim(),
 
@@ -451,7 +488,6 @@ const CompoundBulkUpload = () => {
   };
 
   // UPLOAD
-  // UPLOAD
   const handleSave = async () => {
     if (!rows.length) {
       showToast("Please upload an Excel file first.", "error");
@@ -488,6 +524,7 @@ const CompoundBulkUpload = () => {
       try {
         const response = await fetch(url, {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ rows: batchRows }),
           signal: controller.signal,
@@ -776,7 +813,7 @@ const CompoundBulkUpload = () => {
                             e.target.value,
                           )
                         }
-                        disabled={loading}
+                        disabled={loading || !canChooseAnyUnit}
                       />
                     </td>
 

@@ -7,6 +7,7 @@ import { X, Save, Loader2 } from "lucide-react";
 const BopMonthlyRateForm = () => {
   const navigate = useNavigate();
   const [bops, setBops] = useState([]);
+  const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(false);
   const financialYears = generateFinancialYears();
   const currentFY =
@@ -21,6 +22,7 @@ const BopMonthlyRateForm = () => {
     bopPartNo: "",
     bopErpCode: "",
     supplierId: "",
+    unitId: "",
     financialYear: currentFY,
     month: "",
     qty: "",
@@ -29,7 +31,22 @@ const BopMonthlyRateForm = () => {
 
   useEffect(() => {
     fetchBops();
+    fetchUnits();
   }, []);
+
+  const fetchUnits = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/units`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch units");
+      const result = await response.json();
+      const list = Array.isArray(result) ? result : result.data || [];
+      setUnits(list);
+    } catch (error) {
+      console.error("Error fetching units:", error);
+    }
+  };
 
   const fetchBops = async () => {
     try {
@@ -131,6 +148,10 @@ const BopMonthlyRateForm = () => {
     }
     try {
       setLoading(true);
+      if (!formData.unitId) {
+        alert("Please select Production Unit");
+        return;
+      }
       const payload = {
         ...formData,
         financial_year: formData.financialYear,
@@ -141,6 +162,7 @@ const BopMonthlyRateForm = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
       const result = await response.json();
@@ -148,7 +170,7 @@ const BopMonthlyRateForm = () => {
         throw new Error(result.message || "Failed to save BOP monthly rate");
       }
       alert("BOP monthly rate saved successfully");
-      navigate("/monthly-master/bop");
+      navigate("/vp/monthly-master/bop");
     } catch (error) {
       console.error("Save error:", error);
       alert(error.message);
@@ -167,7 +189,7 @@ const BopMonthlyRateForm = () => {
         <button
           type="button"
           className="bop-form-close-btn"
-          onClick={() => navigate("/monthly-master/bop")}
+          onClick={() => navigate("/vp/monthly-master/bop")}
           title="Close"
           aria-label="Close"
         >
@@ -299,6 +321,23 @@ const BopMonthlyRateForm = () => {
                   })}
               </select>
             </div>
+            {/* Production Unit */}
+            <div className="col-md-3">
+              <label className="form-label"><b>Production Unit</b></label>
+              <select
+                className={`form-control ${formData.unitId ? "field-filled" : ""}`}
+                name="unitId"
+                value={formData.unitId}
+                onChange={handleInputChange}
+              >
+                <option value="">Select Production Unit</option>
+                {units.map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    {unit.unit || unit.unit_name || unit.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             {/* Year */}
             <div className="col-md-3">
               <label className="form-label">
@@ -386,7 +425,7 @@ const BopMonthlyRateForm = () => {
             <button
               type="button"
               className="bop-form-cancel-btn"
-              onClick={() => navigate("/monthly-master/bop")}
+              onClick={() => navigate("/vp/monthly-master/bop")}
               disabled={loading}
             >
               <X size={16} strokeWidth={2} />

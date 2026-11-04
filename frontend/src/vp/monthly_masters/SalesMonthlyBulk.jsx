@@ -278,6 +278,17 @@ function validateUploadedRows(rows, parts, units, selectedFinancialYear = "") {
     };
   });
 }
+const getStoredSalesUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "{}");
+  } catch {
+    return {};
+  }
+};
+const storedSalesUser = getStoredSalesUser();
+const canManageAllSalesUnits = ["vp", "vice president", "admin", "super admin"]
+  .includes(String(storedSalesUser.designation || "").trim().toLowerCase());
+
 const SalesMonthlyBulk = () => {
   const navigate = useNavigate();
   const [financialYear, setFinancialYear] = useState(defaultFinancialYear);
@@ -307,8 +318,8 @@ const SalesMonthlyBulk = () => {
     try {
       setMasterLoading(true);
       const [partsResponse, unitsResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/parts`),
-        fetch(`${API_BASE_URL}/units`),
+        fetch(`${API_BASE_URL}/parts`, { credentials: "include" }),
+        fetch(`${API_BASE_URL}/units`, { credentials: "include" }),
       ]);
       if (!partsResponse.ok)
         throw new Error(
@@ -430,7 +441,13 @@ const SalesMonthlyBulk = () => {
             excelRow: index + 2,
             partNo: String(partNo ?? "").trim(),
             partName: String(partName ?? "").trim(),
-            unit: String(unit ?? "").trim(),
+            unit: canManageAllSalesUnits
+              ? String(unit ?? "").trim()
+              : String(
+                  masters.units.find((item) => Number(item?.id ?? item?._id) === Number(storedSalesUser.unit))
+                    ? getUnitName(masters.units.find((item) => Number(item?.id ?? item?._id) === Number(storedSalesUser.unit)))
+                    : ""
+                ).trim(),
             financialYear: parseFinancialYear(financialYearValue),
             month: parseMonth(monthValue),
             qty: parseNumber(qtyValue),
@@ -527,6 +544,7 @@ const SalesMonthlyBulk = () => {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/sales-monthly/bulk`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ financialYear, entries }),
       });
@@ -545,7 +563,7 @@ const SalesMonthlyBulk = () => {
         result?.message || `${entries.length} records saved successfully.`,
         "success",
       );
-      window.setTimeout(() => navigate("/sales-monthly"), 1000);
+      window.setTimeout(() => navigate("/vp/sales-monthly"), 1000);
     } catch (error) {
       console.error("Bulk Sales Monthly save error:", error);
       showToast(error.message || "Unable to save bulk entries.", "error");
@@ -612,7 +630,7 @@ const SalesMonthlyBulk = () => {
         <button
           type="button"
           className="bulk-back-btn"
-          onClick={() => navigate("/sales-monthly")}
+          onClick={() => navigate("/vp/sales-monthly")}
         >
           <ArrowLeft size={16} />
           Back
@@ -790,7 +808,7 @@ const SalesMonthlyBulk = () => {
                         onChange={(e) =>
                           handleRowChange(index, "unit", e.target.value)
                         }
-                        disabled={loading}
+                        disabled={loading || !canManageAllSalesUnits}
                       />
                     </td>
                     <td>
@@ -900,7 +918,7 @@ const SalesMonthlyBulk = () => {
         <button
           type="button"
           className="bulk-cancel-btn"
-          onClick={() => navigate("/sales-monthly")}
+          onClick={() => navigate("/vp/sales-monthly")}
           disabled={loading}
         >
           <X size={16} />

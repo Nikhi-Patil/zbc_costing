@@ -68,7 +68,7 @@ const CompoundMonthlyMaster = () => {
   // Fetch Units
   const fetchUnits = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/units`);
+      const response = await fetch(`${API_BASE_URL}/units`, { credentials: "include" });
 
       if (!response.ok) {
         throw new Error("Failed to fetch units");
@@ -91,6 +91,7 @@ const CompoundMonthlyMaster = () => {
         `${API_BASE_URL}/monthly-compound-rate?financial_year=${encodeURIComponent(
           financialYear,
         )}`,
+        { credentials: "include" },
       );
       const result = await response.json();
 

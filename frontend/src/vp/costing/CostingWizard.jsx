@@ -477,7 +477,7 @@ function CostingWizard() {
 
       alert(`Costing submitted successfully: ${saved}`);
       console.log("Final:", data);
-      navigate("/molding");
+      navigate("/vp/molding");
     } catch (error) {
       console.error("Final submit error:", error);
       alert(`Failed to submit costing: ${error.message}`);
@@ -1372,7 +1372,11 @@ function CostingWizard() {
 
       {/* Stepper Header */}
       <div className="costing-wizard-stepper">
-        <Stepper currentStep={currentStep} totalSteps={totalSteps} />
+        <Stepper
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          backPath="/vp/molding"
+        />
       </div>
 
       {/* Wizard Content */}

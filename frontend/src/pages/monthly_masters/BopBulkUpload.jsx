@@ -85,13 +85,14 @@ function validateRows(rows, bops = []) {
   rows.forEach((row) => {
     const bopErpCode = normalize(row.bopErpCode);
     const supplierName = normalize(row.supplierName);
+    const productionUnit = normalize(row.productionUnit);
     const financialYear = parseFinancialYear(row.financialYear);
     const month = Number(row.month);
     const bop = bopMap.get(bopErpCode);
     if (bop && financialYear && Number.isInteger(month)) {
       const supplierId = getSupplierIdFromBop(bop, supplierName);
       if (supplierId) {
-        const duplicateKey = `${bop.id}||${supplierId}||${financialYear}||${month}`;
+        const duplicateKey = `${bop.id}||${supplierId}||${productionUnit}||${financialYear}||${month}`;
         duplicateMap.set(
           duplicateKey,
           (duplicateMap.get(duplicateKey) || 0) + 1,
@@ -104,6 +105,7 @@ function validateRows(rows, bops = []) {
     const errors = [];
     const bopErpCode = String(row.bopErpCode ?? "").trim();
     const supplierName = String(row.supplierName ?? "").trim();
+    const productionUnit = String(row.productionUnit ?? "").trim();
     const financialYear = parseFinancialYear(row.financialYear);
     const month = parseMonth(row.month);
     const qty = parseNumber(row.qty);
@@ -129,6 +131,9 @@ function validateRows(rows, bops = []) {
         );
       }
     }
+
+    /* PRODUCTION UNIT */
+    if (!productionUnit) errors.push("Production Unit is required.");
 
     /* FINANCIAL YEAR */
     if (!financialYear) {
@@ -166,7 +171,7 @@ function validateRows(rows, bops = []) {
 
     /* DUPLICATE */
     if (bop && supplierId && financialYear && Number.isInteger(month)) {
-      const duplicateKey = `${bop.id}||${supplierId}||${financialYear}||${month}`;
+      const duplicateKey = `${bop.id}||${supplierId}||${productionUnit}||${financialYear}||${month}`;
       if (duplicateMap.get(duplicateKey) > 1) {
         errors.push(
           `Duplicate BOP + Supplier + Financial Year + ${monthName(month)} found in Excel.`,
@@ -248,6 +253,7 @@ const BopBulkUpload = () => {
       {
         "BOP ERP Code": "BOP001",
         "Supplier Name": "ANTECH INDUSTRIES",
+        "Production Unit": "UNIT-1",
         "Financial Year": "2026-27",
         Month: 4,
         Qty: 1000,
@@ -260,6 +266,7 @@ const BopBulkUpload = () => {
     worksheet["!cols"] = [
       { wch: 18 },
       { wch: 28 },
+      { wch: 20 },
       { wch: 16 },
       { wch: 12 },
       { wch: 14 },
@@ -267,7 +274,7 @@ const BopBulkUpload = () => {
     ];
 
     worksheet["!autofilter"] = {
-      ref: "A1:F2",
+      ref: "A1:G2",
     };
 
     const workbook = XLSX.utils.book_new();
@@ -280,7 +287,7 @@ const BopBulkUpload = () => {
   const loadMasters = async () => {
     setMasterLoading(true);
     try {
-      const bopResponse = await fetch(`${API_BASE_URL}/bops`);
+      const bopResponse = await fetch(`${API_BASE_URL}/bops`, { credentials: "include" });
       if (!bopResponse.ok) {
         throw new Error(
           `Unable to load BOP Master. Status: ${bopResponse.status}`,
@@ -354,6 +361,7 @@ const BopBulkUpload = () => {
       const requiredHeaders = [
         "BOP ERP Code",
         "Supplier Name",
+        "Production Unit",
         "Financial Year",
         "Month",
         "Qty",
@@ -384,6 +392,7 @@ const BopBulkUpload = () => {
           excelRow: index + 2,
           bopErpCode: String(getCell(excelRow, "BOP ERP Code") ?? "").trim(),
           supplierName: String(getCell(excelRow, "Supplier Name") ?? "").trim(),
+          productionUnit: String(getCell(excelRow, "Production Unit") ?? "").trim(),
           financialYear: parseFinancialYear(
             getCell(excelRow, "Financial Year"),
           ),
@@ -395,6 +404,7 @@ const BopBulkUpload = () => {
           (row) =>
             row.bopErpCode ||
             row.supplierName ||
+            row.productionUnit ||
             row.financialYear ||
             row.month ||
             row.qty !== null ||
@@ -491,6 +501,7 @@ const BopBulkUpload = () => {
     const uploadData = validRows.map((row) => ({
       bopErpCode: String(row.bopErpCode).trim(),
       supplierName: String(row.supplierName).trim(),
+      productionUnit: String(row.productionUnit).trim(),
       financial_year: String(row.financialYear).trim(),
       month: Number(row.month),
       qty: Number(row.qty),
@@ -503,6 +514,7 @@ const BopBulkUpload = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           rows: uploadData,
         }),
@@ -647,7 +659,7 @@ const BopBulkUpload = () => {
       <div className="sales-bulk-info">
         <strong>Excel format:</strong>
         <span>
-          BOP ERP Code | Supplier Name | Financial Year | Month | Qty | Rate
+          BOP ERP Code | Supplier Name | Production Unit | Financial Year | Month | Qty | Rate
         </span>
       </div>
 
@@ -716,6 +728,7 @@ const BopBulkUpload = () => {
                   <th className="bulk-sr">#</th>
                   <th>BOP ERP Code</th>
                   <th>Supplier Name</th>
+                  <th>Production Unit</th>
                   <th>Financial Year</th>
                   <th>Month</th>
                   <th>Qty</th>
@@ -773,6 +786,19 @@ const BopBulkUpload = () => {
                           )
                         }
                         disabled={loading}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="text"
+                        className="bulk-edit-input bulk-text-input"
+                        value={row.productionUnit || ""}
+                        onChange={(event) =>
+                          handleRowChange(index, "productionUnit", event.target.value)
+                        }
+                        disabled={loading}
+                        placeholder="Enter Unit"
                       />
                     </td>
 

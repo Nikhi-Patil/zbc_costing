@@ -40,13 +40,12 @@ app.use(
         },
     })
 );
-
-/* HEALTH CHECK */
-app.get("/api/health-check", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "Node.js server is running",
-        timestamp: new Date().toISOString(),
+app.get("/api/session-check", (req, res) => {
+    res.json({
+        sessionExists: !!req.session,
+        userExists: !!req.session?.user,
+        designation: req.session?.user?.designation || null,
+        usernameExists: !!req.session?.user?.user_name,
     });
 });
 

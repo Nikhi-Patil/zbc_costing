@@ -10,6 +10,13 @@ const CompoundMonthlyRateForm = () => {
   const [compounds, setCompounds] = useState([]);
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(false);
+  const loggedInUser = (() => {
+    try { return JSON.parse(localStorage.getItem("user") || "{}"); }
+    catch { return {}; }
+  })();
+  const userRole = String(loggedInUser.designation || "").trim().toLowerCase();
+  const canChooseAnyUnit = ["vp", "vice president", "admin", "super admin"].includes(userRole);
+  const loggedInUnitId = Number(loggedInUser.unit);
 
   const financialYears = generateFinancialYears();
 
@@ -38,7 +45,7 @@ const CompoundMonthlyRateForm = () => {
 
   const fetchCompounds = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/compounds`);
+      const response = await fetch(`${API_BASE_URL}/compounds`, { credentials: "include" });
       if (!response.ok) {
         throw new Error("Failed to fetch compounds");
       }
@@ -51,12 +58,19 @@ const CompoundMonthlyRateForm = () => {
 
   const fetchUnits = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/units`);
+      const response = await fetch(`${API_BASE_URL}/units`, { credentials: "include" });
       if (!response.ok) {
         throw new Error("Failed to fetch units");
       }
       const result = await response.json();
-      setUnits(result.data || result);
+      const allUnits = result.data || result;
+      const allowedUnits = canChooseAnyUnit
+        ? allUnits
+        : allUnits.filter((unit) => Number(unit.id) === loggedInUnitId);
+      setUnits(allowedUnits);
+      if (!canChooseAnyUnit && loggedInUnitId > 0) {
+        setFormData((prev) => ({ ...prev, unitId: String(loggedInUnitId) }));
+      }
     } catch (error) {
       console.error("Error fetching units:", error);
     }
@@ -168,6 +182,7 @@ const CompoundMonthlyRateForm = () => {
       };
       const response = await fetch(`${API_BASE_URL}/monthly-compound-rate`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -319,6 +334,7 @@ const CompoundMonthlyRateForm = () => {
                   name="unitId"
                   value={formData.unitId}
                   onChange={handleInputChange}
+                  disabled={!canChooseAnyUnit}
                 >
                   <option value="">Select Unit</option>
 

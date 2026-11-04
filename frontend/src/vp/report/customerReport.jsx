@@ -83,6 +83,13 @@ function CustomerReport() {
       });
       const response = await fetch(
         `${API_BASE_URL}/molding/customer-wise-report?${params.toString()}`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
       );
       const payload = await response.json().catch(() => ({}));
 

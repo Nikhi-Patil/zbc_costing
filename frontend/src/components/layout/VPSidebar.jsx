@@ -136,6 +136,11 @@ function VPSidebar({ isOpen }) {
                 faFlask,
                 "Monthly Polymer Report",
               )}
+              {childLink(
+                "/vp/customer-report",
+                faFlask,
+                "Customer Wise Report",
+              )}
 
               {/* Add other VP report links here if required */}
             </>,

@@ -1534,7 +1534,11 @@ function CostingWizard() {
 
       {/* Stepper Header */}
       <div className="costing-wizard-stepper">
-        <Stepper currentStep={currentStep} totalSteps={totalSteps} />
+        <Stepper
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          backPath="/molding"
+        />
       </div>
 
       {/* Wizard Content */}

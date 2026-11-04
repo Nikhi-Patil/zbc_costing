@@ -282,6 +282,7 @@ const SalesMonthly = () => {
         `${API_BASE_URL}/sales-monthly?financialYear=${encodeURIComponent(
           selectedYear,
         )}`,
+        { credentials: "include" },
       );
       if (!response.ok) {
         throw new Error(
@@ -321,7 +322,8 @@ const SalesMonthly = () => {
       if (!partNo) {
         return;
       }
-      const key = partNo.toLowerCase();
+      const unit = String(entry.unit || "").trim();
+      const key = `${partNo.toLowerCase()}||${unit.toLowerCase()}`;
       if (!map.has(key)) {
         map.set(key, {
           partId: entry.partId ?? null,

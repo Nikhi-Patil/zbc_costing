@@ -27,6 +27,24 @@ const CompoundBulkUpload = () => {
     type: "success",
   });
   const [currentInvalidIndex, setCurrentInvalidIndex] = useState(-1);
+  const loggedInUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  })();
+  const userRole = String(loggedInUser.designation || "")
+    .trim()
+    .toLowerCase();
+  const canChooseAnyUnit = [
+    "vp",
+    "vice president",
+    "admin",
+    "super admin",
+  ].includes(userRole);
+  const loggedInUnitId = Number(loggedInUser.unit);
+  const loggedInUnitName = String(loggedInUser.unit_name || "").trim();
   const invalidRowRefs = useRef({});
 
   // TOAST
@@ -72,8 +90,8 @@ const CompoundBulkUpload = () => {
   const loadMasterData = async () => {
     try {
       const [compoundResponse, unitResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/compounds`),
-        fetch(`${API_BASE_URL}/units`),
+        fetch(`${API_BASE_URL}/compounds`, { credentials: "include" }),
+        fetch(`${API_BASE_URL}/units`, { credentials: "include" }),
       ]);
 
       if (!compoundResponse.ok) {
@@ -155,6 +173,11 @@ const CompoundBulkUpload = () => {
       errors.push(
         `Production Unit "${productionUnit}" not found in Unit Master`,
       );
+    } else if (
+      !canChooseAnyUnit &&
+      Number(findUnit(productionUnit)?.id) !== loggedInUnitId
+    ) {
+      errors.push("You can upload records only for your login unit");
     }
 
     // FINANCIAL YEAR
@@ -257,7 +280,12 @@ const CompoundBulkUpload = () => {
     const template = [
       {
         "IM Code": "",
-        "Production Unit": "",
+        "Production Unit": canChooseAnyUnit
+          ? ""
+          : loggedInUnitName ||
+            unitMaster.find((unit) => Number(unit.id) === loggedInUnitId)
+              ?.unit ||
+            "",
         "Financial Year": "",
         Month: "",
         Qty: "",
@@ -354,7 +382,16 @@ const CompoundBulkUpload = () => {
 
             imCode: String(values["im code"] ?? "").trim(),
 
-            productionUnit: String(values["production unit"] ?? "").trim(),
+            productionUnit: (() => {
+              const excelUnit = String(values["production unit"] ?? "").trim();
+              if (excelUnit || canChooseAnyUnit) return excelUnit;
+              return (
+                loggedInUnitName ||
+                unitMaster.find((unit) => Number(unit.id) === loggedInUnitId)
+                  ?.unit ||
+                ""
+              );
+            })(),
 
             financialYear: String(values["financial year"] ?? "").trim(),
 
@@ -367,6 +404,7 @@ const CompoundBulkUpload = () => {
         });
 
         setRows(parsedRows);
+        setLoading(false);
 
         showToast(
           `${parsedRows.length} row(s) loaded successfully.`,
@@ -459,72 +497,111 @@ const CompoundBulkUpload = () => {
 
     if (invalidRows.length > 0) {
       showToast(
-        `Cannot upload.\n${invalidRows.length} row(s) have validation errors.`,
+        `Cannot upload. ${invalidRows.length} row(s) have validation errors.`,
         "error",
       );
-
-      setCurrentInvalidIndex(-1);
-
-      setTimeout(() => {
-        goToNextInvalidRow();
-      }, 100);
-
       return;
     }
+
+    const uploadData = validRows.map((row) => ({
+      rowNumber: row.rowNumber,
+      imCode: String(row.imCode).trim(),
+      productionUnit: String(row.productionUnit).trim(),
+      financial_year: String(row.financialYear).trim(),
+      month: Number(row.month),
+      qty: Number(row.qty),
+      rate: Number(row.rate),
+    }));
+
+    const BATCH_SIZE = 100;
+    const TIMEOUT_MS = 60000;
+    const url = `${API_BASE_URL}/monthly-compound-rate/bulk`;
+
+    // Sends one batch and always resolves or throws (never hangs)
+    const postBatch = async (batchRows, batchNumber) => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rows: batchRows }),
+          signal: controller.signal,
+        });
+
+        const responseText = await response.text();
+
+        let result;
+        try {
+          result = JSON.parse(responseText);
+        } catch {
+          console.error("[COMPOUND BULK] Non-JSON response:", responseText);
+          throw new Error(
+            `Batch ${batchNumber}: invalid server response (HTTP ${response.status}).`,
+          );
+        }
+
+        if (!response.ok || !result.success) {
+          throw new Error(
+            `Batch ${batchNumber}: ${
+              result.message || result.error || `HTTP ${response.status}`
+            }`,
+          );
+        }
+
+        return result;
+      } catch (error) {
+        if (error.name === "AbortError") {
+          throw new Error(
+            `Batch ${batchNumber}: server did not respond within ${
+              TIMEOUT_MS / 1000
+            } seconds.`,
+          );
+        }
+        throw error;
+      } finally {
+        clearTimeout(timer);
+      }
+    };
 
     try {
       setLoading(true);
 
-      const uploadData = validRows.map((row) => ({
-        rowNumber: row.rowNumber,
+      const totalBatches = Math.ceil(uploadData.length / BATCH_SIZE);
 
-        imCode: String(row.imCode).trim(),
+      console.log("[COMPOUND BULK] Upload started:", {
+        totalRows: uploadData.length,
+        totalBatches,
+        url,
+      });
 
-        productionUnit: String(row.productionUnit).trim(),
+      for (let i = 0; i < uploadData.length; i += BATCH_SIZE) {
+        const batchNumber = i / BATCH_SIZE + 1;
+        const batch = uploadData.slice(i, i + BATCH_SIZE);
 
-        financial_year: String(row.financialYear).trim(),
+        await postBatch(batch, batchNumber);
 
-        month: Number(row.month),
-
-        qty: Number(row.qty),
-
-        rate: Number(row.rate),
-      }));
-
-      const response = await fetch(
-        `${API_BASE_URL}/monthly-compound-rate/bulk`,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            rows: uploadData,
-          }),
-        },
-      );
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Compound bulk upload failed");
+        console.log(
+          `[COMPOUND BULK] Batch ${batchNumber}/${totalBatches} saved (${Math.min(
+            i + BATCH_SIZE,
+            uploadData.length,
+          )}/${uploadData.length} rows)`,
+        );
       }
 
       showToast(
-        result.message ||
-          `${uploadData.length} record(s) uploaded successfully.`,
+        `${uploadData.length} record(s) saved successfully.`,
         "success",
       );
 
       setTimeout(() => {
-        navigate("/monthly-master/compound");
+        navigate("/vp/monthly-master/compound");
       }, 1200);
     } catch (error) {
-      console.error("Compound bulk upload error:", error);
-
-      showToast(error.message || "Compound bulk upload failed", "error");
+      console.error("[COMPOUND BULK] Save error:", error);
+      showToast(error.message || "Compound bulk upload failed.", "error");
     } finally {
       setLoading(false);
     }
@@ -569,7 +646,7 @@ const CompoundBulkUpload = () => {
         <button
           type="button"
           className="bulk-back-btn"
-          onClick={() => navigate("/monthly-master/compound")}
+          onClick={() => navigate("/vp/monthly-master/compound")}
         >
           <ArrowLeft size={15} />
           Back
@@ -737,7 +814,7 @@ const CompoundBulkUpload = () => {
                             e.target.value,
                           )
                         }
-                        disabled={loading}
+                        disabled={loading || !canChooseAnyUnit}
                       />
                     </td>
 
@@ -856,7 +933,7 @@ const CompoundBulkUpload = () => {
         <button
           type="button"
           className="bulk-cancel-btn"
-          onClick={() => navigate("/monthly-master/compound")}
+          onClick={() => navigate("/vp/monthly-master/compound")}
           disabled={loading}
         >
           Cancel

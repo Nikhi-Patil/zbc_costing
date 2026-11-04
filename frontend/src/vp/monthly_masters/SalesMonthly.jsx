@@ -248,7 +248,7 @@ const salesMonthlyDataTableStyles = {
 const SalesMonthly = () => {
   const navigate = useNavigate();
   const [financialYear, setFinancialYear] = useState(defaultFinancialYear);
-  const [view, setView] = useState("Qty");
+  const [view, setView] = useState("Rate");
   const [search, setSearch] = useState("");
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -282,6 +282,7 @@ const SalesMonthly = () => {
         `${API_BASE_URL}/sales-monthly?financialYear=${encodeURIComponent(
           selectedYear,
         )}`,
+        { credentials: "include" },
       );
       if (!response.ok) {
         throw new Error(
@@ -321,7 +322,8 @@ const SalesMonthly = () => {
       if (!partNo) {
         return;
       }
-      const key = partNo.toLowerCase();
+      const unit = String(entry.unit || "").trim();
+      const key = `${partNo.toLowerCase()}||${unit.toLowerCase()}`;
       if (!map.has(key)) {
         map.set(key, {
           partId: entry.partId ?? null,
@@ -385,7 +387,7 @@ const SalesMonthly = () => {
 
   /* ADD */
   const handleAddRate = () => {
-    navigate("/sales-monthly/add");
+    navigate("/vp/sales-monthly/add");
   };
 
   /* EDIT */
@@ -394,7 +396,7 @@ const SalesMonthly = () => {
       showToast("No saved entry found for this month.", "error");
       return;
     }
-    navigate(`/sales-monthly/add?id=${entry.id}`);
+    navigate(`/vp/sales-monthly/add?id=${entry.id}`);
   };
 
   const handleDownloadExcel = () => {
@@ -465,7 +467,7 @@ const SalesMonthly = () => {
   return (
     <div className="sales-monthly-page">
       <div>
-        <h1>Compound Monthly Report</h1>
+        <h1>Sales Monthly Report</h1>
       </div>
       {/* TOAST */}
       {toast.show && (
@@ -543,7 +545,7 @@ const SalesMonthly = () => {
           <button
             type="button"
             className="sales-bulk-upload-btn"
-            onClick={() => navigate("/sales-monthly/bulk")}
+            onClick={() => navigate("/vp/sales-monthly/bulk")}
           >
             <FileSpreadsheet size={16} strokeWidth={2} />
             <span>Bulk Upload</span>

@@ -462,7 +462,6 @@ export const loginUser = async (req, res) => {
       });
     }
 
-
     // USER ACCESS
     const [accessRows] =
       await adminDB.query(`

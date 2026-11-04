@@ -278,6 +278,25 @@ function validateUploadedRows(rows, parts, units, selectedFinancialYear = "") {
     };
   });
 }
+const getStoredSalesUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "{}");
+  } catch {
+    return {};
+  }
+};
+const storedSalesUser = getStoredSalesUser();
+const canManageAllSalesUnits = [
+  "vp",
+  "vice president",
+  "admin",
+  "super admin",
+].includes(
+  String(storedSalesUser.designation || "")
+    .trim()
+    .toLowerCase(),
+);
+
 const SalesMonthlyBulk = () => {
   const navigate = useNavigate();
   const [financialYear, setFinancialYear] = useState(defaultFinancialYear);
@@ -307,8 +326,8 @@ const SalesMonthlyBulk = () => {
     try {
       setMasterLoading(true);
       const [partsResponse, unitsResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/parts`),
-        fetch(`${API_BASE_URL}/units`),
+        fetch(`${API_BASE_URL}/parts`, { credentials: "include" }),
+        fetch(`${API_BASE_URL}/units`, { credentials: "include" }),
       ]);
       if (!partsResponse.ok)
         throw new Error(
@@ -430,7 +449,23 @@ const SalesMonthlyBulk = () => {
             excelRow: index + 2,
             partNo: String(partNo ?? "").trim(),
             partName: String(partName ?? "").trim(),
-            unit: String(unit ?? "").trim(),
+            unit: canManageAllSalesUnits
+              ? String(unit ?? "").trim()
+              : String(
+                  masters.units.find(
+                    (item) =>
+                      Number(item?.id ?? item?._id) ===
+                      Number(storedSalesUser.unit),
+                  )
+                    ? getUnitName(
+                        masters.units.find(
+                          (item) =>
+                            Number(item?.id ?? item?._id) ===
+                            Number(storedSalesUser.unit),
+                        ),
+                      )
+                    : "",
+                ).trim(),
             financialYear: parseFinancialYear(financialYearValue),
             month: parseMonth(monthValue),
             qty: parseNumber(qtyValue),
@@ -527,6 +562,7 @@ const SalesMonthlyBulk = () => {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/sales-monthly/bulk`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ financialYear, entries }),
       });
@@ -790,7 +826,7 @@ const SalesMonthlyBulk = () => {
                         onChange={(e) =>
                           handleRowChange(index, "unit", e.target.value)
                         }
-                        disabled={loading}
+                        disabled={loading || !canManageAllSalesUnits}
                       />
                     </td>
                     <td>

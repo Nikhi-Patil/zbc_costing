@@ -450,6 +450,7 @@ const Molding = () => {
   const [profitLossFilter, setProfitLossFilter] = useState("All");
   const [searchText, setSearchText] = useState("");
   const [salesMonthlyLoading, setSalesMonthlyLoading] = useState(false);
+  const [salesMonthlyEntries, setSalesMonthlyEntries] = useState([]);
   const [moldingMonthlyReports, setMoldingMonthlyReports] = useState([]);
   const [moldingMonthlyReportLoading, setMoldingMonthlyReportLoading] =
     useState(false);
@@ -576,6 +577,9 @@ const Molding = () => {
 
         const response = await fetch(
           `${API_BASE_URL}/molding-monthly-report?${params.toString()}`,
+          {
+            credentials: "include",
+          },
         );
 
         if (!response.ok) {
@@ -747,27 +751,29 @@ const Molding = () => {
 
   // TRANSACTION HANDLERS
   const handleAddTransaction = () => {
-    navigate("/molding/costing-wizard");
-  };
-
-  const handleBulkUpload = () => {
-    navigate("/molding/bulk-upload");
+    navigate("/vp/molding/costing-wizard");
   };
 
   const handleOpenTransaction = (transactionId) => {
-    navigate(`/molding/costing-wizard/${transactionId}`);
+    navigate(`/vp/molding/costing-wizard/${transactionId}`);
   };
 
+  const handleBulkUpload = () => {
+    navigate("/vp/molding/bulk-upload");
+  };
   const handleDownloadExcel = async (transactionId) => {
     try {
       const response = await fetch(
         `${API_BASE_URL}/molding/${transactionId}/download-excel`,
+        {
+          method: "GET",
+          credentials: "include",
+        },
       );
 
       if (!response.ok) {
         const errorText = await response.text();
-
-        console.error("Excel API error:", errorText);
+        console.error("Excel API error:", response.status, errorText);
 
         throw new Error(
           `Excel download failed (${response.status}): ${errorText}`,
@@ -777,19 +783,19 @@ const Molding = () => {
       const blob = await response.blob();
 
       const url = window.URL.createObjectURL(blob);
-
       const link = document.createElement("a");
+
       link.href = url;
       link.download = `${transactionId}_Costing.xlsx`;
 
       document.body.appendChild(link);
       link.click();
+      link.remove();
 
-      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Excel download error:", error);
-      alert("Failed to download Excel.");
+      alert(error.message || "Failed to download Excel.");
     }
   };
 

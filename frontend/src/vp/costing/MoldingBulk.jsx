@@ -912,7 +912,7 @@ const MoldingBulk = () => {
         "success",
       );
 
-      window.setTimeout(() => navigate("/molding"), 1200);
+      window.setTimeout(() => navigate("/vp/molding"), 1200);
     } catch (error) {
       console.error("Molding bulk save error:", error);
 
@@ -982,7 +982,7 @@ const MoldingBulk = () => {
         <button
           type="button"
           className="bulk-back-btn"
-          onClick={() => navigate("/molding")}
+          onClick={() => navigate("/vp/molding")}
         >
           ← Back
         </button>
@@ -1013,17 +1013,6 @@ const MoldingBulk = () => {
 
           {fileName && <span className="selected-file">{fileName}</span>}
         </div>
-      </div>
-
-      {/* MONTH LOGIC INFO */}
-
-      <div className="sales-bulk-info">
-        <strong>Important:</strong>
-
-        <span>
-          Month controls the Molding Month, Compound Month, all BOP monthly
-          rates, Sales Monthly Qty and Customer Sell Rate.
-        </span>
       </div>
 
       {/* SUMMARY */}
@@ -1663,7 +1652,7 @@ const MoldingBulk = () => {
         <button
           type="button"
           className="bulk-cancel-btn"
-          onClick={() => navigate("/molding")}
+          onClick={() => navigate("/vp/molding")}
           disabled={loading}
         >
           Cancel

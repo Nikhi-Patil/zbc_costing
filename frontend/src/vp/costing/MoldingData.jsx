@@ -851,7 +851,7 @@ const saveHistoricalMonthlyReport = async ({
     headers: {
       "Content-Type": "application/json",
     },
-
+    credentials: "include",
     body: JSON.stringify({
       records,
       userName:
@@ -1515,7 +1515,7 @@ export default function MoldingData() {
 
               if (row.transaction_id) {
                 navigate(
-                  `/molding/costing-wizard/${encodeURIComponent(
+                  `/vp/molding/costing-wizard/${encodeURIComponent(
                     row.transaction_id,
                   )}`,
                 );

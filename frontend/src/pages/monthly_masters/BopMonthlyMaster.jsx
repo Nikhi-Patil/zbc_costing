@@ -66,6 +66,7 @@ const BopMonthlyMaster = () => {
         `${API_BASE_URL}/monthly-bop-rate?financial_year=${encodeURIComponent(
           financialYear,
         )}`,
+        { credentials: "include" },
       );
 
       const result = await response.json();
@@ -87,7 +88,7 @@ const BopMonthlyMaster = () => {
   /* GROUP DATA */
   const groupedData = useMemo(() => {
     const grouped = data.reduce((acc, row) => {
-      const key = `${row.bop_id}-${row.supplier_id}-${row.financial_year}`;
+      const key = `${row.bop_id}-${row.supplier_id}-${row.unit_id}-${row.financial_year}`;
 
       if (!acc[key]) {
         acc[key] = {
@@ -106,6 +107,8 @@ const BopMonthlyMaster = () => {
           supplier_id: row.supplier_id,
 
           supplier_name: row.supplier_name,
+          unit_id: row.unit_id,
+          unit_name: row.unit_name,
 
           financial_year: row.financial_year,
 
@@ -140,6 +143,7 @@ const BopMonthlyMaster = () => {
         row.bop_part_no,
         row.bop_erp_code,
         row.supplier_name,
+        row.unit_name,
       ].some((value) =>
         String(value || "")
           .toLowerCase()
@@ -208,6 +212,13 @@ const BopMonthlyMaster = () => {
         cell: (row) => (
           <div className="bop-wrap-cell">{row.supplier_name || "-"}</div>
         ),
+      },
+      {
+        name: "Production Unit",
+        selector: (row) => row.unit_name || "",
+        sortable: true,
+        width: "110px",
+        cell: (row) => <div className="bop-wrap-cell">{row.unit_name || "-"}</div>,
       },
     ];
 
@@ -323,6 +334,7 @@ const BopMonthlyMaster = () => {
       "BOP Part No",
       "BOP ERP Code",
       "Supplier Name",
+      "Production Unit",
     ];
 
     const headers = [
@@ -340,6 +352,7 @@ const BopMonthlyMaster = () => {
         row.bop_part_no || "-",
         row.bop_erp_code || "-",
         row.supplier_name || "-",
+        row.unit_name || "-",
         ...months.map((month) => {
           const monthData = row.months?.[month.value];
 
@@ -361,6 +374,7 @@ const BopMonthlyMaster = () => {
         { wch: 18 },
         { wch: 18 },
         { wch: 25 },
+        { wch: 18 },
         ...months.map(() => ({ wch: 14 })),
       ];
 

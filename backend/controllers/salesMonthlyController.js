@@ -1,9 +1,34 @@
 import zbcDB from "../config/zbcDB.js";
 import adminDB from "../config/adminDB.js";
 
+/* SALES MONTHLY UNIT ACCESS */
+const getSalesSessionUser = (req) => req.session?.user || null;
+const getSalesRole = (req) =>
+    String(getSalesSessionUser(req)?.designation || "").trim().toLowerCase();
+const canAccessAllSalesUnits = (req) =>
+    ["vp", "vice president", "admin", "super admin"].includes(getSalesRole(req));
+const getSalesSessionUnitId = (req) => {
+    const unitId = Number(getSalesSessionUser(req)?.unit);
+    return Number.isInteger(unitId) && unitId > 0 ? unitId : null;
+};
+const requireSalesSession = (req, res) => {
+    if (!getSalesSessionUser(req)) {
+        res.status(401).json({ success: false, message: "Please log in to access Sales Monthly" });
+        return false;
+    }
+    if (!canAccessAllSalesUnits(req) && !getSalesSessionUnitId(req)) {
+        res.status(403).json({ success: false, message: "No valid unit is assigned to your login session" });
+        return false;
+    }
+    return true;
+};
+const resolveSalesUnitId = (req, requestedUnitId) =>
+    canAccessAllSalesUnits(req) ? Number(requestedUnitId) : getSalesSessionUnitId(req);
+
 /* GET SALES MONTHLY REPORT */
 export const getSalesMonthlyReport = async (req, res) => {
     try {
+        if (!requireSalesSession(req, res)) return;
         const { financialYear, financial_year, partNo } = req.query;
         const selectedFinancialYear =
             financialYear || financial_year;
@@ -28,9 +53,11 @@ export const getSalesMonthlyReport = async (req, res) => {
                 sell_rate
             FROM sales_monthly
             WHERE financial_year = ? `;
-        const params = [
-            String(selectedFinancialYear).trim(),
-        ];
+        const params = [String(selectedFinancialYear).trim()];
+        if (!canAccessAllSalesUnits(req)) {
+            sql += " AND unit_id = ?";
+            params.push(getSalesSessionUnitId(req));
+        }
 
         if (partNo && String(partNo).trim()) {
             sql += `AND LOWER(TRIM(part_no))
@@ -58,6 +85,7 @@ export const getSalesMonthlyReport = async (req, res) => {
 /* GET PREVIOUS MONTH SALES FOR COSTING */
 export const getPreviousMonthSales = async (req, res) => {
     try {
+        if (!requireSalesSession(req, res)) return;
         const {
             partNo,
             financialYear,
@@ -139,13 +167,15 @@ export const getPreviousMonthSales = async (req, res) => {
             WHERE LOWER(TRIM(part_no)) = LOWER(TRIM(?))
               AND financial_year = ?
               AND month = ?
-            ORDER BY qty ASC, id ASC
+              ${canAccessAllSalesUnits(req) ? "" : "AND unit_id = ?"}
+            ORDER BY qty DESC, id ASC
             LIMIT 1
             `,
             [
                 String(partNo).trim(),
                 previousFinancialYear,
                 previousMonth,
+                ...(canAccessAllSalesUnits(req) ? [] : [getSalesSessionUnitId(req)]),
             ]
         );
 
@@ -187,6 +217,7 @@ export const getPreviousMonthSales = async (req, res) => {
 /* GET ONE SALES MONTHLY RECORD */
 export const getSalesMonthlyById = async (req, res) => {
     try {
+        if (!requireSalesSession(req, res)) return;
         const { id } = req.params;
         if (!id) {
             return res.status(400).json({
@@ -211,8 +242,9 @@ export const getSalesMonthlyById = async (req, res) => {
                 updated_at
             FROM sales_monthly
             WHERE id = ?
+              ${canAccessAllSalesUnits(req) ? "" : "AND unit_id = ?"}
             LIMIT 1`,
-            [id]
+            canAccessAllSalesUnits(req) ? [id] : [id, getSalesSessionUnitId(req)]
         );
         if (rows.length === 0) {
             return res.status(404).json({
@@ -236,6 +268,7 @@ export const getSalesMonthlyById = async (req, res) => {
 /* CHECK EXISTING RECORD */
 export const checkSalesMonthly = async (req, res) => {
     try {
+        if (!requireSalesSession(req, res)) return;
         const {
             partNo,
             part_no,
@@ -286,11 +319,13 @@ export const checkSalesMonthly = async (req, res) => {
                     = LOWER(TRIM(?))
                 AND financial_year = ?
                 AND month = ?
+                ${canAccessAllSalesUnits(req) ? "" : "AND unit_id = ?"}
             LIMIT 1`,
             [
                 String(selectedPartNo).trim(),
                 String(selectedFinancialYear).trim(),
                 monthNumber,
+                ...(canAccessAllSalesUnits(req) ? [] : [getSalesSessionUnitId(req)]),
             ]
         );
         if (rows.length === 0) {
@@ -319,6 +354,7 @@ export const checkSalesMonthly = async (req, res) => {
 /* CREATE SALES MONTHLY */
 export const createSalesMonthly = async (req, res) => {
     try {
+        if (!requireSalesSession(req, res)) return;
         const {
             partNo,
             partName,
@@ -392,14 +428,28 @@ export const createSalesMonthly = async (req, res) => {
         }
         const part = partRows[0];
 
+        /* REGULAR USERS ALWAYS USE THEIR SESSION UNIT */
+        let effectiveUnitId;
+        if (canAccessAllSalesUnits(req)) {
+            const [requestedUnitRows] = await adminDB.query(
+                `SELECT id FROM unit_master WHERE LOWER(TRIM(unit)) = LOWER(TRIM(?)) LIMIT 1`,
+                [String(unit).trim()]
+            );
+            effectiveUnitId = Number(requestedUnitRows[0]?.id);
+        } else {
+            effectiveUnitId = getSalesSessionUnitId(req);
+        }
+        if (!Number.isInteger(effectiveUnitId) || effectiveUnitId <= 0) {
+            return res.status(400).json({ success: false, message: "Please select a valid Unit" });
+        }
+
         /* FIND UNIT FROM UNIT MASTER */
         const [unitRows] = await adminDB.query(`
             SELECT id,unit
             FROM unit_master
-            WHERE LOWER(TRIM(unit))
-                    = LOWER(TRIM(?))
+            WHERE id = ?
             LIMIT 1`,
-            [String(unit).trim(),]
+            [effectiveUnitId]
         );
         if (unitRows.length === 0) {
             return res.status(404).json({
@@ -452,10 +502,11 @@ export const createSalesMonthly = async (req, res) => {
                 updated_at
             FROM sales_monthly
             WHERE part_id = ?
+                AND unit_id = ?
                 AND financial_year = ?
                 AND month = ?
             LIMIT 1`,
-            [part.id, String(financialYear).trim(), monthNumber,]
+            [part.id, unitMaster.id, String(financialYear).trim(), monthNumber,]
         );
         return res.status(201).json({
             success: true,
@@ -482,6 +533,7 @@ export const bulkCreateSalesMonthly = async (req, res) => {
     let connection;
 
     try {
+        if (!requireSalesSession(req, res)) return;
         const { financialYear, entries } = req.body;
 
         /* -------------------------------------------------
@@ -600,9 +652,10 @@ export const bulkCreateSalesMonthly = async (req, res) => {
                 ""
             ).trim();
 
-            const unit = String(
-                entry.unit ?? ""
-            ).trim();
+            const requestedUnit = String(entry.unit ?? "").trim();
+            const unit = canAccessAllSalesUnits(req)
+                ? requestedUnit
+                : String(getSalesSessionUnitId(req) || "");
 
             const month = Number(entry.month);
 
@@ -731,9 +784,9 @@ export const bulkCreateSalesMonthly = async (req, res) => {
                 return;
             }
 
-            const unitMaster = unitMap.get(
-                unit.toLowerCase()
-            );
+            const unitMaster = canAccessAllSalesUnits(req)
+                ? unitMap.get(unit.toLowerCase())
+                : unitRows.find((item) => Number(item.id) === getSalesSessionUnitId(req));
 
             if (!unitMaster) {
                 errors.push({
@@ -986,6 +1039,7 @@ export const bulkCreateSalesMonthly = async (req, res) => {
 /* UPDATE SALES MONTHLY */
 export const updateSalesMonthly = async (req, res) => {
     try {
+        if (!requireSalesSession(req, res)) return;
         const { id } = req.params;
         const {
             partNo,
@@ -1054,6 +1108,15 @@ export const updateSalesMonthly = async (req, res) => {
             });
         }
 
+        /* ENSURE THE RECORD BELONGS TO THE SESSION UNIT */
+        const [existingRows] = await zbcDB.query(
+            `SELECT id, unit_id FROM sales_monthly WHERE id = ? ${canAccessAllSalesUnits(req) ? "" : "AND unit_id = ?"} LIMIT 1`,
+            canAccessAllSalesUnits(req) ? [id] : [id, getSalesSessionUnitId(req)]
+        );
+        if (!existingRows.length) {
+            return res.status(404).json({ success: false, message: "Sales Monthly record not found for your unit" });
+        }
+
         /* CHECK PART */
         const [partRows] = await adminDB.query(`
             SELECT id, part_no, part_name
@@ -1071,14 +1134,23 @@ export const updateSalesMonthly = async (req, res) => {
         }
         const part = partRows[0];
 
-        /* CHECK UNIT */
+        /* REGULAR USERS CANNOT CHANGE THE RECORD'S UNIT */
+        let effectiveUnitId;
+        if (canAccessAllSalesUnits(req)) {
+            const [requestedUnitRows] = await adminDB.query(
+                `SELECT id FROM unit_master WHERE LOWER(TRIM(unit)) = LOWER(TRIM(?)) LIMIT 1`,
+                [String(unit).trim()]
+            );
+            effectiveUnitId = Number(requestedUnitRows[0]?.id);
+        } else {
+            effectiveUnitId = getSalesSessionUnitId(req);
+        }
         const [unitRows] = await adminDB.query(`
             SELECT id, unit
             FROM unit_master
-            WHERE LOWER(TRIM(unit))
-                    = LOWER(TRIM(?))
+            WHERE id = ?
             LIMIT 1`,
-            [String(unit).trim(),]
+            [effectiveUnitId]
         );
         if (unitRows.length === 0) {
             return res.status(404).json({
@@ -1169,6 +1241,7 @@ export const updateSalesMonthly = async (req, res) => {
 /* DELETE SALES MONTHLY */
 export const deleteSalesMonthly = async (req, res) => {
     try {
+        if (!requireSalesSession(req, res)) return;
         const { id } = req.params;
         if (!id) {
             return res.status(400).json({
@@ -1178,8 +1251,9 @@ export const deleteSalesMonthly = async (req, res) => {
         }
         const [result] = await zbcDB.query(`
             DELETE FROM sales_monthly
-            WHERE id = ?`,
-            [id]
+            WHERE id = ?
+              ${canAccessAllSalesUnits(req) ? "" : "AND unit_id = ?"}`,
+            canAccessAllSalesUnits(req) ? [id] : [id, getSalesSessionUnitId(req)]
         );
         if (result.affectedRows === 0) {
             return res.status(404).json({
