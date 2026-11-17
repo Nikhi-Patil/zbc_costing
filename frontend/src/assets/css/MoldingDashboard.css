@@ -1,5 +1,4 @@
 /* Plain CSS version â€” Tailwind is not required. */
-
 *,
 *::before,
 *::after {
@@ -376,15 +375,38 @@ select {
   display: flex;
   align-items: center;
 }
-
 .molding-billing-content {
-  height: 214px;
+  height: 300px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
+}
+.molding-billing-content > .relative {
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.molding-billing-content .recharts-wrapper {
+  margin: auto;
 }
 
 .molding-status-content {
-  height: 125px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 240px;
   gap: 12px;
+}
+
+.molding-status-content > .relative {
+  height: 100%;
+  min-width: 0;
+  flex: 1;
 }
 
 .molding-dashboard [class~="h-[215px]"] {
@@ -640,4 +662,147 @@ select {
     break-inside: avoid;
     box-shadow: none;
   }
+}
+/* Center content inside all KPI cards */
+.molding-kpi {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.molding-kpi > div {
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px !important;
+}
+
+.molding-kpi > div > div:first-child {
+  flex: 0 0 40px;
+}
+
+.molding-kpi > div > div:last-child {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.molding-kpi > div > div:last-child > div {
+  justify-content: center;
+}
+
+.molding-kpi > div > div:last-child > p {
+  text-align: center;
+}
+/* Dashboard dynamic colors */
+
+.molding-color-blue {
+  color: #2878e8;
+  background-color: #2878e8;
+}
+
+.molding-color-green {
+  color: #24a866;
+  background-color: #24a866;
+}
+
+.molding-color-orange {
+  color: #f59a23;
+  background-color: #f59a23;
+}
+
+.molding-color-red {
+  color: #ef4764;
+  background-color: #ef4764;
+}
+
+.molding-color-amber {
+  color: #f6bd16;
+  background-color: #f6bd16;
+}
+
+.molding-color-slate {
+  color: #64748b;
+  background-color: #64748b;
+}
+
+.molding-color-muted {
+  color: #94a3b8;
+  background-color: #94a3b8;
+}
+
+.molding-color-default {
+  color: #334155;
+  background-color: #334155;
+}
+
+/* Legend color indicators */
+.molding-legend-color {
+  display: inline-block;
+  flex: 0 0 12px;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+/* Custom chart tooltip */
+.molding-dashboard .molding-chart-tooltip {
+  min-width: 150px;
+  padding: 10px 12px;
+  border: 1px solid #dbe3ed;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 5px 18px rgb(15 23 42 / 14%);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.molding-dashboard .molding-tooltip-title {
+  margin-bottom: 8px;
+  color: #173d70;
+  font-weight: 700;
+}
+
+.molding-dashboard .molding-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 5px;
+  color: #475569;
+}
+
+.molding-dashboard .molding-tooltip-dot {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.molding-dashboard .molding-tooltip-name {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.molding-dashboard .molding-tooltip-value {
+  color: #173d70;
+  white-space: nowrap;
+  font-weight: 700;
+}
+.molding-color-profit {
+  background-color: #16a34a;
+}
+
+.molding-color-loss {
+  background-color: #ef4444;
+}
+/* Parts table P/L values */
+.molding-parts-table .molding-pl-value--profit {
+  color: #059669 !important;
+}
+
+.molding-parts-table .molding-pl-value--loss {
+  color: #dc2626 !important;
 }

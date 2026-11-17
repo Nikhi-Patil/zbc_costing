@@ -90,9 +90,7 @@ const FORM_COLUMN_MAP = {
     cylindricalGrindingRequired: "cylindrical_grinding_required",
     bopWeight: "bop_weight",
     bopArea: "bop_area",
-    paintArea: "paint_area",
     paintPerLit: "paint_per_lit",
-    finishedPartWeight: "finished_part_weight",
     metalPartArea: "metal_part_area",
     assemblyQty: "assembly_qty",
     assemblyPerCost: "assembly_per_cost",
@@ -256,7 +254,7 @@ export const updateAllMoldingMargins = async (updatedBy = null) => {
         // 3. GET CURRENT VALUES FROM MARGIN MASTER
         const icc = marginMap.icc ?? 0;
         const rejection = marginMap.rejection ?? 0;
-        const overhead = marginMap.overhead ?? marginMap.overheadoh ?? 0;
+        const overhead = marginMap.overheades ?? marginMap.overheadesoh ?? 0;
         const profit = marginMap.profit ?? 0;
         const transport = marginMap.transport ?? 0;
         const packaging = marginMap.packaging ?? 0;

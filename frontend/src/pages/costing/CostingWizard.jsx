@@ -100,9 +100,7 @@ function CostingWizard() {
     // Inputs used by margin-master-based process calculations
     bopWeight: "",
     bopArea: "",
-    paintArea: "",
     paintPerLit: "",
-    finishedPartWeight: "",
     metalPartArea: "",
     // Rates fetched from Margin Master (not user-editable)
     postCuringRate: 0,
@@ -370,12 +368,7 @@ function CostingWizard() {
         plating: data.plating ?? prev.plating,
         bopWeight: data.bop_weight ?? data.bopWeight ?? prev.bopWeight,
         bopArea: data.bop_area ?? data.bopArea ?? prev.bopArea,
-        paintArea: data.paint_area ?? data.paintArea ?? prev.paintArea,
         paintPerLit: data.paint_per_lit ?? data.paintPerLit ?? prev.paintPerLit,
-        finishedPartWeight:
-          data.finished_part_weight ??
-          data.finishedPartWeight ??
-          prev.finishedPartWeight,
         metalPartArea:
           data.metal_part_area ?? data.metalPartArea ?? prev.metalPartArea,
         assemblyQty: data.assembly_qty ?? prev.assemblyQty,
@@ -1091,9 +1084,7 @@ function CostingWizard() {
     const netWeight = Number(formData.netWeight) || 0;
     const bopWeight = Number(formData.bopWeight) || 0;
     const bopArea = Number(formData.bopArea) || 0;
-    const paintArea = Number(formData.paintArea) || 0;
     const paintPerLit = Number(formData.paintPerLit) || 0;
-    const finishedPartWeight = Number(formData.finishedPartWeight) || 0;
     const metalPartArea = Number(formData.metalPartArea) || 0;
 
     // Post Curing = (Part Master rate * (Net Weight + BOP Weight)) / 1000.
@@ -1187,9 +1178,7 @@ function CostingWizard() {
     formData.netWeight,
     formData.bopWeight,
     formData.bopArea,
-    formData.paintArea,
     formData.paintPerLit,
-    formData.finishedPartWeight,
     formData.metalPartArea,
     formData.shotBlastingRequired,
     formData.shotBlastingRate,
@@ -1338,7 +1327,6 @@ function CostingWizard() {
   };
 
   const fetchBopRate = async ({
-    bopId,
     bopErpCode,
     supplierId,
     financialYear,
@@ -1407,7 +1395,6 @@ function CostingWizard() {
       const supplierId = currentBop.supplierId;
 
       const rate = await fetchBopRate({
-        bopId: currentBop.bopId,
         bopErpCode,
         supplierId,
         financialYear: formData.financialYear,

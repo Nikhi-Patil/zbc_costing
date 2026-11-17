@@ -26,7 +26,16 @@ const formatNumber = (value, digits = 0) =>
   });
 
 const formatCurrency = (value) => formatNumber(value, 0);
-
+const formatCurrencyInCr = (value) =>
+  `${(toNumber(value) / 10000000).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} Cr`;
+const formatCurrencyInLakh = (value) =>
+  `${(toNumber(value) / 100000).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} Lakh`;
 const getPartKey = (row) =>
   [row.transaction_id, row.production_unit, row.sub_category, row.part_no]
     .map((value) =>
@@ -83,6 +92,13 @@ function CustomerReport() {
       });
       const response = await fetch(
         `${API_BASE_URL}/molding/customer-wise-report?${params.toString()}`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
       );
       const payload = await response.json().catch(() => ({}));
 
@@ -322,9 +338,9 @@ function CustomerReport() {
       sortable: true,
     },
     {
-      name: "Sales Value (INR)",
+      name: "Sales Value",
       selector: (row) => row.salesValue,
-      cell: (row) => formatCurrency(row.salesValue),
+      cell: (row) => formatCurrencyInCr(row.salesValue),
       center: true,
       width: "120px",
       sortable: true,
@@ -338,7 +354,7 @@ function CustomerReport() {
       sortable: true,
     },
     {
-      name: "Profit Value (INR)",
+      name: "Profit Value",
       selector: (row) => row.profitValue,
       width: "150px",
       center: true,
@@ -354,13 +370,14 @@ function CustomerReport() {
             })
           }
         >
-          {formatCurrency(row.profitValue)} <span aria-hidden="true">↑</span>
+          {formatCurrencyInCr(row.profitValue)}{" "}
+          <span aria-hidden="true">↑</span>
         </button>
       ),
       sortable: true,
     },
     {
-      name: "Loss Value (INR)",
+      name: "Loss Value",
       selector: (row) => row.lossValue,
       width: "150px",
       center: true,
@@ -376,7 +393,7 @@ function CustomerReport() {
             })
           }
         >
-          {formatCurrency(row.lossValue)} <span aria-hidden="true">↓</span>
+          {formatCurrencyInCr(row.lossValue)} <span aria-hidden="true">↓</span>
         </button>
       ),
       sortable: true,
@@ -493,15 +510,11 @@ function CustomerReport() {
 
   const detailRows = useMemo(() => {
     if (!selectedCategory) return [];
-
     const customer = customers.find(
       (item) => item.customer_name === selectedCategory.customer,
     );
-
     if (!customer) return [];
-
     const category = selectedCategory.category;
-
     const list = category
       ? customer.categories.find((item) => item.sub_category === category)
           ?.parts || []
@@ -583,7 +596,7 @@ function CustomerReport() {
           {
             name: "Sales Value",
             selector: (row) => row.salesValue,
-            cell: (row) => formatCurrency(row.salesValue),
+            cell: (row) => formatCurrencyInLakh(row.salesValue),
             center: true,
             width: "120px",
           },
@@ -609,7 +622,7 @@ function CustomerReport() {
                   })
                 }
               >
-                {formatCurrency(row.profitValue)} ↑
+                {formatCurrencyInLakh(row.profitValue)} ↑
               </button>
             ),
             center: true,
@@ -630,7 +643,7 @@ function CustomerReport() {
                   })
                 }
               >
-                {formatCurrency(row.lossValue)} ↓
+                {formatCurrencyInLakh(row.lossValue)} ↓
               </button>
             ),
             center: true,
@@ -838,7 +851,6 @@ const customerTableStyles = {
   },
   cells: { style: { padding: "0px 0px" } },
 };
-
 const categoryTableStyles = {
   ...customerTableStyles,
   headRow: { style: { minHeight: "32px", backgroundColor: "#fff" } },
@@ -859,7 +871,6 @@ const categoryTableStyles = {
     },
   },
 };
-
 const detailTableStyles = {
   ...customerTableStyles,
   tableWrapper: { style: { maxHeight: "calc(100vh - 210px)" } },

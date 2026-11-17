@@ -286,16 +286,8 @@ const getStoredSalesUser = () => {
   }
 };
 const storedSalesUser = getStoredSalesUser();
-const canManageAllSalesUnits = [
-  "vp",
-  "vice president",
-  "admin",
-  "super admin",
-].includes(
-  String(storedSalesUser.designation || "")
-    .trim()
-    .toLowerCase(),
-);
+const canManageAllSalesUnits = ["vp", "vice president", "admin", "super admin"]
+  .includes(String(storedSalesUser.designation || "").trim().toLowerCase());
 
 const SalesMonthlyBulk = () => {
   const navigate = useNavigate();

@@ -26,7 +26,16 @@ const formatNumber = (value, digits = 0) =>
   });
 
 const formatCurrency = (value) => formatNumber(value, 0);
-
+const formatCurrencyInCr = (value) =>
+  `${(toNumber(value) / 10000000).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} Cr`;
+const formatCurrencyInLakh = (value) =>
+  `${(toNumber(value) / 100000).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} Lakh`;
 const getPartKey = (row) =>
   [row.transaction_id, row.production_unit, row.sub_category, row.part_no]
     .map((value) =>
@@ -329,9 +338,9 @@ function CustomerReport() {
       sortable: true,
     },
     {
-      name: "Sales Value (INR)",
+      name: "Sales Value",
       selector: (row) => row.salesValue,
-      cell: (row) => formatCurrency(row.salesValue),
+      cell: (row) => formatCurrencyInCr(row.salesValue),
       center: true,
       width: "120px",
       sortable: true,
@@ -345,7 +354,7 @@ function CustomerReport() {
       sortable: true,
     },
     {
-      name: "Profit Value (INR)",
+      name: "Profit Value",
       selector: (row) => row.profitValue,
       width: "150px",
       center: true,
@@ -354,16 +363,21 @@ function CustomerReport() {
           type="button"
           className="cr-value-link cr-profit-link"
           onClick={() =>
-            setSelectedCategory({ customer: row.customer_name, category: null })
+            setSelectedCategory({
+              customer: row.customer_name,
+              category: null,
+              filter: "profit",
+            })
           }
         >
-          {formatCurrency(row.profitValue)} <span aria-hidden="true">↑</span>
+          {formatCurrencyInCr(row.profitValue)}{" "}
+          <span aria-hidden="true">↑</span>
         </button>
       ),
       sortable: true,
     },
     {
-      name: "Loss Value (INR)",
+      name: "Loss Value",
       selector: (row) => row.lossValue,
       width: "150px",
       center: true,
@@ -372,10 +386,14 @@ function CustomerReport() {
           type="button"
           className="cr-value-link cr-loss-link"
           onClick={() =>
-            setSelectedCategory({ customer: row.customer_name, category: null })
+            setSelectedCategory({
+              customer: row.customer_name,
+              category: null,
+              filter: "loss",
+            })
           }
         >
-          {formatCurrency(row.lossValue)} <span aria-hidden="true">↓</span>
+          {formatCurrencyInCr(row.lossValue)} <span aria-hidden="true">↓</span>
         </button>
       ),
       sortable: true,
@@ -501,13 +519,36 @@ function CustomerReport() {
       ? customer.categories.find((item) => item.sub_category === category)
           ?.parts || []
       : customer.parts;
-    return [...list].sort(
+
+    const filteredList = list.filter((part) => {
+      if (selectedCategory.filter === "profit") {
+        return part.monthly_profit_loss_value > 0;
+      }
+
+      if (selectedCategory.filter === "loss") {
+        return part.monthly_profit_loss_value < 0;
+      }
+
+      return true;
+    });
+
+    return [...filteredList].sort(
       (a, b) => b.monthly_profit_loss_value - a.monthly_profit_loss_value,
     );
   }, [customers, selectedCategory]);
 
   const detailTitle = selectedCategory
-    ? `${selectedCategory.customer}${selectedCategory.category ? ` — ${selectedCategory.category}` : " — Part List"}`
+    ? [
+        selectedCategory.customer,
+        selectedCategory.category,
+        selectedCategory.filter === "profit"
+          ? "Profit Parts"
+          : selectedCategory.filter === "loss"
+            ? "Loss Parts"
+            : "All Parts",
+      ]
+        .filter(Boolean)
+        .join(" — ")
     : "";
 
   const ExpandedCustomer = ({ data: customer }) => (
@@ -555,7 +596,7 @@ function CustomerReport() {
           {
             name: "Sales Value",
             selector: (row) => row.salesValue,
-            cell: (row) => formatCurrency(row.salesValue),
+            cell: (row) => formatCurrencyInLakh(row.salesValue),
             center: true,
             width: "120px",
           },
@@ -570,9 +611,19 @@ function CustomerReport() {
             name: "Profit Value",
             selector: (row) => row.profitValue,
             cell: (row) => (
-              <span className="cr-positive">
-                {formatCurrency(row.profitValue)}
-              </span>
+              <button
+                type="button"
+                className="cr-value-link cr-profit-link"
+                onClick={() =>
+                  setSelectedCategory({
+                    customer: customer.customer_name,
+                    category: row.sub_category,
+                    filter: "profit",
+                  })
+                }
+              >
+                {formatCurrencyInLakh(row.profitValue)} ↑
+              </button>
             ),
             center: true,
             width: "150px",
@@ -581,9 +632,19 @@ function CustomerReport() {
             name: "Loss Value",
             selector: (row) => row.lossValue,
             cell: (row) => (
-              <span className="cr-negative">
-                {formatCurrency(row.lossValue)}
-              </span>
+              <button
+                type="button"
+                className="cr-value-link cr-loss-link"
+                onClick={() =>
+                  setSelectedCategory({
+                    customer: customer.customer_name,
+                    category: row.sub_category,
+                    filter: "loss",
+                  })
+                }
+              >
+                {formatCurrencyInLakh(row.lossValue)} ↓
+              </button>
             ),
             center: true,
             width: "150px",
@@ -720,7 +781,13 @@ function CustomerReport() {
           >
             <div className="cr-detail-header">
               <div>
-                <h2>Part List</h2>
+                <h2>
+                  {selectedCategory?.filter === "profit"
+                    ? "Profit Parts"
+                    : selectedCategory?.filter === "loss"
+                      ? "Loss Parts"
+                      : "Part List"}
+                </h2>
                 <p>{detailTitle}</p>
               </div>
               <button

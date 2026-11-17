@@ -444,9 +444,19 @@ const SalesMonthlyBulk = () => {
             unit: canManageAllSalesUnits
               ? String(unit ?? "").trim()
               : String(
-                  masters.units.find((item) => Number(item?.id ?? item?._id) === Number(storedSalesUser.unit))
-                    ? getUnitName(masters.units.find((item) => Number(item?.id ?? item?._id) === Number(storedSalesUser.unit)))
-                    : ""
+                  masters.units.find(
+                    (item) =>
+                      Number(item?.id ?? item?._id) ===
+                      Number(storedSalesUser.unit),
+                  )
+                    ? getUnitName(
+                        masters.units.find(
+                          (item) =>
+                            Number(item?.id ?? item?._id) ===
+                            Number(storedSalesUser.unit),
+                        ),
+                      )
+                    : "",
                 ).trim(),
             financialYear: parseFinancialYear(financialYearValue),
             month: parseMonth(monthValue),

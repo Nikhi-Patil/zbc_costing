@@ -4,8 +4,8 @@ const getCurrentUserName = (req) =>
     req.session?.user?.user_name ||
     req.user?.user_name ||
     req.user?.username ||
+    req.body?.userName ||
     null;
-
 const getUserRole = (req) =>
     String(
         req.session?.user?.designation ||
@@ -46,6 +46,7 @@ export const saveMoldingMonthlyReport = async (req, res) => {
         } = req.body;
 
         const currentUser = getCurrentUserName(req);
+
         // ------------------------------------
         // Required field validation
         // ------------------------------------
@@ -457,13 +458,26 @@ export const deleteMoldingMonthlyReport = async (
     }
 };
 
+
 export const saveMoldingMonthlyReportBulk = async (req, res) => {
-    const connection = await zbcDB.getConnection();
+    let connection;
+    let transactionStarted = false;
 
     try {
+        connection = await zbcDB.getConnection();
+
         const { records } = req.body;
         const currentUser = getCurrentUserName(req);
 
+        console.log("Bulk Monthly Report User Debug:", {
+            sessionUser: req.session?.user,
+            requestUser: req.user,
+            bodyUserName: req.body?.userName,
+            resolvedUser: currentUser,
+            totalRecords: records?.length,
+        });
+
+        // Validate records
         if (!Array.isArray(records) || records.length === 0) {
             return res.status(400).json({
                 success: false,
@@ -471,7 +485,13 @@ export const saveMoldingMonthlyReportBulk = async (req, res) => {
             });
         }
 
-        // Validate all records before inserting anything
+        if (!currentUser || !String(currentUser).trim()) {
+            return res.status(401).json({
+                success: false,
+                message: "Unable to identify the logged-in user",
+            });
+        }
+
         const errors = [];
 
         records.forEach((record, index) => {
@@ -507,112 +527,110 @@ export const saveMoldingMonthlyReportBulk = async (req, res) => {
                 errors,
             });
         }
-        if (!currentUser || !String(currentUser).trim()) {
-            return res.status(401).json({
-                success: false,
-                message: "Unable to identify the logged-in user",
-            });
-        }
 
-        await connection.beginTransaction();
+        const columns = [
+            "molding_id",
+            "transaction_id",
+            "part_no",
+            "fg_code",
+            "customer_name",
+            "production_unit",
+            "billing_unit",
+            "sub_category",
+            "financial_year",
+            "month",
+            "month_name",
+            "month_index",
+            "subtotal_a",
+            "part_cost",
+            "customer_sales_cost",
+            "monthly_quantity",
+            "created_by",
+            "updated_by",
+        ];
 
         const sql = `
             INSERT INTO molding_monthly_report (
-                molding_id,
-                transaction_id,
-
-                part_no,
-                fg_code,
-                customer_name,
-                production_unit,
-                billing_unit,
-                sub_category,
-
-                financial_year,
-                month,
-                month_name,
-                month_index,
-
-                subtotal_a,
-                part_cost,
-                customer_sales_cost,
-                monthly_quantity,created_by,
-                updated_by
-
+                ${columns.join(",")}
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-
+            VALUES ?
             ON DUPLICATE KEY UPDATE
-
                 transaction_id = VALUES(transaction_id),
-
                 part_no = VALUES(part_no),
                 fg_code = VALUES(fg_code),
                 customer_name = VALUES(customer_name),
                 production_unit = VALUES(production_unit),
                 billing_unit = VALUES(billing_unit),
                 sub_category = VALUES(sub_category),
-
                 month_name = VALUES(month_name),
                 month_index = VALUES(month_index),
-
                 subtotal_a = VALUES(subtotal_a),
                 part_cost = VALUES(part_cost),
                 customer_sales_cost = VALUES(customer_sales_cost),
                 monthly_quantity = VALUES(monthly_quantity),
-updated_by = VALUES(updated_by),
+                updated_by = VALUES(updated_by),
                 updated_at = CURRENT_TIMESTAMP
         `;
+
+        const batchSize = 200;
 
         let inserted = 0;
         let updated = 0;
 
-        for (const record of records) {
-            const values = [
+        await connection.beginTransaction();
+        transactionStarted = true;
+
+        for (let i = 0; i < records.length; i += batchSize) {
+            const batch = records.slice(i, i + batchSize);
+
+            const values = batch.map(record => [
                 record.molding_id,
                 record.transaction_id,
-
                 record.part_no ?? null,
                 record.fg_code ?? null,
                 record.customer_name ?? null,
                 record.production_unit ?? null,
                 record.billing_unit ?? null,
                 record.sub_category ?? null,
-
                 record.financial_year,
                 record.month,
                 record.month_name ?? null,
                 record.month_index ?? null,
-
                 record.subtotal_a ?? null,
                 record.part_cost ?? null,
                 record.customer_sales_cost ?? null,
                 record.monthly_quantity ?? 0,
                 currentUser,
                 currentUser,
-            ];
+            ]);
 
-            const [result] = await connection.query(sql, values);
+            const [result] = await connection.query(sql, [values]);
 
-            if (result.affectedRows === 1) {
-                inserted++;
-            } else if (result.affectedRows === 2) {
-                updated++;
-            }
+            // affectedRows can be 1 for inserts and 2 for updates.
+            // No-op updates and CLIENT_FOUND_ROWS can change these counts.
+            // Therefore, do not use affectedRows to determine exact
+            // inserted/updated counts for a multi-row upsert.
         }
 
         await connection.commit();
+        transactionStarted = false;
 
         return res.status(200).json({
             success: true,
             message: "Monthly molding report saved successfully",
             totalRecords: records.length,
-            inserted,
-            updated,
+            inserted: null,
+            updated: null,
         });
 
     } catch (error) {
-        await connection.rollback();
+        if (connection && transactionStarted) {
+            try {
+                await connection.rollback();
+            } catch (rollbackError) {
+                console.error("Rollback error:", rollbackError);
+            }
+        }
 
         console.error(
             "Error saving bulk molding monthly report:",
@@ -626,6 +644,8 @@ updated_by = VALUES(updated_by),
         });
 
     } finally {
-        connection.release();
+        if (connection) {
+            connection.release();
+        }
     }
 };

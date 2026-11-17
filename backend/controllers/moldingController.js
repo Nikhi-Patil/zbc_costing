@@ -47,7 +47,7 @@ export const saveDraft = async (req, res) => {
         const { formData, bops, transactionId, userName } = req.body;
 
         // Prefer the authenticated server-side user when available.
-        const loggedInUser = req.user?.user_name || req.user?.username || userName;
+        const loggedInUser = getCurrentUserName(req);
         if (!loggedInUser || !String(loggedInUser).trim()) {
             return res.status(401).json({
                 success: false,
@@ -105,14 +105,14 @@ export const saveDraft = async (req, res) => {
 // FINAL SUBMIT
 export const finalSubmit = async (req, res) => {
     try {
-        const { transactionId, userName } = req.body;
+        const { transactionId, } = req.body;
         if (!transactionId) {
             return res.status(400).json({
                 message: "Transaction ID is required"
             });
         }
 
-        const loggedInUser = req.user?.user_name || req.user?.username || userName;
+        const loggedInUser = getCurrentUserName(req);
         if (!loggedInUser || !String(loggedInUser).trim()) {
             return res.status(401).json({
                 message: "Logged-in username is required to submit costing."
@@ -987,8 +987,8 @@ export const calculateMoldingBulkController = async (req, res) => {
 // POST /api/molding/bulk
 export const bulkCreateMoldingController = async (req, res) => {
     try {
-        const { entries, userName } = req.body;
-        const loggedInUser = req.user?.user_name || req.user?.username || userName;
+        const { entries } = req.body;
+        const loggedInUser = getCurrentUserName(req);
         if (!loggedInUser || !String(loggedInUser).trim()) {
             return res.status(401).json({
                 success: false,

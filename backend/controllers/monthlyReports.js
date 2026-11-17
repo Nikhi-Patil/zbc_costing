@@ -312,36 +312,132 @@ export const getCompoundRateForCosting = async (req, res) => {
 };
 
 // Get BOP Rate For Costing (unit-specific)
+
+// Get BOP Rate For Costing (unit-specific)
 export const getBopRateForCosting = async (req, res) => {
   try {
     if (!requireBopSession(req, res)) return;
-    const { bopId, bopErpCode, supplierId, unitId, financial_year, month } = req.query;
-    const effectiveUnitId = resolveBopEffectiveUnitId(req, unitId);
-    if (!supplierId || !Number.isInteger(effectiveUnitId) || effectiveUnitId <= 0 || !financial_year || !month || (!bopId && !bopErpCode)) {
+
+    const {
+      bopId,
+      bopErpCode,
+      supplierId,
+      unitId,
+      financial_year,
+      month
+    } = req.query;
+
+    // Resolve Production Unit ID
+    let effectiveUnitId = null;
+
+    if (canAccessAllBopUnits(req)) {
+      // Admin / VP can request any valid production unit.
+      if (unitId && Number.isInteger(Number(unitId)) && Number(unitId) > 0) {
+        effectiveUnitId = Number(unitId);
+      } else if (unitId) {
+        // Resolve unit code such as UNIT-04 to its numeric database ID.
+        const [unitRows] = await adminDB.query(
+          `SELECT id
+                     FROM unit_master
+                     WHERE LOWER(TRIM(unit)) = LOWER(TRIM(?))
+                     LIMIT 1`,
+          [String(unitId).trim()]
+        );
+
+        if (unitRows.length) {
+          effectiveUnitId = Number(unitRows[0].id);
+        }
+      }
+    } else {
+      // Regular users must use their login-assigned unit.
+      effectiveUnitId = getBopSessionUnitId(req);
+    }
+
+    console.log("BOP Rate Lookup Debug:", {
+      bopId,
+      bopErpCode,
+      supplierId,
+      requestedUnitId: unitId,
+      effectiveUnitId,
+      financial_year,
+      month,
+      role: getBopRole(req)
+    });
+
+    if (
+      !supplierId ||
+      Number(supplierId) <= 0 ||
+      !Number.isInteger(effectiveUnitId) ||
+      effectiveUnitId <= 0 ||
+      !financial_year ||
+      !month ||
+      Number(month) < 1 ||
+      Number(month) > 12 ||
+      (!bopId && !bopErpCode)
+    ) {
       return res.status(400).json({
-        success: false, found: false,
+        success: false,
+        found: false,
         message: "BOP, Supplier, Production Unit, Financial Year and Month are required"
       });
     }
+
     const [rows] = await zbcDB.query(
-      `SELECT id, bop_id, bop_erp_code, supplier_id, unit_id,
-              financial_year, month, qty, rate
-       FROM bop_monthly_report
-       WHERE (bop_id = ? OR LOWER(TRIM(bop_erp_code)) = LOWER(TRIM(?)))
-         AND supplier_id = ? AND unit_id = ?
-         AND TRIM(financial_year) = TRIM(?) AND month = ?
-       LIMIT 1`,
+      `SELECT
+                id,
+                bop_id,
+                bop_erp_code,
+                supplier_id,
+                unit_id,
+                financial_year,
+                month,
+                qty,
+                rate
+             FROM bop_monthly_report
+             WHERE (
+                bop_id = ?
+                OR LOWER(TRIM(bop_erp_code)) = LOWER(TRIM(?))
+             )
+             AND supplier_id = ?
+             AND unit_id = ?
+             AND TRIM(financial_year) = TRIM(?)
+             AND month = ?
+             LIMIT 1`,
       [
-        Number(bopId) || 0, String(bopErpCode || "").trim(),
-        Number(supplierId), effectiveUnitId,
-        String(financial_year).trim(), Number(month)
+        Number(bopId) || 0,
+        String(bopErpCode || "").trim(),
+        Number(supplierId),
+        effectiveUnitId,
+        String(financial_year).trim(),
+        Number(month)
       ]
     );
-    if (!rows.length) return res.json({ success: true, found: false, rate: null, data: null });
-    return res.json({ success: true, found: true, rate: Number(rows[0].rate) || 0, data: rows[0] });
+
+    if (!rows.length) {
+      return res.json({
+        success: true,
+        found: false,
+        rate: null,
+        data: null
+      });
+    }
+
+    return res.json({
+      success: true,
+      found: true,
+      rate: Number(rows[0].rate) || 0,
+      data: rows[0]
+    });
+
   } catch (error) {
     console.error("BOP RATE ERROR:", error);
-    return res.status(500).json({ success: false, found: false, message: "Failed to fetch BOP rate", error: error.message });
+
+    return res.status(500).json({
+      success: false,
+      found: false,
+      message: "Failed to fetch BOP rate",
+      error: error.message
+    });
   }
 };
 
@@ -374,8 +470,9 @@ export const createBulkBopMonthlyRate = async (req, res) => {
       if (!bopErpCode) rowErrors.push("BOP ERP Code is required");
       if (!supplierName) rowErrors.push("Supplier Name is required");
       if (!productionUnit) rowErrors.push("Production Unit is required");
-      if (!/^\\d{4}-\\d{2}$/.test(financialYear)) rowErrors.push("Financial Year must be in YYYY-YY format");
-      if (!Number.isInteger(month) || month < 1 || month > 12) rowErrors.push("Month must be between 1 and 12");
+      if (!/^\d{4}-\d{2}$/.test(financialYear)) {
+        rowErrors.push("Financial Year must be in YYYY-YY format");
+      } if (!Number.isInteger(month) || month < 1 || month > 12) rowErrors.push("Month must be between 1 and 12");
       if (!Number.isFinite(qty) || qty < 0) rowErrors.push("Qty must be a valid non-negative number");
       if (!Number.isFinite(rate) || rate < 0) rowErrors.push("Rate must be a valid non-negative number");
 

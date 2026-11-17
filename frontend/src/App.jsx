@@ -51,6 +51,7 @@ import VPSalesMonthlyEntry from "./vp/monthly_masters/SalesMonthlyEntry";
 import VPSalesMonthlyBulk from "./vp/monthly_masters/SalesMonthlyBulk";
 import VPCompoundPolymerMonthlyReport from "./vp/report/CompoundPolymerMonthlyReport";
 import VPCustmorReport from "./vp/report/customerReport";
+import MoldingDashboardPage from "./vp/MoldingDashboardPage";
 
 // APP
 function App() {
@@ -63,7 +64,7 @@ function App() {
       <Route element={<PrivateRoute />}>
         <Route element={<VPLayout />}>
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/vp/dashboard" element={<VPDashboard />} />
+          <Route path="/vp/dashboard" element={<MoldingDashboardPage />} />
 
           <Route path="/vp/molding" element={<VPMolding />} />
           <Route path="/vp/molding-data" element={<VPMoldingData />} />

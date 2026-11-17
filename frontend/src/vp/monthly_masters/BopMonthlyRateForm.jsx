@@ -323,7 +323,9 @@ const BopMonthlyRateForm = () => {
             </div>
             {/* Production Unit */}
             <div className="col-md-3">
-              <label className="form-label"><b>Production Unit</b></label>
+              <label className="form-label">
+                <b>Production Unit</b>
+              </label>
               <select
                 className={`form-control ${formData.unitId ? "field-filled" : ""}`}
                 name="unitId"

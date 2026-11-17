@@ -450,6 +450,7 @@ const Molding = () => {
   const [profitLossFilter, setProfitLossFilter] = useState("All");
   const [searchText, setSearchText] = useState("");
   const [salesMonthlyLoading, setSalesMonthlyLoading] = useState(false);
+  const [salesMonthlyEntries, setSalesMonthlyEntries] = useState([]);
   const [moldingMonthlyReports, setMoldingMonthlyReports] = useState([]);
   const [moldingMonthlyReportLoading, setMoldingMonthlyReportLoading] =
     useState(false);
@@ -481,15 +482,22 @@ const Molding = () => {
         `${API_BASE_URL}/molding?userName=${encodeURIComponent(
           getStoredUserName(),
         )}`,
+        {
+          credentials: "include",
+        },
       );
       const result = await response.json();
-      if (result.success) {
-        setTransactions(result.data);
-      } else {
-        console.error(result.message);
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || "Failed to fetch molding transactions",
+        );
       }
+
+      setTransactions(Array.isArray(result.data) ? result.data : []);
     } catch (error) {
       console.error("Error fetching molding transactions:", error);
+      setTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -506,7 +514,12 @@ const Molding = () => {
       try {
         setSalesMonthlyLoading(true);
         const response = await fetch(
-          `${API_BASE_URL}/sales-monthly?financialYear=${encodeURIComponent(salesFinancialYear)}`,
+          `${API_BASE_URL}/molding?userName=${encodeURIComponent(
+            getStoredUserName(),
+          )}`,
+          {
+            credentials: "include",
+          },
         );
         if (!response.ok) {
           throw new Error(
@@ -563,6 +576,9 @@ const Molding = () => {
 
         const response = await fetch(
           `${API_BASE_URL}/molding-monthly-report?${params.toString()}`,
+          {
+            credentials: "include",
+          },
         );
 
         if (!response.ok) {
@@ -737,32 +753,26 @@ const Molding = () => {
     navigate("/molding/costing-wizard");
   };
 
-  const handleBulkUpload = () => {
-    navigate("/molding/bulk-upload");
-  };
-
   const handleOpenTransaction = (transactionId) => {
     navigate(`/molding/costing-wizard/${transactionId}`);
   };
 
+  const handleBulkUpload = () => {
+    navigate("/molding/bulk-upload");
+  };
   const handleDownloadExcel = async (transactionId) => {
     try {
-      const userName = getStoredUserName();
-
-      if (!userName) {
-        alert("Unable to identify the logged-in user. Please log in again.");
-        return;
-      }
-
       const response = await fetch(
-        `${API_BASE_URL}/molding/${encodeURIComponent(
-          transactionId,
-        )}/download-excel?userName=${encodeURIComponent(userName)}`,
+        `${API_BASE_URL}/molding/${transactionId}/download-excel`,
+        {
+          method: "GET",
+          credentials: "include",
+        },
       );
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Excel API error:", errorText);
+        console.error("Excel API error:", response.status, errorText);
 
         throw new Error(
           `Excel download failed (${response.status}): ${errorText}`,
@@ -783,7 +793,7 @@ const Molding = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Excel download error:", error);
-      alert("Failed to download Excel. Check the console for details.");
+      alert(error.message || "Failed to download Excel.");
     }
   };
 

@@ -10,6 +10,7 @@ import bopPartRoutes from "./routes/bopPartRoutes.js";
 import salesMonthlyRoutes from "./routes/salesMonthlyRoutes.js";
 import moldingMonthlyRoutes from "./routes/moldingMonthlyRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use("/api/part-bops", bopPartRoutes);
 app.use("/api/sales-monthly", salesMonthlyRoutes);
 app.use("/api", moldingMonthlyRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/molding-dashboard", dashboardRoutes);
 
 /* 404 FOR UNKNOWN API ROUTES */
 app.use("/api", (req, res) => {

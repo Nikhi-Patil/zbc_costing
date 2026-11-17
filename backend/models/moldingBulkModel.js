@@ -69,7 +69,7 @@ export const findDuplicatePartNoErrors = async (entries) => {
     });
 
     entries.forEach((entry, index) => {
-        const partNo = normalizePartNo(entry.part_no);
+        const partNo = normalizePartNo(entry.partNo ?? entry.part_no);
 
         if (!partNo) return;
 
@@ -317,8 +317,8 @@ const getSalesMonthly = async ({ partNo, billingUnitId, financialYear, month }) 
               AND TRIM(financial_year)
                   = TRIM(?)
               AND month = ?
-            ORDER BY id ASC
-            LIMIT 1 `,
+ORDER BY qty DESC, id ASC
+LIMIT 1`,
             [
                 text(partNo),
                 Number(billingUnitId),
@@ -393,10 +393,20 @@ const getMoldingMargins = async () => {
     return {
         icc: marginMap.icc ?? 0,
         rejection: marginMap.rejection ?? 0,
-        overhead: marginMap.overhead ?? marginMap.overheadoh ?? 0,
+        overhead: marginMap.overheades ?? marginMap.overheadesoh ?? 0,
         profit: marginMap.profit ?? 0,
         packaging: marginMap.packaging ?? 0,
         transport: marginMap.transport ?? 0,
+
+        postCuring: marginMap.postcuringcharges ?? 0,
+        shotBlasting: marginMap.shotblasting ?? 0,
+        vapourDegreasing: marginMap.vapourdegreasing ?? 0,
+        chromating: marginMap.chromating ?? 0,
+        phospating: marginMap.phospating ?? 0,
+        adhesive: marginMap.adhesive ?? 0,
+        painting: marginMap.painting ?? 0,
+        plating: marginMap.plating ?? 0,
+        cylindricalGrinding: marginMap.cylindricalgrinding ?? 0,
     };
 };
 
@@ -536,30 +546,173 @@ export const buildCalculatedRow = async (entry) => {
     const totalAssemblyCost = round2(totalAssemblyQty * assemblyPerCost);
 
     /* PROCESS COST B*/
-    const processCostB = round2(
-        n(entry.postCuring) +
-        n(entry.finishing) +
-        n(entry.inspection) +
-        n(entry.shotBlasting) +
-        n(entry.vapourDegreasing) +
-        n(entry.chromating) +
-        n(entry.phospating) +
-        n(entry.adhesive) +
-        n(entry.painting) +
-        n(entry.cylindricalGrinding)
+    /* PROCESS REQUIREMENTS */
+
+    const getRequired = (requiredValue, costValue) => {
+        if (
+            String(requiredValue).trim().toLowerCase() === "yes"
+        ) {
+            return "Yes";
+        }
+
+        if (
+            String(requiredValue).trim().toLowerCase() === "no"
+        ) {
+            return "No";
+        }
+
+        // Backward compatibility when an older Excel file
+        // does not contain a Required column.
+        return n(costValue) !== 0 ? "Yes" : "No";
+    };
+
+    const postCuringRequired = getRequired(
+        entry.postCuringRequired,
+        entry.postCuring
     );
 
-    /* CONVERSION COST*/
-    const conversionCost = round2(processCostA + totalAssemblyCost + processCostB);
+    const finishingRequired = getRequired(
+        entry.finishingRequired,
+        entry.finishing
+    );
+
+    const inspectionRequired = getRequired(
+        entry.inspectionRequired,
+        entry.inspection
+    );
+
+    const shotBlastingRequired = getRequired(
+        entry.shotBlastingRequired,
+        entry.shotBlasting
+    );
+
+    const vapourDegreasingRequired = getRequired(
+        entry.vapourDegreasingRequired,
+        entry.vapourDegreasing
+    );
+
+    const chromatingRequired = getRequired(
+        entry.chromatingRequired,
+        entry.chromating
+    );
+
+    const phospatingRequired = getRequired(
+        entry.phospatingRequired,
+        entry.phospating
+    );
+
+    const adhesiveRequired = getRequired(
+        entry.adhesiveRequired,
+        entry.adhesive
+    );
+
+    const paintingRequired = getRequired(
+        entry.paintingRequired,
+        entry.painting
+    );
+
+    const platingRequired = getRequired(
+        entry.platingRequired,
+        entry.plating
+    );
+
+    const cylindricalGrindingRequired = getRequired(
+        entry.cylindricalGrindingRequired,
+        entry.cylindricalGrinding
+    );
+
+    /* PROCESS MEASUREMENTS */
+
+    const bopWeight = n(entry.bopWeight);
+    const bopArea = n(entry.bopArea);
+    const paintPerLit = n(entry.paintPerLit);
+    const metalPartArea = n(entry.metalPartArea);
+
+    /* MARGIN MASTER RATES */
+
+    const margins = await getMoldingMargins();
+
+    /* PROCESS COST CALCULATIONS */
+
+    // Post Curing
+    const postCuring = postCuringRequired === "Yes"
+        ? round2((margins.postCuring * (netWeight + bopWeight)) / 1000)
+        : 0;
+
+    // Finishing - manual input
+    const finishing = finishingRequired === "Yes"
+        ? n(entry.finishing)
+        : 0;
+
+    // Inspection - manual input
+    const inspection = inspectionRequired === "Yes"
+        ? n(entry.inspection)
+        : 0;
+
+    // Shot Blasting
+    const shotBlasting = shotBlastingRequired === "Yes"
+        ? round2((margins.shotBlasting * bopWeight) / 1000)
+        : 0;
+
+    // Vapour Degreasing
+    const vapourDegreasing = vapourDegreasingRequired === "Yes"
+        ? round2((margins.vapourDegreasing * bopWeight) / 1000)
+        : 0;
+
+    // Chromating
+    const chromating = chromatingRequired === "Yes"
+        ? round2((margins.chromating * bopWeight) / 1000)
+        : 0;
+
+    // Phospating
+    const phospating = phospatingRequired === "Yes"
+        ? round2((margins.phospating * bopWeight) / 1000)
+        : 0;
+
+    // Adhesive
+    const adhesive = adhesiveRequired === "Yes"
+        ? round2(margins.adhesive * bopArea)
+        : 0;
+
+    // Painting
+    const painting = paintingRequired === "Yes"
+        ? round2(((margins.painting * metalPartArea) / 1000) * paintPerLit)
+        : 0;
+
+    // Plating
+    const plating = platingRequired === "Yes"
+        ? round2((margins.plating * (netWeight + bopWeight)) / 1000)
+        : 0;
+
+    // Cylindrical Grinding
+    const cylindricalGrinding = cylindricalGrindingRequired === "Yes"
+        ? round2(margins.cylindricalGrinding * metalPartArea)
+        : 0;
+
+    /* PROCESS COST B */
+    const processCostB = round2(
+        finishing +
+        inspection +
+        postCuring +
+        shotBlasting +
+        vapourDegreasing +
+        chromating +
+        phospating +
+        adhesive +
+        painting +
+        plating +
+        cylindricalGrinding +
+        totalAssemblyCost
+    );
+
+    /* CONVERSION COST */
+    const conversionCost = round2(processCostA + processCostB);
 
     /* FINAL RM*/
     const finalRmCost = round2(totalRmCost + totalBopCost);
 
     /* SUBTOTAL A*/
     const subtotalA = round2(finalRmCost + conversionCost);
-
-    /* BOTTOM LINE % */
-    const margins = await getMoldingMargins();
 
     const iccOnRm = margins.icc;
     const rejOnSubtotal = margins.rejection;
@@ -650,16 +803,34 @@ export const buildCalculatedRow = async (entry) => {
         PlattenSize: text(entry.plattenSize),
         toolSize: text(entry.toolSize),
         processCostA,
-        postCuring: n(entry.postCuring),
-        finishing: n(entry.finishing),
-        inspection: n(entry.inspection),
-        shotBlasting: n(entry.shotBlasting),
-        vapourDegreasing: n(entry.vapourDegreasing),
-        chromating: n(entry.chromating),
-        phospating: n(entry.phospating),
-        adhesive: n(entry.adhesive),
-        painting: n(entry.painting),
-        cylindricalGrinding: n(entry.cylindricalGrinding),
+        postCuringRequired,
+        finishingRequired,
+        inspectionRequired,
+        shotBlastingRequired,
+        vapourDegreasingRequired,
+        chromatingRequired,
+        phospatingRequired,
+        adhesiveRequired,
+        paintingRequired,
+        platingRequired,
+        cylindricalGrindingRequired,
+
+        bopWeight,
+        bopArea,
+        paintPerLit,
+        metalPartArea,
+
+        postCuring,
+        finishing,
+        inspection,
+        shotBlasting,
+        vapourDegreasing,
+        chromating,
+        phospating,
+        adhesive,
+        painting,
+        plating,
+        cylindricalGrinding,
         assemblyQty: totalAssemblyQty,
         assemblyPerCost,
         totalAssemblyCost,
@@ -769,7 +940,23 @@ const insertCalculatedRow = async (connection, row, userName) => {
         row.phospating,
         row.adhesive,
         row.painting,
+        row.plating,
         row.cylindricalGrinding,
+        row.bopWeight,
+        row.bopArea,
+        row.paintPerLit,
+        row.metalPartArea,
+        row.postCuringRequired,
+        row.finishingRequired,
+        row.inspectionRequired,
+        row.shotBlastingRequired,
+        row.vapourDegreasingRequired,
+        row.chromatingRequired,
+        row.phospatingRequired,
+        row.adhesiveRequired,
+        row.paintingRequired,
+        row.platingRequired,
+        row.cylindricalGrindingRequired,
         row.assemblyQty,
         row.assemblyPerCost,
         row.totalAssemblyCost,
@@ -801,7 +988,6 @@ const insertCalculatedRow = async (connection, row, userName) => {
         row.monthlyQuantity,
         row.monthlyProfitLoss,
         userName, // created_by
-        userName, // updated_by
     ];
     const placeholders =
         new Array(values.length)
@@ -856,7 +1042,23 @@ const insertCalculatedRow = async (connection, row, userName) => {
                     phospating,
                     adhesive,
                     painting,
+                    plating,
                     cylindrical_grinding,
+                    bop_weight,
+                    bop_area,
+                    paint_per_lit,
+                    metal_part_area,
+                    post_curing_required,
+                    finishing_required,
+                    inspection_required,
+                    shot_blasting_required,
+                    vapour_degreasing_required,
+                    chromating_required,
+                    phospating_required,
+                    adhesive_required,
+                    painting_required,
+                    plating_required,
+                    cylindrical_grinding_required,
                     assembly_qty,
                     assembly_per_cost,
                     total_assembly_cost,
@@ -887,8 +1089,7 @@ const insertCalculatedRow = async (connection, row, userName) => {
                     buying_profit_loss,
                     monthly_quantity,
                     monthly_profit_loss,
-                    created_by,
-                    updated_by
+                    created_by
                 )
                 VALUES (${placeholders})
                 `,

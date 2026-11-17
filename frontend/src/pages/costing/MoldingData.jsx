@@ -776,6 +776,10 @@ const getHistoricalCompoundRate = async ({
     });
     const response = await fetch(
       `${API_BASE_URL}/historical-compound-rate?${params.toString()}`,
+      {
+        method: "GET",
+        credentials: "include",
+      },
     );
     const result = await response.json();
     if (!response.ok) {
@@ -787,28 +791,48 @@ const getHistoricalCompoundRate = async ({
     return null;
   }
 };
+const getHistoricalBopRate = async ({ bop, financialYear, month, unitId }) => {
+  const bopErpCode = String(bop?.bop_erp_code ?? bop?.bop_fg_code ?? "").trim();
 
-const getHistoricalBopRate = async ({ bop, financialYear, month }) => {
-  if (!bop?.bop_fg_code || !bop?.supplier_id) {
+  const supplierId = bop?.supplier_id;
+
+  if (!bopErpCode || !supplierId || !unitId) {
+    console.warn("Missing BOP lookup details:", {
+      bopErpCode,
+      supplierId,
+      unitId,
+      bop,
+    });
     return 0;
   }
+
   try {
     const params = new URLSearchParams({
-      bopErpCode: bop.bop_fg_code || "",
-      supplierId: String(bop.supplier_id),
-      financial_year: financialYear,
+      bopErpCode,
+      supplierId: String(supplierId),
+      unitId: String(unitId),
+      financial_year: String(financialYear),
       month: String(month),
     });
+
     const response = await fetch(
       `${API_BASE_URL}/bop-rate-for-costing?${params.toString()}`,
+      {
+        method: "GET",
+        credentials: "include",
+      },
     );
+
+    const result = await response.json();
+
     if (!response.ok) {
+      console.error("BOP rate API error:", response.status, result);
       return 0;
     }
-    const result = await response.json();
-    return toNumber(result?.rate);
+
+    return result?.found ? toNumber(result.rate) : 0;
   } catch (error) {
-    console.error("Historical BOP rate error:", bop?.bop_fg_code, error);
+    console.error("Historical BOP rate error:", bopErpCode, error);
     return 0;
   }
 };
@@ -851,7 +875,7 @@ const saveHistoricalMonthlyReport = async ({
     headers: {
       "Content-Type": "application/json",
     },
-
+    credentials: "include",
     body: JSON.stringify({
       records,
       userName:
@@ -956,7 +980,10 @@ export default function MoldingData() {
         params.set("search", trimmedSearch);
       }
       const url = `${API_BASE_URL}/molding/all?${params.toString()}`;
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+      });
       if (!response.ok) throw new Error(`Server returned ${response.status}`);
       const result = await response.json();
       if (!result.success) {
@@ -990,6 +1017,13 @@ export default function MoldingData() {
         `${API_BASE_URL}/sales-monthly?financialYear=${encodeURIComponent(
           financialYear,
         )}`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
       );
       if (!response.ok) {
         throw new Error(`Sales monthly server returned ${response.status}`);
@@ -1071,9 +1105,20 @@ export default function MoldingData() {
                 `${API_BASE_URL}/molding/${encodeURIComponent(
                   row.transaction_id,
                 )}`,
+                {
+                  method: "GET",
+                  credentials: "include",
+                },
               );
 
+              if (!bopResponse.ok) {
+                throw new Error(
+                  `BOP details API returned ${bopResponse.status}`,
+                );
+              }
+
               const bopResult = await bopResponse.json();
+
               historicalBops = Array.isArray(bopResult?.data?.bops)
                 ? bopResult.data.bops
                 : [];
@@ -1093,6 +1138,7 @@ export default function MoldingData() {
                   bop,
                   financialYear,
                   month,
+                  unitId: row.production_unit,
                 });
 
                 const assemblyQty = toNumber(
@@ -1311,29 +1357,42 @@ export default function MoldingData() {
       cancelled = true;
     };
   }, [rows, salesMonthlyEntries, historicalFinancialYear, historicalMonth]);
-
   const openBopDetails = async (row) => {
     if (!row?.transaction_id) return;
+
     try {
       setSelectedBopRow(row);
       setBopDetails([]);
       setBopLoading(true);
+
+      // Historical rows already contain their calculated BOP details.
+      if (row?.historical_report && Array.isArray(row.__historicalBops)) {
+        setBopDetails(row.__historicalBops);
+        return;
+      }
+
       const response = await fetch(
         `${API_BASE_URL}/molding/${encodeURIComponent(row.transaction_id)}`,
+        {
+          method: "GET",
+          credentials: "include",
+        },
       );
+
+      if (!response.ok) {
+        throw new Error(`BOP details API returned ${response.status}`);
+      }
+
       const result = await response.json();
-      if (!response.ok || !result.success) {
+
+      if (!result.success) {
         throw new Error(result.message || "Failed to load BOP details");
       }
 
-      if (row?.historical_report && Array.isArray(row.__historicalBops)) {
-        setBopDetails(row.__historicalBops);
-      } else {
-        setBopDetails(Array.isArray(result.data?.bops) ? result.data.bops : []);
-      }
-    } catch (err) {
-      console.error("Error loading BOP details:", err);
-      setError(err.message || "Unable to load BOP details");
+      setBopDetails(Array.isArray(result?.data?.bops) ? result.data.bops : []);
+    } catch (error) {
+      console.error("Error loading BOP details:", error);
+      setError(error.message || "Unable to load BOP details");
       setSelectedBopRow(null);
     } finally {
       setBopLoading(false);
@@ -1359,6 +1418,10 @@ export default function MoldingData() {
         `${API_BASE_URL}/molding/${encodeURIComponent(
           transactionId,
         )}/download-excel?${params.toString()}`,
+        {
+          method: "GET",
+          credentials: "include",
+        },
       );
 
       if (!response.ok) {
@@ -1620,6 +1683,9 @@ export default function MoldingData() {
         `${API_BASE_URL}/molding/export?userName=${encodeURIComponent(
           getStoredUserName(),
         )}`,
+        {
+          credentials: "include",
+        },
       );
 
       if (!response.ok) {

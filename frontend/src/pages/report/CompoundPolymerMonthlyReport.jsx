@@ -107,10 +107,16 @@ const CompoundPolymerMonthlyReport = () => {
   );
 
   // FORMAT NUMBER
-  const formatNumber = (value, decimals = 2) => {
+  const formatNumber = (value, decimals = 0) => {
     return Number(value || 0).toLocaleString("en-IN", {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
+    });
+  };
+  const formatCostInCr = (value) => {
+    return (Number(value || 0) / 10000000).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     });
   };
   // GRAND TOTAL QTY
@@ -159,10 +165,15 @@ const CompoundPolymerMonthlyReport = () => {
           if (!monthData) {
             return <span className="compound-empty-value">-</span>;
           }
-
           const value = viewType === "qty" ? monthData.qty : monthData.cost;
 
-          return <span>{formatNumber(value, 2)}</span>;
+          return (
+            <span>
+              {viewType === "qty"
+                ? formatNumber(value, 0)
+                : `${formatCostInCr(value)} Cr`}
+            </span>
+          );
         },
 
         sortable: true,
@@ -226,8 +237,8 @@ const CompoundPolymerMonthlyReport = () => {
           return nameA.localeCompare(nameB);
         },
 
-        width: "170px",
-        minWidth: "170px",
+        width: "80px",
+        minWidth: "80px",
       },
 
       /* =================================
@@ -235,6 +246,24 @@ const CompoundPolymerMonthlyReport = () => {
     ================================= */
 
       ...monthColumns,
+      {
+        name: "Total",
+        selector: (row) =>
+          viewType === "qty" ? row.total_qty : row.total_cost,
+
+        cell: (row) => (
+          <strong className="compound-total-value">
+            {viewType === "qty"
+              ? formatNumber(row.total_qty, 0)
+              : `${formatCostInCr(row.total_cost)} Cr`}
+          </strong>
+        ),
+
+        sortable: true,
+        right: true,
+        width: "130px",
+        minWidth: "130px",
+      },
     ];
   }, [viewType, groupedData]);
 
@@ -261,10 +290,10 @@ const CompoundPolymerMonthlyReport = () => {
           );
 
           return (
-            <div key={month.value} className="grand-total-value">
+            <div className="grand-total-value compound-total-value">
               {viewType === "qty"
-                ? formatNumber(monthlyQty, 2)
-                : formatNumber(monthlyCost, 2)}
+                ? formatNumber(grandTotalQty, 0)
+                : `${formatCostInCr(grandTotalCost)} Cr`}
             </div>
           );
         })}
@@ -286,7 +315,7 @@ const CompoundPolymerMonthlyReport = () => {
         "No.",
         "Polymer Name",
         ...monthHeaders,
-        viewType === "qty" ? "Total Qty" : "Total Cost",
+        viewType === "qty" ? "Total Qty" : "Total Cost (Cr)",
       ],
       ...groupedData.map((polymer, index) => [
         index + 1,
@@ -295,9 +324,9 @@ const CompoundPolymerMonthlyReport = () => {
           const monthData = polymer.months[month.value];
           return viewType === "qty"
             ? Number(monthData?.qty || 0)
-            : Number(monthData?.cost || 0);
+            : Number(monthData?.cost || 0) / 10000000;
         }),
-        viewType === "qty" ? polymer.total_qty : polymer.total_cost,
+        viewType === "qty" ? polymer.total_qty : polymer.total_cost / 10000000,
       ]),
     ];
 
@@ -308,7 +337,7 @@ const CompoundPolymerMonthlyReport = () => {
           total +
           (viewType === "qty"
             ? Number(monthData?.qty || 0)
-            : Number(monthData?.cost || 0))
+            : Number(monthData?.cost || 0) / 10000000)
         );
       }, 0),
     );
@@ -317,7 +346,7 @@ const CompoundPolymerMonthlyReport = () => {
       "",
       "Grand Total",
       ...monthlyTotals,
-      viewType === "qty" ? grandTotalQty : grandTotalCost,
+      viewType === "qty" ? grandTotalQty : grandTotalCost / 10000000,
     ]);
 
     const worksheet = XLSX.utils.aoa_to_sheet(rows);

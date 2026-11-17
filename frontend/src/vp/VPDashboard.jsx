@@ -13,6 +13,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  ReferenceLine,
 } from "recharts";
 import {
   AlertCircle,
@@ -30,13 +31,6 @@ import {
 } from "lucide-react";
 
 import "./../assets/css/MoldingDashboard.css";
-
-/*
- * Drop this file into a React + Tailwind project with `recharts` and
- * `lucide-react` installed. It accepts an API array through `transactions`, or
- * an optional function through `fetchTransactions`. The mock rows below make
- * the component immediately usable in Storybook or a new screen.
- */
 
 const COLORS = {
   navy: "#173d70",
@@ -69,6 +63,7 @@ const STATUS_COLORS = {
   COMPLETED: COLORS.blue,
   INACTIVE: COLORS.red,
   DRAFT: "#94a3b8",
+  FINAL: COLORS.green,
 };
 
 const number = (value) => Number(value) || 0;
@@ -93,7 +88,7 @@ const formatCurrency = (value) => {
 };
 
 const formatLakhs = (value) =>
-  `₹ ${number(value).toFixed(number(value) >= 10 ? 0 : 1)} L`;
+  `₹ ${number(value).toFixed(number(value) >= 10 ? 0 : 2)} L`;
 const formatPercent = (value, digits = 2) =>
   `${number(value).toFixed(digits)}%`;
 
@@ -105,501 +100,6 @@ const monthLabel = (financialYear, month) => {
     ? `${name} ${number(month) >= 4 ? startYear : startYear + 1}`
     : name;
 };
-
-const createTransaction = ({
-  trId,
-  customerName,
-  prodUnit,
-  billingUnit,
-  subcategory,
-  partNo,
-  partName,
-  mfgWoMargin,
-  mfgWithMargin,
-  saleCost,
-  monthlyQty,
-  status,
-  month,
-  financialYear = "2026-27",
-}) => {
-  const extraPL = saleCost - mfgWoMargin;
-  const plVsMfgCost = saleCost - mfgWithMargin;
-
-  return {
-    trId,
-    customerName,
-    prodUnit,
-    billingUnit,
-    subcategory,
-    partNo,
-    partName,
-    mfgWoMargin,
-    mfgWithMargin,
-    saleCost,
-    extraPL,
-    plVsMfgCost,
-    monthlyQty,
-    totalMfgPL: monthlyQty * plVsMfgCost,
-    extraPLTotal: monthlyQty * extraPL,
-    status,
-    month,
-    financialYear,
-  };
-};
-
-// TODO: replace mockTransactions with API data from /api/molding/transactions.
-const mockTransactions = [
-  createTransaction({
-    trId: "ML120",
-    customerName: "Tata Motors",
-    prodUnit: "Unit 1",
-    billingUnit: "Unit 1",
-    subcategory: "General Moulding",
-    partNo: "335/E1805",
-    partName: "FLOOR MATS",
-    mfgWoMargin: 98,
-    mfgWithMargin: 105,
-    saleCost: 118,
-    monthlyQty: 42000,
-    status: "ACTIVE",
-    month: 4,
-  }),
-  createTransaction({
-    trId: "ML121",
-    customerName: "Mahindra & Mahindra",
-    prodUnit: "Unit 4",
-    billingUnit: "Unit 4",
-    subcategory: "Sealing",
-    partNo: "657863",
-    partName: "GASKET - HOOD TO COOLER",
-    mfgWoMargin: 83,
-    mfgWithMargin: 89,
-    saleCost: 96,
-    monthlyQty: 39000,
-    status: "PENDING",
-    month: 4,
-  }),
-  createTransaction({
-    trId: "ML122",
-    customerName: "Maruti Suzuki",
-    prodUnit: "Unit 6",
-    billingUnit: "Unit 6",
-    subcategory: "General Moulding",
-    partNo: "0661036_CAP",
-    partName: "DUST COVER",
-    mfgWoMargin: 119,
-    mfgWithMargin: 128,
-    saleCost: 134,
-    monthlyQty: 33000,
-    status: "COMPLETED",
-    month: 4,
-  }),
-  createTransaction({
-    trId: "ML123",
-    customerName: "Bajaj Auto",
-    prodUnit: "Unit 1",
-    billingUnit: "Unit 1",
-    subcategory: "O-Ring",
-    partNo: "04070701X003",
-    partName: "GROMMET",
-    mfgWoMargin: 86,
-    mfgWithMargin: 92,
-    saleCost: 108,
-    monthlyQty: 40500,
-    status: "ACTIVE",
-    month: 5,
-  }),
-  createTransaction({
-    trId: "ML124",
-    customerName: "TVS Motors",
-    prodUnit: "Unit 4",
-    billingUnit: "Unit 4",
-    subcategory: "Sealing",
-    partNo: "J1NG 233",
-    partName: "SEALING RING",
-    mfgWoMargin: 101,
-    mfgWithMargin: 108,
-    saleCost: 116,
-    monthlyQty: 37000,
-    status: "ACTIVE",
-    month: 5,
-  }),
-  createTransaction({
-    trId: "ML125",
-    customerName: "Eicher Motors",
-    prodUnit: "Unit 6",
-    billingUnit: "Unit 6",
-    subcategory: "General Moulding",
-    partNo: "445566",
-    partName: "BRACKET",
-    mfgWoMargin: 126,
-    mfgWithMargin: 135,
-    saleCost: 141,
-    monthlyQty: 35000,
-    status: "COMPLETED",
-    month: 5,
-  }),
-  createTransaction({
-    trId: "ML126",
-    customerName: "Ashok Leyland",
-    prodUnit: "Unit 1",
-    billingUnit: "Unit 1",
-    subcategory: "Insulation",
-    partNo: "778899",
-    partName: "INSULATOR",
-    mfgWoMargin: 72,
-    mfgWithMargin: 77,
-    saleCost: 85,
-    monthlyQty: 51000,
-    status: "ACTIVE",
-    month: 6,
-  }),
-  createTransaction({
-    trId: "ML127",
-    customerName: "Hyundai",
-    prodUnit: "Unit 4",
-    billingUnit: "Unit 4",
-    subcategory: "Sealing",
-    partNo: "990011",
-    partName: "CAP",
-    mfgWoMargin: 103,
-    mfgWithMargin: 110,
-    saleCost: 116,
-    monthlyQty: 39000,
-    status: "PENDING",
-    month: 6,
-  }),
-  createTransaction({
-    trId: "ML128",
-    customerName: "Force Motors",
-    prodUnit: "Unit 6",
-    billingUnit: "Unit 4",
-    subcategory: "Hose",
-    partNo: "981234",
-    partName: "CAP - ENGINE COVER",
-    mfgWoMargin: 138,
-    mfgWithMargin: 148,
-    saleCost: 143,
-    monthlyQty: 28000,
-    status: "INACTIVE",
-    month: 6,
-  }),
-  createTransaction({
-    trId: "ML129",
-    customerName: "Tata Motors",
-    prodUnit: "Unit 1",
-    billingUnit: "Unit 1",
-    subcategory: "General Moulding",
-    partNo: "774411",
-    partName: "SUPPORT BRACKET",
-    mfgWoMargin: 94,
-    mfgWithMargin: 101,
-    saleCost: 119,
-    monthlyQty: 45500,
-    status: "ACTIVE",
-    month: 7,
-  }),
-  createTransaction({
-    trId: "ML130",
-    customerName: "Mahindra & Mahindra",
-    prodUnit: "Unit 4",
-    billingUnit: "Unit 4",
-    subcategory: "Hose",
-    partNo: "550022",
-    partName: "HOSE CLIP",
-    mfgWoMargin: 117,
-    mfgWithMargin: 126,
-    saleCost: 121,
-    monthlyQty: 36000,
-    status: "DRAFT",
-    month: 7,
-  }),
-  createTransaction({
-    trId: "ML131",
-    customerName: "Maruti Suzuki",
-    prodUnit: "Unit 6",
-    billingUnit: "Unit 6",
-    subcategory: "Sealing",
-    partNo: "660033",
-    partName: "GUIDE",
-    mfgWoMargin: 110,
-    mfgWithMargin: 118,
-    saleCost: 117,
-    monthlyQty: 34000,
-    status: "COMPLETED",
-    month: 7,
-  }),
-  createTransaction({
-    trId: "ML132",
-    customerName: "Bajaj Auto",
-    prodUnit: "Unit 1",
-    billingUnit: "Unit 1",
-    subcategory: "O-Ring",
-    partNo: "770044",
-    partName: "RETAINER",
-    mfgWoMargin: 77,
-    mfgWithMargin: 82,
-    saleCost: 95,
-    monthlyQty: 59000,
-    status: "ACTIVE",
-    month: 8,
-  }),
-  createTransaction({
-    trId: "ML133",
-    customerName: "TVS Motors",
-    prodUnit: "Unit 4",
-    billingUnit: "Unit 4",
-    subcategory: "General Moulding",
-    partNo: "880055",
-    partName: "BUSH",
-    mfgWoMargin: 105,
-    mfgWithMargin: 113,
-    saleCost: 108,
-    monthlyQty: 41000,
-    status: "PENDING",
-    month: 8,
-  }),
-  createTransaction({
-    trId: "ML134",
-    customerName: "Eicher Motors",
-    prodUnit: "Unit 6",
-    billingUnit: "Unit 6",
-    subcategory: "Sealing",
-    partNo: "990066",
-    partName: "PLATE",
-    mfgWoMargin: 144,
-    mfgWithMargin: 154,
-    saleCost: 151,
-    monthlyQty: 30000,
-    status: "INACTIVE",
-    month: 8,
-  }),
-  createTransaction({
-    trId: "ML135",
-    customerName: "Ashok Leyland",
-    prodUnit: "Unit 1",
-    billingUnit: "Unit 1",
-    subcategory: "Insulation",
-    partNo: "101112",
-    partName: "SPACER",
-    mfgWoMargin: 82,
-    mfgWithMargin: 88,
-    saleCost: 104,
-    monthlyQty: 55000,
-    status: "ACTIVE",
-    month: 9,
-  }),
-  createTransaction({
-    trId: "ML136",
-    customerName: "Hyundai",
-    prodUnit: "Unit 4",
-    billingUnit: "Unit 4",
-    subcategory: "Hose",
-    partNo: "131415",
-    partName: "MOUNT",
-    mfgWoMargin: 121,
-    mfgWithMargin: 130,
-    saleCost: 127,
-    monthlyQty: 38000,
-    status: "PENDING",
-    month: 9,
-  }),
-  createTransaction({
-    trId: "ML137",
-    customerName: "Force Motors",
-    prodUnit: "Unit 6",
-    billingUnit: "Unit 6",
-    subcategory: "General Moulding",
-    partNo: "161718",
-    partName: "SHIELD",
-    mfgWoMargin: 132,
-    mfgWithMargin: 141,
-    saleCost: 158,
-    monthlyQty: 36500,
-    status: "COMPLETED",
-    month: 9,
-  }),
-  createTransaction({
-    trId: "ML138",
-    customerName: "Tata Motors",
-    prodUnit: "Unit 1",
-    billingUnit: "Unit 1",
-    subcategory: "Sealing",
-    partNo: "200101",
-    partName: "DOOR SEAL",
-    mfgWoMargin: 96,
-    mfgWithMargin: 103,
-    saleCost: 124,
-    monthlyQty: 52000,
-    status: "ACTIVE",
-    month: 10,
-  }),
-  createTransaction({
-    trId: "ML139",
-    customerName: "Mahindra & Mahindra",
-    prodUnit: "Unit 4",
-    billingUnit: "Unit 4",
-    subcategory: "O-Ring",
-    partNo: "200102",
-    partName: "O-RING 44MM",
-    mfgWoMargin: 89,
-    mfgWithMargin: 95,
-    saleCost: 110,
-    monthlyQty: 47000,
-    status: "ACTIVE",
-    month: 10,
-  }),
-  createTransaction({
-    trId: "ML140",
-    customerName: "Maruti Suzuki",
-    prodUnit: "Unit 6",
-    billingUnit: "Unit 6",
-    subcategory: "General Moulding",
-    partNo: "200103",
-    partName: "MUD FLAP",
-    mfgWoMargin: 113,
-    mfgWithMargin: 121,
-    saleCost: 118,
-    monthlyQty: 32000,
-    status: "INACTIVE",
-    month: 10,
-  }),
-  createTransaction({
-    trId: "ML141",
-    customerName: "Bajaj Auto",
-    prodUnit: "Unit 1",
-    billingUnit: "Unit 1",
-    subcategory: "Hose",
-    partNo: "200104",
-    partName: "FUEL HOSE",
-    mfgWoMargin: 84,
-    mfgWithMargin: 90,
-    saleCost: 107,
-    monthlyQty: 64000,
-    status: "ACTIVE",
-    month: 11,
-  }),
-  createTransaction({
-    trId: "ML142",
-    customerName: "TVS Motors",
-    prodUnit: "Unit 4",
-    billingUnit: "Unit 4",
-    subcategory: "Sealing",
-    partNo: "200105",
-    partName: "COVER GASKET",
-    mfgWoMargin: 109,
-    mfgWithMargin: 117,
-    saleCost: 136,
-    monthlyQty: 43000,
-    status: "COMPLETED",
-    month: 11,
-  }),
-  createTransaction({
-    trId: "ML143",
-    customerName: "Eicher Motors",
-    prodUnit: "Unit 6",
-    billingUnit: "Unit 6",
-    subcategory: "Insulation",
-    partNo: "200106",
-    partName: "TERMINAL BOOT",
-    mfgWoMargin: 129,
-    mfgWithMargin: 138,
-    saleCost: 145,
-    monthlyQty: 35500,
-    status: "PENDING",
-    month: 11,
-  }),
-  createTransaction({
-    trId: "ML144",
-    customerName: "Ashok Leyland",
-    prodUnit: "Unit 1",
-    billingUnit: "Unit 1",
-    subcategory: "General Moulding",
-    partNo: "200107",
-    partName: "AIR INTAKE DUCT",
-    mfgWoMargin: 106,
-    mfgWithMargin: 113,
-    saleCost: 138,
-    monthlyQty: 61000,
-    status: "ACTIVE",
-    month: 12,
-  }),
-  createTransaction({
-    trId: "ML145",
-    customerName: "Hyundai",
-    prodUnit: "Unit 4",
-    billingUnit: "Unit 4",
-    subcategory: "O-Ring",
-    partNo: "200108",
-    partName: "SUSPENSION BUSH",
-    mfgWoMargin: 98,
-    mfgWithMargin: 105,
-    saleCost: 123,
-    monthlyQty: 49000,
-    status: "ACTIVE",
-    month: 12,
-  }),
-  createTransaction({
-    trId: "ML146",
-    customerName: "Force Motors",
-    prodUnit: "Unit 6",
-    billingUnit: "Unit 6",
-    subcategory: "Hose",
-    partNo: "200109",
-    partName: "VACUUM TUBE",
-    mfgWoMargin: 153,
-    mfgWithMargin: 164,
-    saleCost: 160,
-    monthlyQty: 29500,
-    status: "DRAFT",
-    month: 12,
-  }),
-  createTransaction({
-    trId: "ML147",
-    customerName: "Tata Motors",
-    prodUnit: "Unit 1",
-    billingUnit: "Unit 1",
-    subcategory: "Sealing",
-    partNo: "200110",
-    partName: "WINDSHIELD SEAL",
-    mfgWoMargin: 111,
-    mfgWithMargin: 119,
-    saleCost: 147,
-    monthlyQty: 63000,
-    status: "ACTIVE",
-    month: 1,
-  }),
-  createTransaction({
-    trId: "ML148",
-    customerName: "Mahindra & Mahindra",
-    prodUnit: "Unit 4",
-    billingUnit: "Unit 4",
-    subcategory: "General Moulding",
-    partNo: "200111",
-    partName: "PEDAL PAD",
-    mfgWoMargin: 91,
-    mfgWithMargin: 97,
-    saleCost: 117,
-    monthlyQty: 56000,
-    status: "COMPLETED",
-    month: 1,
-  }),
-  createTransaction({
-    trId: "ML149",
-    customerName: "Maruti Suzuki",
-    prodUnit: "Unit 6",
-    billingUnit: "Unit 6",
-    subcategory: "O-Ring",
-    partNo: "200112",
-    partName: "GROMMET RING",
-    mfgWoMargin: 126,
-    mfgWithMargin: 135,
-    saleCost: 151,
-    monthlyQty: 41000,
-    status: "PENDING",
-    month: 1,
-  }),
-];
 
 function DashboardCard({ title, action, children, className = "" }) {
   return (
@@ -675,16 +175,51 @@ function SelectField({ label, value, onChange, children }) {
   );
 }
 
+const getColorClass = (color) => {
+  const colorClasses = {
+    "#2878e8": "molding-color-blue",
+    "#24a866": "molding-color-green",
+    "#16a34a": "molding-color-profit",
+    "#f59a23": "molding-color-orange",
+    "#ef4764": "molding-color-red",
+    "#ef4444": "molding-color-loss",
+    "#f6bd16": "molding-color-amber",
+    "#64748b": "molding-color-slate",
+    "#94a3b8": "molding-color-muted",
+  };
+
+  return colorClasses[String(color).toLowerCase()] || "molding-color-default";
+};
+
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
 
+  const validItems = payload.filter(
+    (entry) =>
+      entry.value !== null &&
+      entry.value !== undefined &&
+      Number.isFinite(Number(entry.value)),
+  );
+
+  if (!validItems.length) return null;
+
   return (
-    <div className="molding-chart-tooltip rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs shadow-lg">
-      <p className="mb-1 font-semibold text-slate-700">{label}</p>
-      {payload.map((entry) => (
-        <p key={entry.name} style={{ color: entry.color }}>
-          {entry.name}: {formatLakhs(entry.value)}
-        </p>
+    <div className="molding-chart-tooltip">
+      <div className="molding-tooltip-title">{label}</div>
+
+      {validItems.map((entry, index) => (
+        <div className="molding-tooltip-row" key={`${entry.dataKey}-${index}`}>
+          <span
+            className="molding-tooltip-dot"
+            style={{ backgroundColor: entry.color || "#2878e8" }}
+          />
+
+          <span className="molding-tooltip-name">{entry.name}</span>
+
+          <strong className="molding-tooltip-value">
+            {formatLakhs(entry.value)}
+          </strong>
+        </div>
       ))}
     </div>
   );
@@ -693,7 +228,7 @@ function ChartTooltip({ active, payload, label }) {
 function LegendDot({ color, label, value }) {
   return (
     <div className="molding-legend-dot flex items-center gap-2 text-sm text-slate-600">
-      <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: color }} />
+      <span className={`molding-legend-color ${getColorClass(color)}`} />
       <span>{label}</span>
       {value && (
         <span className="ml-auto font-semibold text-[#173d70]">{value}</span>
@@ -723,14 +258,24 @@ function PartsTable({ rows, title, positive }) {
           <tbody className="divide-y divide-slate-100">
             {rows.length ? (
               rows.map((row, index) => (
-                <tr key={row.trId} className="text-slate-600">
+                <tr
+                  key={
+                    row.monthlyReportId ??
+                    `${row.moldingId}-${row.month}-${index}`
+                  }
+                  className="text-slate-600"
+                >
                   <td className="px-3 py-1.5">{index + 1}</td>
                   <td className="px-3 py-1.5 font-medium">{row.partNo}</td>
                   <td className="px-3 py-1.5">
                     {row.partName || row.subcategory}
                   </td>
                   <td
-                    className={`px-3 py-1.5 text-right font-bold ${positive ? "text-emerald-600" : "text-rose-500"}`}
+                    className={`px-3 py-1.5 text-right font-bold molding-pl-value ${
+                      positive
+                        ? "molding-pl-value--profit"
+                        : "molding-pl-value--loss"
+                    }`}
                   >
                     {number(row.totalMfgPL / 100000).toFixed(1)}
                   </td>
@@ -753,6 +298,21 @@ function PartsTable({ rows, title, positive }) {
   );
 }
 
+function CustomerAxisTick({ x, y, payload }) {
+  return (
+    <text
+      x={x}
+      y={y}
+      textAnchor="end"
+      dominantBaseline="middle"
+      fill="#334155"
+      fontSize={8}
+    >
+      {payload.value}
+    </text>
+  );
+}
+
 /**
  * @param {{
  *   transactions?: Array<object>,
@@ -764,6 +324,7 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
   const [isLoading, setIsLoading] = useState(false);
   const [loadVersion, setLoadVersion] = useState(0);
   const [lastUpdated, setLastUpdated] = useState(() => new Date());
+  const [fetchedTotalTransactions, setFetchedTotalTransactions] = useState(0);
 
   const [draftFilters, setDraftFilters] = useState({
     financialYear: "2026-27",
@@ -774,6 +335,7 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
     customer: "ALL",
     status: "ALL",
   });
+
   const [appliedFilters, setAppliedFilters] = useState(draftFilters);
 
   useEffect(() => {
@@ -785,8 +347,28 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
       try {
         // Example: fetchTransactions can call GET /api/molding/transactions.
         const result = await fetchTransactions();
-        if (!cancelled)
-          setFetchedTransactions(Array.isArray(result) ? result : []);
+
+        console.log("Dashboard API response:", result);
+        console.log("Total API transactions:", result?.transactions?.length);
+
+        console.log(
+          "MTRB transactions:",
+          result?.transactions?.filter((row) =>
+            String(row.subCategory || row.subcategory || "")
+              .toUpperCase()
+              .includes("MTRB"),
+          ),
+        );
+
+        // IMPORTANT: Save API data into React state
+        if (!cancelled) {
+          const rows = Array.isArray(result?.transactions)
+            ? result.transactions
+            : [];
+
+          setFetchedTransactions(rows);
+          setFetchedTotalTransactions(Number(result?.totalTransactions) || 0);
+        }
       } catch (error) {
         console.error("Unable to load molding transactions", error);
         if (!cancelled) setFetchedTransactions([]);
@@ -804,11 +386,12 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
     };
   }, [fetchTransactions, loadVersion]);
 
-  const sourceTransactions =
-    transactions ??
-    (typeof fetchTransactions === "function"
-      ? (fetchedTransactions ?? [])
-      : mockTransactions);
+  const sourceTransactions = Array.isArray(transactions)
+    ? transactions
+    : Array.isArray(fetchedTransactions)
+      ? fetchedTransactions
+      : [];
+
   const financialYears = useMemo(
     () =>
       [
@@ -834,17 +417,42 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
   }, [financialYears, draftFilters.financialYear]);
 
   const options = useMemo(() => {
-    const selectRows = (key) =>
-      [
-        ...new Set(sourceTransactions.map((row) => row[key]).filter(Boolean)),
-      ].sort();
-    return {
-      prodUnits: selectRows("prodUnit"),
-      billingUnits: selectRows("billingUnit"),
-      customers: selectRows("customerName"),
-      statuses: selectRows("status"),
+    const getUnique = (rows, key) =>
+      [...new Set(rows.map((row) => row[key]).filter(Boolean))].sort();
+
+    const matchesFilters = (row, excludeKey) => {
+      return (
+        (excludeKey === "prodUnit" ||
+          draftFilters.prodUnit === "ALL" ||
+          row.prodUnit === draftFilters.prodUnit) &&
+        (excludeKey === "billingUnit" ||
+          draftFilters.billingUnit === "ALL" ||
+          row.billingUnit === draftFilters.billingUnit) &&
+        (excludeKey === "customerName" ||
+          draftFilters.customer === "ALL" ||
+          row.customerName === draftFilters.customer)
+      );
     };
-  }, [sourceTransactions]);
+
+    const filteredForProduction = sourceTransactions.filter((row) =>
+      matchesFilters(row, "prodUnit"),
+    );
+
+    const filteredForBilling = sourceTransactions.filter((row) =>
+      matchesFilters(row, "billingUnit"),
+    );
+
+    const filteredForCustomer = sourceTransactions.filter((row) =>
+      matchesFilters(row, "customerName"),
+    );
+
+    return {
+      prodUnits: getUnique(filteredForProduction, "prodUnit"),
+      billingUnits: getUnique(filteredForBilling, "billingUnit"),
+      customers: getUnique(filteredForCustomer, "customerName"),
+      statuses: getUnique(sourceTransactions, "status"),
+    };
+  }, [sourceTransactions, draftFilters]);
 
   const filteredTransactions = useMemo(() => {
     const fromIndex = fiscalIndex(appliedFilters.fromMonth);
@@ -879,22 +487,36 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
       (row) => row.mfgWithMargin * row.monthlyQty,
     );
     const totalMfgPL = sumBy(filteredTransactions, (row) => row.totalMfgPL);
-    const averageMargin = filteredTransactions.length
-      ? sumBy(
-          filteredTransactions,
-          (row) => (number(row.plVsMfgCost) / number(row.saleCost)) * 100,
-        ) / filteredTransactions.length
-      : 0;
+    const averageMargin =
+      salesValue !== 0 ? (totalMfgPL / salesValue) * 100 : 0;
+
+    const uniqueTransactions = new Set(
+      filteredTransactions
+        .filter((row) => {
+          return (
+            (appliedFilters.prodUnit === "ALL" ||
+              row.prodUnit === appliedFilters.prodUnit) &&
+            (appliedFilters.billingUnit === "ALL" ||
+              row.billingUnit === appliedFilters.billingUnit) &&
+            (appliedFilters.customer === "ALL" ||
+              row.customerName === appliedFilters.customer) &&
+            (appliedFilters.status === "ALL" ||
+              row.status === appliedFilters.status)
+          );
+        })
+        .map((row) => row.moldingId)
+        .filter(Boolean),
+    ).size;
 
     return {
-      transactionCount: filteredTransactions.length,
+      transactionCount: uniqueTransactions,
       monthlyQty: sumBy(filteredTransactions, (row) => row.monthlyQty),
       salesValue,
       manufacturingValue,
       totalMfgPL,
       averageMargin,
     };
-  }, [filteredTransactions]);
+  }, [filteredTransactions, fetchedTotalTransactions]);
 
   const monthlyData = useMemo(() => {
     const selectedMonths = FISCAL_MONTHS.filter((item) => {
@@ -909,29 +531,42 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
       const rows = filteredTransactions.filter(
         (row) => number(row.month) === item.value,
       );
+      const monthlySalesValue = sumBy(
+        rows,
+        (row) => number(row.saleCost) * number(row.monthlyQty),
+      );
+
+      const monthlyTotalMfgPL = sumBy(rows, (row) => row.totalMfgPL);
+
       return {
         month: monthLabel(appliedFilters.financialYear, item.value),
         manufacturing:
           sumBy(rows, (row) => row.mfgWithMargin * row.monthlyQty) / 100000,
-        sales: sumBy(rows, (row) => row.saleCost * row.monthlyQty) / 100000,
-        profit: sumBy(rows, (row) => row.totalMfgPL) / 100000,
+        sales: monthlySalesValue / 100000,
+        profit: monthlyTotalMfgPL / 100000,
         transactionCount: rows.length,
         monthlyQty: sumBy(rows, (row) => row.monthlyQty),
-        averageMargin: rows.length
-          ? sumBy(
-              rows,
-              (row) => (number(row.plVsMfgCost) / number(row.saleCost)) * 100,
-            ) / rows.length
-          : 0,
+        averageMargin:
+          monthlySalesValue > 0
+            ? (monthlyTotalMfgPL / monthlySalesValue) * 100
+            : 0,
       };
     });
   }, [filteredTransactions, appliedFilters]);
 
+  const monthlyProfitValues = monthlyData.map(
+    (item) => Number(item.profit) || 0,
+  );
+
+  const plMin = Math.min(0, ...monthlyProfitValues);
+  const plMax = Math.max(0, ...monthlyProfitValues);
+  const zeroOffset = plMax === plMin ? 50 : (plMax / (plMax - plMin)) * 100;
   const previousPeriod =
     monthlyData.length > 1 ? monthlyData[monthlyData.length - 2] : null;
   const latestPeriod = monthlyData.length
     ? monthlyData[monthlyData.length - 1]
     : null;
+
   const calcTrend = (current, previous) => {
     if (!previous || !current || !number(previous)) return null;
     return (
@@ -1009,65 +644,111 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
   const statusData = useMemo(
     () =>
       Object.entries(STATUS_COLORS)
-        .map(([status, color]) => ({
-          name: status.charAt(0) + status.slice(1).toLowerCase(),
-          value: filteredTransactions.filter(
-            (row) => String(row.status).toUpperCase() === status,
-          ).length,
-          color,
-        }))
+        .map(([status, color]) => {
+          const uniqueTransactions = new Set(
+            filteredTransactions
+              .filter(
+                (row) =>
+                  String(row.status || "")
+                    .trim()
+                    .toUpperCase() === status,
+              )
+              .map((row) => row.moldingId)
+              .filter(Boolean),
+          );
+
+          return {
+            name: status.charAt(0) + status.slice(1).toLowerCase(),
+            value: uniqueTransactions.size,
+            color,
+          };
+        })
         .filter((item) => item.value > 0),
     [filteredTransactions],
   );
 
+  const partWiseData = useMemo(() => {
+    const groupedParts = filteredTransactions.reduce((result, row) => {
+      const key = String(row.partNo || row.subcategory || row.moldingId).trim();
+
+      if (!result[key]) {
+        result[key] = {
+          partNo: row.partNo,
+          partName: row.partName || row.subcategory,
+          totalMfgPL: 0,
+          monthlyQty: 0,
+        };
+      }
+
+      result[key].totalMfgPL += Number(row.totalMfgPL) || 0;
+      result[key].monthlyQty += Number(row.monthlyQty) || 0;
+
+      return result;
+    }, {});
+
+    return Object.values(groupedParts);
+  }, [filteredTransactions]);
+
   const profitableParts = useMemo(
     () =>
-      [...filteredTransactions]
-        .filter((row) => number(row.totalMfgPL) >= 0)
-        .sort((a, b) => number(b.totalMfgPL) - number(a.totalMfgPL))
+      partWiseData
+        .filter((row) => row.totalMfgPL > 0)
+        .sort((a, b) => b.totalMfgPL - a.totalMfgPL)
         .slice(0, 10),
-    [filteredTransactions],
+    [partWiseData],
   );
+
   const lossParts = useMemo(
     () =>
-      [...filteredTransactions]
-        .filter((row) => number(row.totalMfgPL) < 0)
-        .sort((a, b) => number(a.totalMfgPL) - number(b.totalMfgPL))
+      partWiseData
+        .filter((row) => row.totalMfgPL < 0)
+        .sort((a, b) => a.totalMfgPL - b.totalMfgPL)
         .slice(0, 10),
-    [filteredTransactions],
+    [partWiseData],
   );
 
   const alerts = useMemo(() => {
-    const margin = (row) =>
-      (number(row.plVsMfgCost) / number(row.saleCost)) * 100;
-    const belowCost = filteredTransactions.filter(
-      (row) => number(row.saleCost) < number(row.mfgWithMargin),
-    ).length;
-    const lowMargin = filteredTransactions.filter(
-      (row) => margin(row) < 5,
-    ).length;
-    const highQtyLowMargin = filteredTransactions.filter(
-      (row) => number(row.monthlyQty) > 50000 && margin(row) < 3,
-    ).length;
-    const highProfit = filteredTransactions.filter(
-      (row) => number(row.totalMfgPL) > 500000,
-    ).length;
+    const getUniquePartCount = (condition) =>
+      new Set(
+        filteredTransactions
+          .filter(condition)
+          .map((row) =>
+            String(row.partNo || row.subcategory || row.moldingId).trim(),
+          ),
+      ).size;
+
+    const getMargin = (row) => {
+      const saleCost = Number(row.saleCost) || 0;
+      if (saleCost === 0) return 0;
+
+      return ((Number(row.plVsMfgCost) || 0) / saleCost) * 100;
+    };
+
+    const belowCost = getUniquePartCount(
+      (row) => (Number(row.saleCost) || 0) < (Number(row.mfgWithMargin) || 0),
+    );
+
+    const lowMargin = getUniquePartCount((row) => getMargin(row) < 5);
+
+    const highQtyLowMargin = getUniquePartCount(
+      (row) => (Number(row.monthlyQty) || 0) > 50000 && getMargin(row) < 3,
+    );
+
     return [
       {
         tone: "red",
         count: belowCost,
-        text: "parts have Sell Cost below Mfg Cost.",
+        text: "parts have Sale Cost below Mfg Cost.",
       },
-      { tone: "orange", count: lowMargin, text: "parts have margin below 5%." },
+      {
+        tone: "orange",
+        count: lowMargin,
+        text: "parts have margin below 5%.",
+      },
       {
         tone: "amber",
         count: highQtyLowMargin,
         text: "parts have Monthly Qty > 50,000 but margin < 3%.",
-      },
-      {
-        tone: "green",
-        count: highProfit,
-        text: "parts generate more than ₹5L monthly P/L.",
       },
     ];
   }, [filteredTransactions]);
@@ -1093,7 +774,47 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
     tickLine: false,
     axisLine: { stroke: "#94a3b8" },
   };
+
   const totalBilling = sumBy(billingData, (item) => item.value);
+
+  const billingChartData = billingData.map((item) => ({
+    ...item,
+    chartValue: Math.max(item.value, totalBilling * 0.03),
+  }));
+
+  useEffect(() => {
+    setDraftFilters((current) => {
+      let changed = false;
+      const next = { ...current };
+
+      if (
+        next.prodUnit !== "ALL" &&
+        !options.prodUnits.includes(next.prodUnit)
+      ) {
+        next.prodUnit = "ALL";
+        changed = true;
+      }
+
+      if (
+        next.billingUnit !== "ALL" &&
+        !options.billingUnits.includes(next.billingUnit)
+      ) {
+        next.billingUnit = "ALL";
+        changed = true;
+      }
+
+      if (
+        next.customer !== "ALL" &&
+        !options.customers.includes(next.customer)
+      ) {
+        next.customer = "ALL";
+        changed = true;
+      }
+
+      // Prevent unnecessary state updates and infinite rendering
+      return changed ? next : current;
+    });
+  }, [options]);
 
   return (
     <main className="molding-dashboard min-h-screen bg-slate-50 text-slate-700">
@@ -1103,7 +824,7 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
             <Factory size={43} strokeWidth={1.7} className="shrink-0" />
             <div>
               <h3 className="font-serif text-2xl font-bold leading-none sm:text-[27px]">
-               Jayashree Polymers Molding Dashboard
+                Jayashree Polymers Molding Dashboard
               </h3>
               <p className="mt-1 text-sm text-blue-100">
                 Manufacturing Cost &amp; Profitability Analysis
@@ -1260,17 +981,18 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
         </div>
 
         <div className="molding-primary-charts grid grid-cols-1 gap-3 xl:grid-cols-2">
-          <DashboardCard title="Manufacturing Cost vs Sell Cost">
+          <DashboardCard title="Manufacturing Cost vs Sales Cost">
             <div className="mb-1 flex justify-end gap-5">
               <LegendDot color={COLORS.blue} label="Manufacturing Cost" />
-              <LegendDot color={COLORS.green} label="Sell Cost" />
+              <LegendDot color={COLORS.green} label="Sales Cost" />
             </div>
-            <div className="h-[215px]">
+            <div className="h-[214px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={monthlyData}
-                  margin={{ top: 8, right: 6, left: -10, bottom: 2 }}
-                  barGap={3}
+                  margin={{ top: 8, right: 15, left: 5, bottom: 5 }}
+                  barGap={4}
+                  barCategoryGap="20%"
                 >
                   <CartesianGrid stroke="#e2e8f0" vertical={false} />
                   <XAxis
@@ -1278,6 +1000,7 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
                     tickFormatter={(value) => value.replace(" ", "\n")}
                     {...chartAxis}
                   />
+
                   <YAxis
                     {...chartAxis}
                     label={{
@@ -1288,21 +1011,39 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
                       fill: "#334155",
                     }}
                   />
-                  <Tooltip content={<ChartTooltip />} />
+
+                  <Tooltip content={<ChartTooltip />} cursor={false} />
                   <Bar
                     dataKey="manufacturing"
                     name="Manufacturing Cost"
                     fill={COLORS.blue}
                     radius={[2, 2, 0, 0]}
                     maxBarSize={20}
-                  />
+                  >
+                    <LabelList
+                      dataKey="manufacturing"
+                      position="top"
+                      formatter={(value) => Math.round(value)}
+                      fill="#173d70"
+                      fontSize={10}
+                    />
+                  </Bar>
+
                   <Bar
                     dataKey="sales"
-                    name="Sell Cost"
+                    name="Sales Cost"
                     fill={COLORS.green}
                     radius={[2, 2, 0, 0]}
                     maxBarSize={20}
-                  />
+                  >
+                    <LabelList
+                      dataKey="sales"
+                      position="top"
+                      formatter={(value) => Math.round(value)}
+                      fill="#173d70"
+                      fontSize={10}
+                    />
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -1310,8 +1051,12 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
 
           <DashboardCard title="Monthly Profit / Loss">
             <div className="mb-1 flex justify-end">
-              <LegendDot color={COLORS.red} label="P/L (₹ in Lakhs)" />
+              <div className="flex justify-end gap-4">
+                <LegendDot color="#16a34a" label="Profit" />
+                <LegendDot color="#ef4444" label="Loss" />
+              </div>
             </div>
+
             <div className="h-[215px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
@@ -1319,51 +1064,99 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
                   margin={{ top: 8, right: 6, left: -10, bottom: 2 }}
                 >
                   <defs>
-                    <linearGradient id="profitFill" x1="0" x2="0" y1="0" y2="1">
+                    {/* Line changes colour at zero */}
+                    <linearGradient
+                      id="plLineGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#16a34a" />
+                      <stop offset={`${zeroOffset}%`} stopColor="#16a34a" />
+                      <stop offset={`${zeroOffset}%`} stopColor="#ef4444" />
+                      <stop offset="100%" stopColor="#ef4444" />
+                    </linearGradient>
+
+                    {/* Original shaded AreaChart appearance */}
+                    <linearGradient
+                      id="plAreaGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop
                         offset="0%"
-                        stopColor={COLORS.red}
-                        stopOpacity={0.32}
+                        stopColor="#16a34a"
+                        stopOpacity={0.25}
+                      />
+                      <stop
+                        offset={`${zeroOffset}%`}
+                        stopColor="#16a34a"
+                        stopOpacity={0.02}
+                      />
+                      <stop
+                        offset={`${zeroOffset}%`}
+                        stopColor="#ef4444"
+                        stopOpacity={0.02}
                       />
                       <stop
                         offset="100%"
-                        stopColor={COLORS.red}
-                        stopOpacity={0.03}
+                        stopColor="#ef4444"
+                        stopOpacity={0.25}
                       />
                     </linearGradient>
                   </defs>
+
                   <CartesianGrid stroke="#e2e8f0" vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickFormatter={(value) => value.replace(" ", "\n")}
-                    {...chartAxis}
-                  />
+
+                  <XAxis dataKey="month" {...chartAxis} />
                   <YAxis
                     {...chartAxis}
-                    label={{
-                      value: "P/L (₹ in Lakhs)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fontSize: 11,
-                      fill: "#334155",
-                    }}
+                    domain={["auto", "auto"]}
+                    tickFormatter={(value) => Number(value).toFixed(0)}
+                    allowDecimals={false}
                   />
-                  <Tooltip content={<ChartTooltip />} />
+                  <ReferenceLine
+                    y={0}
+                    stroke="#64748b"
+                    strokeWidth={1.5}
+                    strokeDasharray="4 3"
+                    ifOverflow="extendDomain"
+                  />
+
+                  <Tooltip content={<ChartTooltip />} cursor={false} />
                   <Area
                     type="monotone"
                     dataKey="profit"
                     name="P/L"
-                    stroke={COLORS.red}
-                    strokeWidth={2}
-                    fill="url(#profitFill)"
-                    dot={{ r: 3, fill: COLORS.red }}
+                    stroke="url(#plLineGradient)"
+                    fill="url(#plAreaGradient)"
+                    strokeWidth={2.5}
+                    dot={(props) => {
+                      const { cx, cy, payload } = props;
+                      const value = Number(payload.profit) || 0;
+
+                      return (
+                        <circle
+                          cx={cx}
+                          cy={cy}
+                          r={3}
+                          fill={value >= 0 ? "#16a34a" : "#ef4444"}
+                          stroke="none"
+                        />
+                      );
+                    }}
                     activeDot={{ r: 5 }}
+                    isAnimationActive={false}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </DashboardCard>
         </div>
+
         <div className="molding-performance-grid grid grid-cols-1 gap-3 xl:grid-cols-[1.05fr_0.92fr_1.05fr]">
           <DashboardCard
             title="Top 10 Customers by P/L"
@@ -1371,37 +1164,42 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
               <span className="text-xs text-slate-500">P/L (₹ in Lakhs)</span>
             }
           >
-            <div className="h-[214px]">
+            <div className="h-[340px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   layout="vertical"
                   data={customerData}
-                  margin={{ top: 0, right: 38, left: 10, bottom: 0 }}
+                  margin={{ top: 5, right: 45, left: 5, bottom: 5 }}
                 >
                   <CartesianGrid stroke="#edf2f7" horizontal={false} />
+
                   <XAxis type="number" hide />
+
                   <YAxis
                     type="category"
                     dataKey="customer"
-                    width={130}
-                    tick={{ fontSize: 11, fill: "#334155" }}
+                    width={175}
+                    interval={0}
+                    tick={<CustomerAxisTick />}
                     tickLine={false}
                     axisLine={false}
+                    fontSize={10}
                   />
-                  <Tooltip content={<ChartTooltip />} />
+
+                  <Tooltip content={<ChartTooltip />} cursor={false} />
                   <Bar
                     dataKey="profit"
                     name="P/L"
                     fill={COLORS.blue}
                     radius={[0, 3, 3, 0]}
-                    maxBarSize={15}
+                    maxBarSize={20}
                   >
                     <LabelList
                       dataKey="profit"
                       position="right"
                       formatter={(value) => number(value).toFixed(1)}
                       fill="#173d70"
-                      fontSize={11}
+                      fontSize={10}
                     />
                   </Bar>
                 </BarChart>
@@ -1414,77 +1212,79 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
               <LegendDot color={COLORS.blue} label="Sales Value" />
               <LegendDot color={COLORS.green} label="P/L" />
             </div>
-            <div className="h-[214px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={productionData}
-                  margin={{ top: 14, right: 2, left: -12, bottom: 0 }}
-                  barGap={3}
-                >
-                  <CartesianGrid stroke="#e2e8f0" vertical={false} />
-                  <XAxis dataKey="unit" {...chartAxis} />
-                  <YAxis
-                    {...chartAxis}
-                    label={{
-                      value: "Value (₹ in Lakhs)",
-                      angle: -90,
-                      position: "insideLeft",
-                      fontSize: 11,
-                      fill: "#334155",
-                    }}
-                  />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Bar
-                    dataKey="sales"
-                    name="Sales Value"
-                    fill={COLORS.blue}
-                    radius={[2, 2, 0, 0]}
-                    maxBarSize={24}
+            <div className="flex h-[300px] items-center justify-center">
+              <div className="h-[214px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={productionData}
+                    margin={{ top: 14, right: 2, left: -12, bottom: 0 }}
+                    barGap={3}
                   >
-                    <LabelList
+                    <CartesianGrid stroke="#e2e8f0" vertical={false} />
+                    <XAxis dataKey="unit" {...chartAxis} />
+                    <YAxis
+                      {...chartAxis}
+                      label={{
+                        value: "Value (₹ in Lakhs)",
+                        angle: -90,
+                        position: "insideLeft",
+                        fontSize: 11,
+                        fill: "#334155",
+                      }}
+                    />
+                    <Tooltip content={<ChartTooltip />} cursor={false} />{" "}
+                    <Bar
                       dataKey="sales"
-                      position="top"
-                      formatter={(value) => Math.round(value)}
-                      fill="#173d70"
-                      fontSize={10}
-                    />
-                  </Bar>
-                  <Bar
-                    dataKey="profit"
-                    name="P/L"
-                    fill={COLORS.green}
-                    radius={[2, 2, 0, 0]}
-                    maxBarSize={24}
-                  >
-                    <LabelList
+                      name="Sales Value"
+                      fill={COLORS.blue}
+                      radius={[2, 2, 0, 0]}
+                      maxBarSize={24}
+                    >
+                      <LabelList
+                        dataKey="sales"
+                        position="top"
+                        formatter={(value) => Math.round(value)}
+                        fill="#173d70"
+                        fontSize={10}
+                      />
+                    </Bar>
+                    <Bar
                       dataKey="profit"
-                      position="top"
-                      formatter={(value) => number(value).toFixed(0)}
-                      fill="#173d70"
-                      fontSize={10}
-                    />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+                      name="P/L"
+                      fill={COLORS.green}
+                      radius={[2, 2, 0, 0]}
+                      maxBarSize={24}
+                    >
+                      <LabelList
+                        dataKey="profit"
+                        position="top"
+                        formatter={(value) => number(value).toFixed(0)}
+                        fill="#173d70"
+                        fontSize={10}
+                      />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </DashboardCard>
 
           <DashboardCard title="Billing Unit Performance">
-            <div className="molding-billing-content flex h-[214px] items-center gap-2">
+            <div className="molding-billing-content flex h-[300px] items-center justify-center gap-2">
               <div className="relative h-full min-w-0 flex-1">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={billingData}
-                      dataKey="value"
+                      data={billingChartData}
+                      dataKey="chartValue"
                       nameKey="name"
                       innerRadius="52%"
                       outerRadius="83%"
-                      paddingAngle={1}
-                      stroke="white"
-                      strokeWidth={2}
+                      paddingAngle={0}
+                      stroke="none"
+                      isAnimationActive={false}
                     >
-                      {billingData.map((entry, index) => (
+                      {billingChartData.map((entry, index) => (
                         <Cell
                           key={entry.name}
                           fill={
@@ -1495,6 +1295,7 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
                               COLORS.red,
                             ][index % 4]
                           }
+                          stroke="none"
                         />
                       ))}
                     </Pie>
@@ -1529,6 +1330,7 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
             </div>
           </DashboardCard>
         </div>
+
         <div className="molding-bottom-grid grid grid-cols-1 gap-3 xl:grid-cols-[1fr_1fr_0.9fr]">
           <PartsTable
             title="Top 10 Profitable Parts"
@@ -1542,7 +1344,7 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
           />
           <div className="grid gap-3">
             <DashboardCard title="Transaction Status">
-              <div className="flex h-[125px] items-center gap-3">
+              <div className="molding-status-content">
                 <div className="relative h-full min-w-0 flex-1">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -1550,14 +1352,21 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
                         data={statusData}
                         dataKey="value"
                         nameKey="name"
-                        innerRadius="54%"
-                        outerRadius="84%"
-                        paddingAngle={1}
-                        stroke="white"
-                        strokeWidth={2}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={42}
+                        outerRadius={58}
+                        paddingAngle={0}
+                        minAngle={10}
+                        stroke="none"
+                        isAnimationActive={false}
                       >
-                        {statusData.map((entry) => (
-                          <Cell key={entry.name} fill={entry.color} />
+                        {statusData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={entry.color}
+                            stroke="none"
+                          />
                         ))}
                       </Pie>
                       <Tooltip />
@@ -1645,4 +1454,4 @@ export default function MoldingDashboard({ transactions, fetchTransactions }) {
   );
 }
 
-export { mockTransactions, formatCurrency, formatPercent };
+export { formatCurrency, formatPercent };

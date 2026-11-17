@@ -38,16 +38,23 @@ const EXCEL_HEADERS = [
   "Shift Time Efficiency",
   "Platten Size",
   "Tool Size",
-  "Post Curing",
-  "Finishing",
-  "Inspection",
-  "Shot Blasting",
-  "Vapour Degreasing",
-  "Chromating",
-  "Phospating",
-  "Adhesive",
-  "Painting",
-  "Cylindrical Grinding",
+  "Post Curing (Yes/No)",
+  "Finishing (Yes/No)",
+  "Finishing Cost",
+  "Inspection (Yes/No)",
+  "Inspection Cost",
+  "Shot Blasting (Yes/No)",
+  "Vapour Degreasing (Yes/No)",
+  "Chromating (Yes/No)",
+  "Phospating (Yes/No)",
+  "Adhesive (Yes/No)",
+  "Painting (Yes/No)",
+  "Plating (Yes/No)",
+  "Cylindrical Grinding (Yes/No)",
+  "BOP Weight",
+  "BOP Area",
+  "Paint Per Litre",
+  "Metal Part Area",
   "Assembly Per Cost",
   "Buying Type",
   "Vendor Name",
@@ -70,7 +77,14 @@ const parseNumber = (value) => {
 
   return Number.isFinite(number) ? number : null;
 };
+const parseYesNo = (value) => {
+  const normalized = normalize(value);
 
+  if (["yes", "y", "1", "true"].includes(normalized)) return "Yes";
+  if (["no", "n", "0", "false", ""].includes(normalized)) return "No";
+
+  return String(value).trim();
+};
 const parseMonth = (value) => {
   if (value === null || value === undefined || String(value).trim() === "") {
     return null;
@@ -160,16 +174,27 @@ const createEmptyRow = (excelRow) => ({
   plattenSize: "",
   toolSize: "",
 
-  postCuring: null,
-  finishing: null,
-  inspection: null,
-  shotBlasting: null,
-  vapourDegreasing: null,
-  chromating: null,
-  phospating: null,
-  adhesive: null,
-  painting: null,
-  cylindricalGrinding: null,
+  postCuringRequired: "No",
+
+  finishingRequired: "No",
+  finishing: 0,
+
+  inspectionRequired: "No",
+  inspection: 0,
+
+  shotBlastingRequired: "No",
+  vapourDegreasingRequired: "No",
+  chromatingRequired: "No",
+  phospatingRequired: "No",
+  adhesiveRequired: "No",
+  paintingRequired: "No",
+  platingRequired: "No",
+  cylindricalGrindingRequired: "No",
+
+  bopWeight: null,
+  bopArea: null,
+  paintPerLitre: null,
+  metalPartArea: null,
 
   assemblyPerCost: null,
 
@@ -363,19 +388,6 @@ const MoldingBulk = () => {
       ) {
         width = 22;
       }
-
-      if (header === "Effective Date") {
-        width = 16;
-      }
-
-      if (header === "Financial Year") {
-        width = 16;
-      }
-
-      if (header === "Month") {
-        width = 15;
-      }
-
       return { wch: width };
     });
 
@@ -494,20 +506,46 @@ const MoldingBulk = () => {
           );
           row.plattenSize = String(getCell(excelRow, "Platten Size")).trim();
           row.toolSize = String(getCell(excelRow, "Tool Size")).trim();
-          row.postCuring = parseNumber(getCell(excelRow, "Post Curing"));
-          row.finishing = parseNumber(getCell(excelRow, "Finishing"));
-          row.inspection = parseNumber(getCell(excelRow, "Inspection"));
-          row.shotBlasting = parseNumber(getCell(excelRow, "Shot Blasting"));
-          row.vapourDegreasing = parseNumber(
-            getCell(excelRow, "Vapour Degreasing"),
+          row.postCuringRequired = parseYesNo(
+            getCell(excelRow, "Post Curing (Yes/No)"),
           );
-          row.chromating = parseNumber(getCell(excelRow, "Chromating"));
-          row.phospating = parseNumber(getCell(excelRow, "Phospating"));
-          row.adhesive = parseNumber(getCell(excelRow, "Adhesive"));
-          row.painting = parseNumber(getCell(excelRow, "Painting"));
-          row.cylindricalGrinding = parseNumber(
-            getCell(excelRow, "Cylindrical Grinding"),
+          row.finishingRequired = parseYesNo(
+            getCell(excelRow, "Finishing (Yes/No)"),
           );
+          row.finishing = parseNumber(getCell(excelRow, "Finishing Cost")) ?? 0;
+          row.inspectionRequired = parseYesNo(
+            getCell(excelRow, "Inspection (Yes/No)"),
+          );
+          row.inspection =
+            parseNumber(getCell(excelRow, "Inspection Cost")) ?? 0;
+          row.shotBlastingRequired = parseYesNo(
+            getCell(excelRow, "Shot Blasting (Yes/No)"),
+          );
+          row.vapourDegreasingRequired = parseYesNo(
+            getCell(excelRow, "Vapour Degreasing (Yes/No)"),
+          );
+          row.chromatingRequired = parseYesNo(
+            getCell(excelRow, "Chromating (Yes/No)"),
+          );
+          row.phospatingRequired = parseYesNo(
+            getCell(excelRow, "Phospating (Yes/No)"),
+          );
+          row.adhesiveRequired = parseYesNo(
+            getCell(excelRow, "Adhesive (Yes/No)"),
+          );
+          row.paintingRequired = parseYesNo(
+            getCell(excelRow, "Painting (Yes/No)"),
+          );
+          row.platingRequired = parseYesNo(
+            getCell(excelRow, "Plating (Yes/No)"),
+          );
+          row.cylindricalGrindingRequired = parseYesNo(
+            getCell(excelRow, "Cylindrical Grinding (Yes/No)"),
+          );
+          row.bopWeight = parseNumber(getCell(excelRow, "BOP Weight"));
+          row.bopArea = parseNumber(getCell(excelRow, "BOP Area"));
+          row.paintPerLitre = parseNumber(getCell(excelRow, "Paint Per Litre"));
+          row.metalPartArea = parseNumber(getCell(excelRow, "Metal Part Area"));
           row.assemblyPerCost = parseNumber(
             getCell(excelRow, "Assembly Per Cost"),
           );
@@ -590,16 +628,12 @@ const MoldingBulk = () => {
       "runningCavity",
       "cycleTime",
       "shiftTimeEfficiency",
-      "postCuring",
       "finishing",
       "inspection",
-      "shotBlasting",
-      "vapourDegreasing",
-      "chromating",
-      "phospating",
-      "adhesive",
-      "painting",
-      "cylindricalGrinding",
+      "bopWeight",
+      "bopArea",
+      "paintPerLitre",
+      "metalPartArea",
       "assemblyPerCost",
       "buyingCost",
     ];
@@ -671,43 +705,41 @@ const MoldingBulk = () => {
 
       const entries = rows.map((row) => ({
         excelRow: row.excelRow,
-
         customer: row.customer,
         productionUnit: row.productionUnit,
         billingUnit: row.billingUnit,
         subDepartment: row.subDepartment,
         subCategory: row.subCategory,
-
         partNo: row.partNo,
         productionImCode: row.productionImCode,
-
         grossWeight: row.grossWeight,
         netWeight: row.netWeight,
-
         processType: row.processType,
         machineTonnage: row.machineTonnage,
-
         totalCavity: row.totalCavity,
         runningCavity: row.runningCavity,
         cycleTime: row.cycleTime,
         shiftTimeEfficiency: row.shiftTimeEfficiency,
-
         plattenSize: row.plattenSize,
         toolSize: row.toolSize,
-
-        postCuring: row.postCuring ?? 0,
+        postCuringRequired: row.postCuringRequired,
+        finishingRequired: row.finishingRequired,
         finishing: row.finishing ?? 0,
+        inspectionRequired: row.inspectionRequired,
         inspection: row.inspection ?? 0,
-        shotBlasting: row.shotBlasting ?? 0,
-        vapourDegreasing: row.vapourDegreasing ?? 0,
-        chromating: row.chromating ?? 0,
-        phospating: row.phospating ?? 0,
-        adhesive: row.adhesive ?? 0,
-        painting: row.painting ?? 0,
-        cylindricalGrinding: row.cylindricalGrinding ?? 0,
-
+        shotBlastingRequired: row.shotBlastingRequired,
+        vapourDegreasingRequired: row.vapourDegreasingRequired,
+        chromatingRequired: row.chromatingRequired,
+        phospatingRequired: row.phospatingRequired,
+        adhesiveRequired: row.adhesiveRequired,
+        paintingRequired: row.paintingRequired,
+        platingRequired: row.platingRequired,
+        cylindricalGrindingRequired: row.cylindricalGrindingRequired,
+        bopWeight: row.bopWeight ?? 0,
+        bopArea: row.bopArea ?? 0,
+        paintPerLit: row.paintPerLitre ?? 0,
+        metalPartArea: row.metalPartArea ?? 0,
         assemblyPerCost: row.assemblyPerCost ?? 0,
-
         buyingType: row.buyingType,
         vendorName: row.vendorName ?? "",
         buyingCost: row.buyingCost ?? 0,
@@ -730,6 +762,7 @@ const MoldingBulk = () => {
       }
 
       const backendErrors = Array.isArray(result?.errors) ? result.errors : [];
+      const frontendValidatedRows = validateRows(rows);
 
       const errorMap = new Map();
 
@@ -752,9 +785,12 @@ const MoldingBulk = () => {
           .push(error?.message || error?.error || "Validation error");
       });
 
-      const rowsWithErrors = rows.map((row) => ({
+      const rowsWithErrors = frontendValidatedRows.map((row) => ({
         ...row,
-        errors: errorMap.get(Number(row.excelRow)) || [],
+        errors: [
+          ...(row.errors || []),
+          ...(errorMap.get(Number(row.excelRow)) || []),
+        ],
       }));
 
       setRows(rowsWithErrors);
@@ -831,16 +867,23 @@ const MoldingBulk = () => {
       plattenSize: row.plattenSize,
       toolSize: row.toolSize,
 
-      postCuring: row.postCuring ?? 0,
+      postCuringRequired: row.postCuringRequired,
+      finishingRequired: row.finishingRequired,
       finishing: row.finishing ?? 0,
+      inspectionRequired: row.inspectionRequired,
       inspection: row.inspection ?? 0,
-      shotBlasting: row.shotBlasting ?? 0,
-      vapourDegreasing: row.vapourDegreasing ?? 0,
-      chromating: row.chromating ?? 0,
-      phospating: row.phospating ?? 0,
-      adhesive: row.adhesive ?? 0,
-      painting: row.painting ?? 0,
-      cylindricalGrinding: row.cylindricalGrinding ?? 0,
+      shotBlastingRequired: row.shotBlastingRequired,
+      vapourDegreasingRequired: row.vapourDegreasingRequired,
+      chromatingRequired: row.chromatingRequired,
+      phospatingRequired: row.phospatingRequired,
+      adhesiveRequired: row.adhesiveRequired,
+      paintingRequired: row.paintingRequired,
+      platingRequired: row.platingRequired,
+      cylindricalGrindingRequired: row.cylindricalGrindingRequired,
+      bopWeight: row.bopWeight ?? 0,
+      bopArea: row.bopArea ?? 0,
+      paintPerLit: row.paintPerLitre ?? 0,
+      metalPartArea: row.metalPartArea ?? 0,
 
       assemblyPerCost: row.assemblyPerCost ?? 0,
 
@@ -1015,6 +1058,17 @@ const MoldingBulk = () => {
         </div>
       </div>
 
+      {/* MONTH LOGIC INFO */}
+
+      <div className="sales-bulk-info">
+        <strong>Important:</strong>
+
+        <span>
+          Month controls the Molding Month, Compound Month, all BOP monthly
+          rates, Sales Monthly Qty and Customer Sell Rate.
+        </span>
+      </div>
+
       {/* SUMMARY */}
 
       {rows.length > 0 && (
@@ -1089,10 +1143,6 @@ const MoldingBulk = () => {
                   <th>Sub Department</th>
 
                   <th>Sub Category</th>
-
-                  <th>FY</th>
-
-                  <th>Month</th>
 
                   <th>Gross Wt.</th>
 
@@ -1203,41 +1253,6 @@ const MoldingBulk = () => {
                         }
                         disabled={loading}
                       />
-                    </td>
-
-                    <td>
-                      <input
-                        type="text"
-                        className="bulk-edit-input"
-                        value={row.financialYear}
-                        onChange={(e) =>
-                          handleRowChange(
-                            index,
-                            "financialYear",
-                            e.target.value,
-                          )
-                        }
-                        disabled={loading}
-                      />
-                    </td>
-
-                    <td>
-                      <select
-                        className="bulk-month-select"
-                        value={row.startMonth || ""}
-                        onChange={(e) =>
-                          handleRowChange(index, "startMonth", e.target.value)
-                        }
-                        disabled={loading}
-                      >
-                        <option value="">Select</option>
-
-                        {MONTHS.map((month, monthIndex) => (
-                          <option key={month} value={monthIndex + 1}>
-                            {month}
-                          </option>
-                        ))}
-                      </select>
                     </td>
 
                     <td>
